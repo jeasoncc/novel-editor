@@ -52,7 +52,9 @@ jobs:
       - name: setup Bun
         run: |
           curl -fsSL https://bun.sh/install | bash
-          echo "export PATH=\"$HOME/.bun/bin:$PATH\"" >> $GITHUB_ENV
+          echo "$HOME/.bun/bin" >> $GITHUB_PATH   # 这样每一步都能识别 bun
+          # curl -fsSL https://bun.sh/install | bash
+          # echo "export PATH=\"$HOME/.bun/bin:$PATH\"" >> $GITHUB_ENV
 
       # -----------------------------
       # Rust
