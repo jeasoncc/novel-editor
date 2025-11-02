@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Novel Editor
+Comment=Minimal novel writing editor built with Tauri, React, and SQLite
+Exec=novel-editor
+Icon=icon
+Type=Application
+Categories=Utility;
+
