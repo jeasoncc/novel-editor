@@ -30,6 +30,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Link } from "@tanstack/react-router";
 import { db } from "@/db/curd";
 import type {
 	ChapterInterface,
@@ -71,17 +72,6 @@ export function StoryWorkspace({
 		useState<SerializedEditorState>();
 	const [sceneWordCount, setSceneWordCount] = useState(0);
 	const [isSaving, setIsSaving] = useState(false);
-
-	// Context menu state for right-click actions on Chapters/Scenes panels
-	const [ctxMenu, setCtxMenu] = useState<
-		| { visible: true; x: number; y: number; type: "chapters" | "scenes" }
-		| { visible: false }
-	>({ visible: false });
-
-	const [confirm, setConfirm] = useState<
-		| { open: true; type: "chapter" | "scene"; id: string; name: string }
-		| { open: false }
-	>({ open: false });
 
 	// keep project selection in sync with external changes
 	useEffect(() => {
@@ -256,7 +246,14 @@ export function StoryWorkspace({
 		async (chapterId: string) => {
 			const target = projectChapters.find((chapter) => chapter.id === chapterId);
 			if (!target) return;
-			setConfirm({ open: true, type: "chapter", id: chapterId, name: target.title });
+			if (!window.confirm(`确认删除章节 “${target.title}” 吗？`)) return;
+			try {
+				await db.deleteChapter(chapterId);
+				toast.success("章节已删除");
+			} catch (error) {
+				loggerError("Failed to delete chapter", error);
+				toast.error("删除章节失败");
+			}
 		},
 		[projectChapters],
 	);
@@ -304,24 +301,6 @@ export function StoryWorkspace({
 		}
 	}, [chapterEditId, chapterEditTitle]);
 
-	const proceedDeletion = useCallback(async () => {
-		if (!('open' in confirm) || !confirm.open) return;
-		const current = confirm;
-		setConfirm({ open: false });
-		try {
-			if (current.type === 'chapter') {
-				await db.deleteChapter(current.id);
-				toast.success('章节已删除');
-			} else {
-				await db.deleteScene(current.id);
-				toast.success('场景已删除');
-			}
-		} catch (error) {
-			loggerError('Failed to delete', error);
-			toast.error('删除失败');
-		}
-	}, [confirm]);
-
 	const handleAddScene = useCallback(async () => {
 		if (!selectedChapterId || !selectedProjectId) {
 			toast.error("请先选择章节");
@@ -352,7 +331,14 @@ export function StoryWorkspace({
 		async (sceneId: string) => {
 			const target = chapterScenes.find((scene) => scene.id === sceneId);
 			if (!target) return;
-			setConfirm({ open: true, type: "scene", id: sceneId, name: target.title });
+			if (!window.confirm(`确认删除场景 “${target.title}” 吗？`)) return;
+			try {
+				await db.deleteScene(sceneId);
+				toast.success("场景已删除");
+			} catch (error) {
+				loggerError("Failed to delete scene", error);
+				toast.error("删除场景失败");
+			}
 		},
 		[chapterScenes],
 	);
@@ -402,21 +388,22 @@ export function StoryWorkspace({
 
 	return (
 		<TooltipProvider>
-			<div className="relative flex h-screen bg-background text-foreground" onClick={() => ctxMenu.visible && setCtxMenu({visible:false})}>
-				<aside className="hidden w-72 flex-col border-r bg-background lg:flex">
-					<div className="border-b px-5 py-4">
+			<div className="flex h-screen bg-background text-foreground">
+				<aside className="relative hidden w-72 flex-col border-r border-border bg-background lg:flex">
+					<div className="border-b border-border px-5 py-4">
 						<div className="flex items-center justify-between">
 							<div>
 								<p className="text-xs uppercase tracking-wide text-muted-foreground">
 									Story projects
 								</p>
-								<h1 className="text-lg font-semibold">
+								<h1 className="text-lg font-semibold text-foreground">
 									Project hub
 								</h1>
 							</div>
 							<Button
 								size="sm"
 								variant="secondary"
+								className="bg-accent text-accent-foreground hover:bg-accent/80"
 								onClick={onCreateProject}
 							>
 								<Plus className="mr-1.5 size-4" />
@@ -448,7 +435,7 @@ export function StoryWorkspace({
 											>
 												<div className="flex items-center justify-between">
 													<div>
-														<p className="text-sm font-semibold">
+														<p className="text-sm font-semibold text-foreground">
 															{project.title}
 														</p>
 														<p className="text-xs text-muted-foreground">
@@ -465,50 +452,44 @@ export function StoryWorkspace({
 								})}
 								{projects.length === 0 ? (
 									<li>
-										<div className="rounded-xl border border-dashed p-4 text-center text-xs text-muted-foreground">
+										<div className="rounded-xl border border-dashed border-border bg-card p-4 text-center text-xs text-muted-foreground">
 											暂无项目，点击右上角按钮创建新的作品。
 										</div>
 									</li>
 								) : null}
-			{/* Confirm Deletion Modal */}
-			{confirm.open ? (
-				<div className="fixed inset-0 z-50 flex items-center justify-center">
-					<div className="absolute inset-0 bg-black/40" onClick={() => setConfirm({ open: false })} />
-					<div className="relative z-10 w-full max-w-sm rounded-lg border bg-card p-4 text-card-foreground shadow-lg">
-						<h4 className="mb-2 text-sm font-semibold">确认删除</h4>
-						<p className="mb-4 text-sm text-muted-foreground">
-							确认删除{confirm.type === 'chapter' ? '章节' : '场景'} “{('open' in confirm && confirm.open) ? confirm.name : ''}” 吗？此操作不可撤销。
-						</p>
-						<div className="flex justify-end gap-2">
-							<Button variant="outline" onClick={() => setConfirm({ open: false })}>取消</Button>
-							<Button className="bg-red-600 text-white hover:bg-red-700" onClick={proceedDeletion}>删除</Button>
-						</div>
-					</div>
-				</div>
-			) : null}
 							</ul>
 						</div>
 					</ScrollArea>
+					{/* Settings link at bottom-right */}
+					<div className="pointer-events-none absolute bottom-3 right-3">
+						<Link to="/settings/design" className="pointer-events-auto">
+							<Button variant="outline" size="sm" className="border-border bg-card text-card-foreground hover:bg-accent">设置</Button>
+						</Link>
+					</div>
 				</aside>
 				<main className="flex-1 overflow-hidden">
 					<div className="flex h-full flex-col">
-						<header className="border-b bg-background px-8 py-5">
+						<header className="border-b border-border bg-background px-8 py-5">
 							<div className="flex flex-wrap items-center justify-between gap-4">
 								<div>
 									<p className="text-xs uppercase tracking-wide text-muted-foreground">
 										{selectedProjectId ? "Project overview" : "No project selected"}
 									</p>
-									<h2 className="text-2xl font-semibold">
+									<h2 className="text-2xl font-semibold text-foreground">
 										{projects.find((project) => project.id === selectedProjectId)
 											?.title ?? "Select a project"}
 									</h2>
 								</div>
 								<div className="flex items-center gap-3">
-									<Button variant="outline" onClick={() => setSelectedSceneId(null)}>
+									<Button
+										variant="outline"
+										className="border-border bg-card text-card-foreground hover:bg-accent"
+										onClick={() => setSelectedSceneId(null)}
+									>
 										<Notebook className="mr-2 size-4" />
 										Scene list
 									</Button>
-									<Button>
+									<Button className="bg-primary text-primary-foreground hover:bg-primary/90">
 										<Flame className="mr-2 size-4" />
 										Start focus session
 									</Button>
@@ -534,16 +515,10 @@ export function StoryWorkspace({
 						</header>
 						<div className="flex flex-1 overflow-hidden">
 							<div className="grid flex-1 gap-4 overflow-hidden px-8 py-6 xl:grid-cols-[300px,320px,1fr]">
-								<section
-									className="flex flex-col overflow-hidden rounded-2xl border bg-card shadow-sm"
-									onContextMenu={(e) => {
-										e.preventDefault();
-										setCtxMenu({ visible: true, x: e.clientX, y: e.clientY, type: "chapters" });
-									}}
-								>
-									<div className="flex items-center justify-between border-b px-4 py-3">
+								<section className="flex flex-col overflow-hidden rounded-2xl border bg-card shadow-sm">
+									<div className="flex items-center justify-between border-b border-border px-4 py-3">
 										<div>
-											<h3 className="text-sm font-semibold">Chapters</h3>
+											<h3 className="text-sm font-semibold text-foreground">Chapters</h3>
 											<p className="text-xs text-muted-foreground">
 												双击重命名，使用控制按钮调整顺序
 											</p>
@@ -579,7 +554,7 @@ export function StoryWorkspace({
 													<li key={chapter.id}>
 														<div
 															className={`group rounded-xl border px-3 py-2 transition ${
-																isSelected ? "bg-accent/30" : "hover:bg-muted"}
+																isSelected ? "bg-accent/30" : "hover:bg-muted"
 															}`}
 														>
 															<div
@@ -613,7 +588,7 @@ export function StoryWorkspace({
 																		</form>
 																	) : (
 																		<>
-																			<p className="text-sm font-semibold">
+																			<p className="text-sm font-semibold text-foreground">
 																				{chapter.title}
 																			</p>
 																			<p className="text-xs text-muted-foreground">
@@ -684,7 +659,7 @@ export function StoryWorkspace({
 																			<Button
 																				variant="ghost"
 																				size="icon"
-																				className="text-red-500 hover:text-red-600"
+																				className="text-red-400 hover:text-red-300"
 																				onClick={() => handleDeleteChapter(chapter.id)}
 																			>
 																				<Trash2 className="size-4" />
@@ -700,7 +675,7 @@ export function StoryWorkspace({
 											})}
 											{projectChapters.length === 0 ? (
 												<li>
-													<div className="rounded-xl border border-dashed p-4 text-center text-xs text-muted-foreground">
+													<div className="rounded-xl border border-dashed border-white/20 bg-white/5 p-4 text-center text-xs text-white/60">
 														暂无章节，点击右上角按钮创建。
 													</div>
 												</li>
@@ -708,17 +683,13 @@ export function StoryWorkspace({
 										</ul>
 									</ScrollArea>
 								</section>
-								<section
-									className="flex flex-col overflow-hidden rounded-2xl border bg-card shadow-sm"
-									onContextMenu={(e) => {
-										e.preventDefault();
-										setCtxMenu({ visible: true, x: e.clientX, y: e.clientY, type: "scenes" });
-									}}
-								>
-									<div className="flex items-center justify-between border-b px-4 py-3">
+								<section className="flex flex-col overflow-hidden rounded-2xl border bg-card shadow-sm">
+									<div className="flex items-center justify-between border-b border-border px-4 py-3">
 										<div>
-											<h3 className="text-sm font-semibold">Scenes</h3>
-											<p className="text-xs text-muted-foreground">维护场景顺序，双击重命名</p>
+											<h3 className="text-sm font-semibold text-foreground">Scenes</h3>
+											<p className="text-xs text-muted-foreground">
+												维护场景顺序，双击重命名
+											</p>
 										</div>
 										<Tooltip>
 											<TooltipTrigger asChild>
@@ -773,7 +744,7 @@ export function StoryWorkspace({
 																					setSceneEditTitle("");
 																				}}
 																				autoFocus
-																				className="h-8 text-sm text-foreground"
+																				className="h-8 text-sm"
 																			/>
 																		</form>
 																	) : (
@@ -845,7 +816,7 @@ export function StoryWorkspace({
 																			<Button
 																				variant="ghost"
 																				size="icon"
-																				className="text-red-500 hover:text-red-600"
+																				className="text-red-400 hover:text-red-300"
 																				onClick={() => handleDeleteScene(scene.id)}
 																			>
 																				<Trash2 className="size-4" />
@@ -861,7 +832,7 @@ export function StoryWorkspace({
 											})}
 											{chapterScenes.length === 0 ? (
 												<li>
-													<div className="rounded-xl border border-dashed p-4 text-center text-xs text-muted-foreground">
+													<div className="rounded-xl border border-dashed border-white/20 bg-white/5 p-4 text-center text-xs text-white/60">
 														暂无场景，点击右上角新增。
 													</div>
 												</li>
@@ -870,6 +841,27 @@ export function StoryWorkspace({
 									</ScrollArea>
 								</section>
 								<section className="flex flex-col overflow-hidden rounded-2xl border bg-card shadow-sm">
+									<div className="flex items-center justify-between border-b border-border px-4 py-3">
+										<div>
+											<h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+												<Layers className="size-4 text-emerald-300" />
+												Scene editor
+											</h3>
+											<p className="text-xs text-muted-foreground">
+												shadcn-editor · 自动保存 {isSaving ? "(保存中…)" : "(已保存)"}
+											</p>
+										</div>
+										<div className="text-right text-xs text-muted-foreground">
+											<p>{sceneWordCount.toLocaleString()} words</p>
+											<p>
+												{chapterScenes.length
+													? `${chapterScenes.findIndex(
+															(scene) => scene.id === selectedSceneId,
+													  ) + 1} / ${chapterScenes.length}`
+													: "0 / 0"}
+											</p>
+										</div>
+									</div>
 									<div className="flex flex-1 flex-col overflow-hidden">
 										{editorInitialState && selectedSceneId ? (
 											<Editor
@@ -888,39 +880,7 @@ export function StoryWorkspace({
 						</div>
 					</div>
 				</main>
-			{/* Right-click Context Menu */}
-			{ctxMenu.visible ? (
-				<div
-					className="absolute z-50 min-w-40 rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
-					style={{ left: ctxMenu.x, top: ctxMenu.y }}
-					onClick={(e) => e.stopPropagation()}
-				>
-					{ctxMenu.type === "chapters" ? (
-						<button
-							className="w-full select-none rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground"
-							onClick={() => {
-								setCtxMenu({ visible: false });
-								handleAddChapter();
-							}}
-						>
-							创建章节
-						</button>
-					) : null}
-					{ctxMenu.type === "scenes" ? (
-						<button
-							className="w-full select-none rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
-							disabled={!selectedChapterId}
-							onClick={() => {
-								setCtxMenu({ visible: false });
-								handleAddScene();
-							}}
-						>
-							创建 Scene
-						</button>
-					) : null}
-				</div>
-			) : null}
-		</div>
+			</div>
 		</TooltipProvider>
 	);
 }
@@ -935,17 +895,17 @@ function ProjectStatCard({
 	description: string;
 }) {
 	return (
-		<Card className="bg-card text-card-foreground">
+		<Card className="border-white/10 bg-white/5 text-white">
 			<CardHeader>
-				<CardTitle className="text-sm uppercase tracking-wide text-muted-foreground">
+				<CardTitle className="text-sm uppercase tracking-wide text-white/60">
 					{label}
 				</CardTitle>
-				<CardDescription className="text-xs text-muted-foreground">
+				<CardDescription className="text-xs text-white/50">
 					{description}
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
-				<p className="text-2xl font-semibold">{value}</p>
+				<p className="text-2xl font-semibold text-white">{value}</p>
 			</CardContent>
 		</Card>
 	);

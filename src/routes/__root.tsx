@@ -1,6 +1,8 @@
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { FormDevtoolsPlugin } from "@tanstack/react-form-devtools";
 import { createRootRoute, Outlet } from "@tanstack/react-router";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import {
 	CircleCheckIcon,
@@ -13,8 +15,7 @@ import { Toaster } from "@/components/ui/sonner";
 
 export const Route = createRootRoute({
 	component: () => (
-		<>
-			{/* <Header /> */}
+		<SidebarProvider open>
 			<Toaster
 				icons={{
 					success: <CircleCheckIcon className="size-4 text-green-500" />,
@@ -26,7 +27,14 @@ export const Route = createRootRoute({
 					),
 				}}
 			/>
-			<Outlet />
+			<AppSidebar />
+			<SidebarInset className="bg-background text-foreground">
+				<div className="flex items-center gap-2 border-b px-4 py-2">
+					<SidebarTrigger />
+					<div className="text-sm text-muted-foreground">Workspace</div>
+				</div>
+				<Outlet />
+			</SidebarInset>
 			<TanStackDevtools
 				config={{
 					position: "bottom-right",
@@ -39,6 +47,6 @@ export const Route = createRootRoute({
 					FormDevtoolsPlugin(),
 				]}
 			/>
-		</>
+		</SidebarProvider>
 	),
 });

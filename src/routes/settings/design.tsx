@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
+import { Link } from "@tanstack/react-router";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 
@@ -39,7 +40,14 @@ function DesignSettings() {
     vars.forEach(v => {
       const [key, val] = v.split(":").map(s => s.trim());
       if (key && val) {
-        root.style.setProperty(key, val);
+        const isColorFunction = /^(oklch|hsl|rgb|#|var)\(/i.test(val) || val.startsWith("#");
+        const isRadius = key === "--radius";
+        const finalVal = isRadius
+          ? val
+          : isColorFunction
+            ? val
+            : `hsl(${val})`;
+        root.style.setProperty(key, finalVal);
       }
     });
     toast.success(`主题已切换为 ${theme.name}`);
@@ -47,10 +55,14 @@ function DesignSettings() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <div>
+      <div className="flex items-center justify-between">
+        <Link to="/">
+          <Button variant="outline" size="sm">返回</Button>
+        </Link>
         <h1 className="text-2xl font-bold">设计设置</h1>
-        <p className="text-muted-foreground">选择你喜欢的配色方案，主题会立即生效。</p>
+        <div />
       </div>
+      <p className="text-muted-foreground">选择你喜欢的配色方案，主题会立即生效。</p>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {themes.map(theme => (
           <Card key={theme.key} className="transition-shadow hover:shadow-md">
