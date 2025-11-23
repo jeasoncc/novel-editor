@@ -12,6 +12,7 @@ import type {
 	RoleInterface,
 	SceneInterface,
 	UserInterface,
+	WorldEntryInterface,
 } from "./schema.ts";
 
 // ==============================
@@ -23,6 +24,7 @@ export class NovelEditorDB extends Dexie {
 	chapters!: Table<ChapterInterface, string>;
 	scenes!: Table<SceneInterface, string>;
 	roles!: Table<RoleInterface, string>;
+	worldEntries!: Table<WorldEntryInterface, string>;
 	attachments!: Table<AttachmentInterface, string>;
 	dbVersions!: Table<DBVersionInterface, string>;
 
@@ -35,6 +37,7 @@ export class NovelEditorDB extends Dexie {
 			chapters: "id, project, order",
 			scenes: "id, chapter, order",
 			roles: "id, project, name",
+			worldEntries: "id, project, category",
 			attachments: "id, project, chapter, scene",
 			dbVersions: "id, version",
 		});
@@ -46,6 +49,7 @@ export class NovelEditorDB extends Dexie {
 			chapters: "id, project, order",
 			scenes: "id, project, chapter, order",
 			roles: "id, project, name",
+			worldEntries: "id, project, category",
 			attachments: "id, project, chapter, scene",
 			dbVersions: "id, version",
 		});

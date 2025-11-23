@@ -1,13 +1,20 @@
-import debounce from "lodash/debounce";
 //
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { SerializedEditorState } from "lexical";
 
-import { Editor } from "@/components/blocks/editor-x/editor";
+import { Editor } from "@/components/blocks/rich-editor/editor";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { Plus, Upload, Download, Settings, MoreHorizontal, Trash2 } from "lucide-react";
+import { Plus, Upload, Download, Settings, MoreHorizontal, Trash2, ChevronRight, Home, FileText } from "lucide-react";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 //
 import { db } from "@/db/curd";
 import type {
@@ -23,6 +30,8 @@ import { useOutlineStore } from "@/stores/outline";
 import { createBook, exportAll, importFromJson, readFileAsText, triggerDownload } from "@/services/projects";
 import { openCreateBookDialog } from "@/components/blocks/createBookDialog";
 //
+
+import { countWords, extractTextFromSerialized } from "@/lib/statistics";
 
 interface StoryWorkspaceProps {
 	projects: ProjectInterface[];
@@ -211,7 +220,8 @@ export function StoryWorkspace({
 		}
 		const initial = parseSceneContent(activeScene);
 		setEditorInitialState(initial);
-		setSceneWordCount(countWordsFromSerialized(initial));
+		const text = extractTextFromSerialized(initial);
+		setSceneWordCount(countWords(text));
 	}, [activeScene?.id]);
 
 	const debouncedSave = useMemo(
@@ -245,7 +255,8 @@ export function StoryWorkspace({
 	const handleSerializedChange = useCallback(
 		(serialized: SerializedEditorState) => {
 			if (!activeScene) return;
-			setSceneWordCount(countWordsFromSerialized(serialized));
+            const text = extractTextFromSerialized(serialized);
+			setSceneWordCount(countWords(text));
 			debouncedSave(activeScene.id, serialized);
 		},
 		[activeScene, debouncedSave],
@@ -451,73 +462,101 @@ export function StoryWorkspace({
 		}
 	}, [sceneEditId, sceneEditTitle]);
 
+    // Current Context Data for Breadcrumb
+    const currentProject = useMemo(() => projects.find(p => p.id === selectedProjectId), [projects, selectedProjectId]);
+    const currentChapter = useMemo(() => chapters.find(c => c.id === selectedChapterId), [chapters, selectedChapterId]);
+    const currentScene = useMemo(() => scenes.find(s => s.id === selectedSceneId), [scenes, selectedSceneId]);
+
 	return (
 		<TooltipProvider>
-			<div className="flex h-screen bg-background text-foreground  ">
-				<main className="flex-1 overflow-hidden">
-					<div className="flex h-full flex-col pb-8">
-						<div className="flex flex-1 overflow-hidden">
-							<div className="flex-1 overflow-hidden px-8 py-6">
-								<section className="flex h-full flex-col overflow-hidden rounded-2xl border bg-card shadow-sm">
-									<div className="flex flex-1 flex-col overflow-hidden">
-										{editorInitialState && selectedSceneId ? (
-											<Editor
-												key={selectedSceneId}
-												editorSerializedState={editorInitialState}
-												onSerializedChange={handleSerializedChange}
-											/>
-										) : (
-											<>
-												<div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
-													请选择一个场景开始创作。
-												</div>
-											</>
-										)}
+			<div className="flex h-screen bg-background text-foreground">
+				<main className="flex-1 flex flex-col overflow-hidden relative bg-background/50">
+                    {/* Top Header / Breadcrumb */}
+                    <header className="h-12 flex items-center px-6 border-b border-border/40 bg-background/95 backdrop-blur z-10 shrink-0">
+                        <Breadcrumb>
+                            <BreadcrumbList>
+                                <BreadcrumbItem>
+                                    <BreadcrumbLink className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors font-medium">
+                                       <Home className="size-3.5" />
+                                    </BreadcrumbLink>
+                                </BreadcrumbItem>
+                                <BreadcrumbSeparator />
+                                <BreadcrumbItem>
+                                    <BreadcrumbLink className={`font-medium ${!currentChapter ? 'text-foreground' : ''}`}>
+                                        {currentProject?.title || "Select Project"}
+                                    </BreadcrumbLink>
+                                </BreadcrumbItem>
+                                {currentChapter && (
+                                    <>
+                                        <BreadcrumbSeparator />
+                                        <BreadcrumbItem>
+                                             <BreadcrumbLink className={`font-medium ${!currentScene ? 'text-foreground' : ''}`}>
+                                                {currentChapter.title}
+                                            </BreadcrumbLink>
+                                        </BreadcrumbItem>
+                                    </>
+                                )}
+                                {currentScene && (
+                                    <>
+                                        <BreadcrumbSeparator />
+                                        <BreadcrumbItem>
+                                            <BreadcrumbPage className="font-semibold text-primary">
+                                                {currentScene.title}
+                                            </BreadcrumbPage>
+                                        </BreadcrumbItem>
+                                    </>
+                                )}
+                            </BreadcrumbList>
+                        </Breadcrumb>
+                        
+                        <div className="ml-auto flex items-center gap-4 text-xs text-muted-foreground">
+                            {isSaving && <span className="animate-pulse text-primary">Saving...</span>}
+                            {!isSaving && <span>Saved</span>}
+                        </div>
+                    </header>
+
+					<div className="flex-1 overflow-hidden relative w-full max-w-5xl mx-auto">
+						<div className="h-full w-full overflow-y-auto px-8 py-8 scroll-smooth">
+                            {/* Editor Container */}
+							<article className="min-h-[calc(100%-4rem)] w-full max-w-3xl mx-auto bg-card shadow-sm border border-border/50 rounded-lg overflow-hidden relative pb-20">
+								{editorInitialState && selectedSceneId ? (
+										<div className="p-8 sm:p-12 min-h-[600px] font-editor text-lg leading-relaxed text-card-foreground">
+												<Editor
+														key={selectedSceneId}
+														editorSerializedState={editorInitialState}
+														onSerializedChange={handleSerializedChange}
+												/>
+										</div>
+								) : (
+									<div className="flex h-full min-h-[400px] items-center justify-center text-sm text-muted-foreground flex-col gap-2">
+                                        <div className="size-12 rounded-full bg-muted flex items-center justify-center">
+                                            <FileText className="size-6 text-muted-foreground/50" />
+                                        </div>
+										<p>Select a scene from the sidebar to start writing.</p>
 									</div>
-								</section>
-							</div>
-							</div>
-							</div>
-							<footer className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 px-3 py-1 text-xs backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="flex items-center justify-between gap-4">
-            <div className="min-w-0 truncate">
-              {projects.find((project) => project.id === selectedProjectId)?.title ?? "No project selected"}
-              {projectStats.streak ? (
-                <span className="ml-2 text-muted-foreground"> {projectStats.streak}d</span>
-              ) : null}
-            </div>
-            <div className="min-w-0 truncate text-muted-foreground">
-              {projectChapters.length ? `第${projectChapters.findIndex((c) => c.id === selectedChapterId) + 1}章` : "第0章"}
-              <span className="mx-2 text-border">/</span>
-              {chapterScenes.length ? `第${chapterScenes.findIndex((s) => s.id === selectedSceneId) + 1}节` : "第0节"}
-              <span className="ml-2">
-                {(chapters.find((c) => c.id === selectedChapterId)?.title ?? "无章节")} · {(chapterScenes.find((s) => s.id === selectedSceneId)?.title ?? "无场景")}
-              </span>
-            </div>
-            <div className="flex items-center gap-4 text-muted-foreground">
-              <span>Chapters: {projectStats.chapterCount}</span>
-              <span>Scenes: {projectStats.sceneCount}</span>
-              <span>Words: {projectStats.wordCount.toLocaleString()}</span>
-            </div>
-            <div className="flex items-center gap-4 text-muted-foreground">
-              <span>{isSaving ? "保存中…" : "已保存"}</span>
-              <span>
-                {chapterScenes.length
-                  ? `${chapterScenes.findIndex((scene) => scene.id === selectedSceneId) + 1}/${chapterScenes.length}`
-                  : "0/0"}
-              </span>
-              <span>{sceneWordCount.toLocaleString()} words</span>
-              <span>Last {formatRelativeTime(projectStats.lastEdited)}</span>
-            </div>
-          </div>
-        </footer>
-      </main>
-      {/* Right-side Sidebar for Chapters & Scenes */}
-      <StoryRightSidebar />
-      {/* <OutlineSidebar /> */}
-    </div>
-  </TooltipProvider>
-);
+								)}
+							</article>
+						</div>
+					</div>
+
+                    {/* Minimal Footer Status Bar */}
+					<footer className="h-8 border-t border-border/40 bg-background/80 backdrop-blur text-[11px] text-muted-foreground flex items-center justify-between px-4 shrink-0 z-20">
+                        <div className="flex items-center gap-3">
+                           <span>Words: <strong className="text-foreground font-medium">{projectStats.wordCount.toLocaleString()}</strong> total</span>
+                           <span className="w-px h-3 bg-border" />
+                           <span>Current Scene: <strong className="text-foreground font-medium">{sceneWordCount.toLocaleString()}</strong></span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            {projectStats.lastEdited && <span>Last edited {formatRelativeTime(projectStats.lastEdited)}</span>}
+                        </div>
+                    </footer>
+				</main>
+				{/* Right-side Sidebar for Chapters & Scenes */}
+				<StoryRightSidebar />
+				{/* <OutlineSidebar /> */}
+			</div>
+		</TooltipProvider>
+	);
 }
 
 function loggerError(message: string, error: unknown) {
@@ -596,36 +635,14 @@ function createLexicalState(text = ""): SerializedEditorState {
 	} as unknown as SerializedEditorState;
 }
 
-function extractTextFromSerialized(state?: SerializedEditorState): string {
-	if (!state?.root) return "";
-	const collect = (node: any): string => {
-		if (!node) return "";
-		if (typeof node.text === "string") {
-			return node.text;
-		}
-		if (Array.isArray(node.children)) {
-			return node.children.map(collect).join(" ");
-		}
-		return "";
-	};
-	return collect(state.root);
-}
-
-function countWordsFromSerialized(state?: SerializedEditorState): number {
-	const text = extractTextFromSerialized(state)
-		.replace(/<[^>]*>/g, " ")
-		.replace(/\s+/g, " ")
-		.trim();
-	if (!text) return 0;
-	return text.split(" ").length;
-}
-
 function countSceneWords(scene: SceneInterface): number {
 	try {
-		return countWordsFromSerialized(parseSceneContent(scene));
+        const state = parseSceneContent(scene);
+        const text = extractTextFromSerialized(state);
+		return countWords(text);
 	} catch {
 		if (typeof scene.content === "string") {
-			return scene.content.split(/\s+/).filter(Boolean).length;
+			return countWords(scene.content);
 		}
 		return 0;
 	}
@@ -693,4 +710,28 @@ function formatRelativeTime(iso?: string): string {
 	const value = Math.round(diffMs / year);
 	return `${value} year${value > 1 ? "s" : ""} ago`;
 }
+
+function debounce<T extends (...args: any[]) => any>(
+	func: T,
+	wait: number,
+): ((...args: Parameters<T>) => void) & { cancel: () => void } {
+	let timeout: ReturnType<typeof setTimeout> | null = null;
+
+	const debounced = (...args: Parameters<T>) => {
+		if (timeout) clearTimeout(timeout);
+		timeout = setTimeout(() => {
+			func(...args);
+		}, wait);
+	};
+
+	debounced.cancel = () => {
+		if (timeout) {
+			clearTimeout(timeout);
+			timeout = null;
+		}
+	};
+
+	return debounced;
+}
+
 

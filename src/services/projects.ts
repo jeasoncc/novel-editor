@@ -4,6 +4,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import type { ChapterInterface, ProjectInterface, SceneInterface, RoleInterface, AttachmentInterface } from "@/db/schema";
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
+import { extractTextFromSerialized } from "@/lib/statistics";
 
 export const bookSchema = z.object({
   title: z.string().trim().min(2).max(100),
@@ -92,8 +93,99 @@ export async function importFromJson(jsonText: string, { keepIds = false } = {})
   toast.success("Import completed");
 }
 
-export function triggerDownload(filename: string, text: string) {
-  const blob = new Blob([text], { type: 'application/json;charset=utf-8' });
+export async function exportAsMarkdown(projectId: string): Promise<string> {
+  const project = await db.projects.get(projectId as string);
+  if (!project) {
+    throw new Error("Project not found");
+  }
+
+  const [chapters, scenes] = await Promise.all([
+    db.chapters.where("project").equals(projectId as string).toArray(),
+    db.scenes.where("project").equals(projectId as string).toArray(),
+  ]);
+
+  const chaptersById = new Map<string, ChapterInterface>();
+  for (const c of chapters) {
+    if (c.id) chaptersById.set(c.id as string, c as ChapterInterface);
+  }
+
+  const scenesByChapter = new Map<string | undefined, SceneInterface[]>();
+  for (const s of scenes) {
+    const key = (s.chapter as string | undefined) ?? "__no_chapter__";
+    const list = scenesByChapter.get(key) ?? [];
+    list.push(s as SceneInterface);
+    scenesByChapter.set(key, list);
+  }
+
+  const lines: string[] = [];
+
+  lines.push(`# ${project.title || "Untitled"}`);
+  if (project.author) {
+    lines.push(`作者：${project.author}`);
+  }
+  if (project.description) {
+    lines.push("");
+    lines.push(project.description);
+  }
+
+  lines.push("");
+
+  // Chapters with their scenes
+  const orderedChapters = [...chaptersById.values()].sort((a, b) => {
+    const ao = (a.order ?? 0) as number;
+    const bo = (b.order ?? 0) as number;
+    return ao - bo;
+  });
+
+  for (const chapter of orderedChapters) {
+    lines.push("");
+    lines.push(`## ${chapter.title || "未命名章节"}`);
+
+    const chapterScenes = (scenesByChapter.get(chapter.id as string) ?? []).sort((a, b) => {
+      const ao = (a.order ?? 0) as number;
+      const bo = (b.order ?? 0) as number;
+      return ao - bo;
+    });
+
+    for (const scene of chapterScenes) {
+      lines.push("");
+      lines.push(`### ${scene.title || "未命名场景"}`);
+      const text = extractTextFromSerialized(scene.content ?? "");
+      if (text.trim()) {
+        lines.push("");
+        lines.push(text);
+      }
+    }
+  }
+
+  // Scenes without chapter
+  const ungroupedScenes = scenesByChapter.get("__no_chapter__") ?? [];
+  if (ungroupedScenes.length > 0) {
+    lines.push("");
+    lines.push("## 未分配章节的场景");
+
+    const orderedScenes = [...ungroupedScenes].sort((a, b) => {
+      const ao = (a.order ?? 0) as number;
+      const bo = (b.order ?? 0) as number;
+      return ao - bo;
+    });
+
+    for (const scene of orderedScenes) {
+      lines.push("");
+      lines.push(`### ${scene.title || "未命名场景"}`);
+      const text = extractTextFromSerialized(scene.content ?? "");
+      if (text.trim()) {
+        lines.push("");
+        lines.push(text);
+      }
+    }
+  }
+
+  return lines.join("\n");
+}
+
+export function triggerDownload(filename: string, text: string, mimeType = 'application/json;charset=utf-8') {
+  const blob = new Blob([text], { type: mimeType });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;

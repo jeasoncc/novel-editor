@@ -7,25 +7,51 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { toast } from "sonner";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/db/curd";
-import { exportAll, importFromJson, readFileAsText, triggerDownload, createBook } from "@/services/projects";
+import { exportAll, importFromJson, readFileAsText, triggerDownload, createBook, exportAsMarkdown } from "@/services/projects";
 import { openCreateBookDialog } from "@/components/blocks/createBookDialog";
-import { BookMarked, Settings, ListTree, Users, BookOpen, Upload, Download, MoreHorizontal, Trash2, Plus } from "lucide-react";
+import { BookMarked, Settings, ListTree, Users, BookOpen, Upload, Download, MoreHorizontal, Trash2, Plus, TrendingUp, FileJson, FileText } from "lucide-react";
 import { useConfirm } from "@/components/ui/confirm";
+import { useSelectionStore } from "@/stores/selection";
 
 export function ActivityBar(): React.ReactElement {
   const projects = useLiveQuery(() => db.getAllProjects(), []) || [];
+  const selectedProjectId = useSelectionStore(s => s.selectedProjectId);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const confirm = useConfirm();
 
-  const handleExport = useCallback(async () => {
+  const handleExportBackup = useCallback(async () => {
     try {
       const json = await exportAll();
       triggerDownload(`novel-editor-backup-${new Date().toISOString().slice(0,10)}.json`, json);
-      toast.success("导出成功");
+      toast.success("备份导出成功");
     } catch {
       toast.error("导出失败");
     }
   }, []);
+
+  const handleExportMarkdown = useCallback(async () => {
+    if (!selectedProjectId) {
+      if (projects.length > 0) {
+        const pid = projects[0].id;
+        const md = await exportAsMarkdown(pid);
+        triggerDownload(`${projects[0].title}.md`, md, "text/markdown;charset=utf-8");
+        toast.success("Markdown 导出成功");
+      } else {
+        toast.error("未找到可导出的项目");
+      }
+      return;
+    }
+
+    try {
+      const project = projects.find(p => p.id === selectedProjectId);
+      const md = await exportAsMarkdown(selectedProjectId);
+      triggerDownload(`${project?.title || "novel"}.md`, md, "text/markdown;charset=utf-8");
+      toast.success("Markdown 导出成功");
+    } catch (e) {
+      console.error(e);
+      toast.error("导出失败");
+    }
+  }, [projects, selectedProjectId]);
 
   const handleQuickCreate = useCallback(async () => {
     const data = await openCreateBookDialog();
@@ -92,7 +118,7 @@ export function ActivityBar(): React.ReactElement {
         <Tooltip>
           <TooltipTrigger asChild>
             <Button size="icon" variant="ghost" aria-label="大纲" asChild>
-              <Link to={{ to: "/", search: { view: "outline" } }}>
+              <Link to="/outline">
                 <ListTree className="size-5" />
               </Link>
             </Button>
@@ -145,13 +171,39 @@ export function ActivityBar(): React.ReactElement {
           <TooltipContent side="right">导入</TooltipContent>
         </Tooltip>
 
+        <Popover>
+            <Tooltip>
+            <TooltipTrigger asChild>
+                <PopoverTrigger asChild>
+                    <Button size="icon" variant="ghost" aria-label="导出" disabled={projects.length === 0}>
+                        <Download className="size-5" />
+                    </Button>
+                </PopoverTrigger>
+            </TooltipTrigger>
+            <TooltipContent side="right">导出</TooltipContent>
+            </Tooltip>
+            <PopoverContent side="right" align="start" className="w-56 p-1">
+                <div className="grid gap-1">
+                    <button onClick={handleExportBackup} className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground w-full text-left">
+                        <FileJson className="size-4" /> 导出备份 (JSON)
+                    </button>
+                    <button onClick={handleExportMarkdown} className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground w-full text-left">
+                        <FileText className="size-4" /> 导出文档 (Markdown)
+                    </button>
+                </div>
+            </PopoverContent>
+        </Popover>
+
+        {/* Statistics */}
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button size="icon" variant="ghost" aria-label="导出" onClick={handleExport} disabled={projects.length === 0}>
-              <Download className="size-5" />
+            <Button size="icon" variant="ghost" aria-label="统计" asChild>
+              <Link to="/statistics">
+                <TrendingUp className="size-5" />
+              </Link>
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="right">导出</TooltipContent>
+          <TooltipContent side="right">统计</TooltipContent>
         </Tooltip>
 
         {/* More (danger) */}

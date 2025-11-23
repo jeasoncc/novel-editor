@@ -1,164 +1,177 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { Link } from "@tanstack/react-router";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { toast } from "sonner";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Check, Moon, Sun, Monitor } from "lucide-react";
+import { themes } from "@/lib/themes";
+import { useTheme } from "@/hooks/use-theme";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/settings/design")({
   component: DesignSettings,
 });
 
-const themes = [
-  { name: "Slate", key: "slate", css: "--primary: 222.2 84% 4.9%; --primary-foreground: 210 40% 98%; --secondary: 210 40% 96%; --secondary-foreground: 222.2 84% 4.9%; --accent: 210 40% 96%; --accent-foreground: 222.2 84% 4.9%; --muted: 210 40% 96%; --muted-foreground: 215.4 16.3% 46.9%; --card: 0 0% 100%; --card-foreground: 222.2 84% 4.9%; --border: 214.3 31.8% 91.4%; --input: 214.3 31.8% 91.4%; --ring: 222.2 84% 4.9%; --background: 0 0% 100%; --foreground: 222.2 84% 4.9%; --destructive: 0 84.2% 60.2%; --destructive-foreground: 210 40% 98%; --radius: 0.5rem;" },
-  { name: "Gray", key: "gray", css: "--primary: 0 0% 9%; --primary-foreground: 0 0% 98%; --secondary: 0 0% 96.1%; --secondary-foreground: 0 0% 9%; --accent: 0 0% 96.1%; --accent-foreground: 0 0% 9%; --muted: 0 0% 96.1%; --muted-foreground: 0 0% 45.1%; --card: 0 0% 100%; --card-foreground: 0 0% 9%; --border: 0 0% 89.8%; --input: 0 0% 89.8%; --ring: 0 0% 9%; --background: 0 0% 100%; --foreground: 0 0% 9%; --destructive: 0 84.2% 60.2%; --destructive-foreground: 0 0% 98%; --radius: 0.5rem;" },
-  { name: "Zinc", key: "zinc", css: "--primary: 240 5.9% 10%; --primary-foreground: 0 0% 98%; --secondary: 240 4.8% 95.9%; --secondary-foreground: 240 5.9% 10%; --accent: 240 4.8% 95.9%; --accent-foreground: 240 5.9% 10%; --muted: 240 4.8% 95.9%; --muted-foreground: 240 3.8% 46.1%; --card: 0 0% 100%; --card-foreground: 240 5.9% 10%; --border: 240 5.9% 90%; --input: 240 5.9% 90%; --ring: 240 5.9% 10%; --background: 0 0% 100%; --foreground: 240 5.9% 10%; --destructive: 0 84.2% 60.2%; --destructive-foreground: 0 0% 98%; --radius: 0.5rem;" },
-  { name: "Neutral", key: "neutral", css: "--primary: 0 0% 3.9%; --primary-foreground: 0 0% 98%; --secondary: 0 0% 14.9%; --secondary-foreground: 0 0% 98%; --accent: 0 0% 14.9%; --accent-foreground: 0 0% 98%; --muted: 0 0% 14.9%; --muted-foreground: 0 0% 63.9%; --card: 0 0% 100%; --card-foreground: 0 0% 3.9%; --border: 0 0% 89.8%; --input: 0 0% 89.8%; --ring: 0 0% 3.9%; --background: 0 0% 100%; --foreground: 0 0% 3.9%; --destructive: 0 84.2% 60.2%; --destructive-foreground: 0 0% 98%; --radius: 0.5rem;" },
-  { name: "Stone", key: "stone", css: "--primary: 24 9.8% 10%; --primary-foreground: 60 9.1% 97.8%; --secondary: 24 9.8% 95.9%; --secondary-foreground: 24 9.8% 10%; --accent: 24 9.8% 95.9%; --accent-foreground: 24 9.8% 10%; --muted: 24 9.8% 95.9%; --muted-foreground: 24 6.1% 46.1%; --card: 0 0% 100%; --card-foreground: 24 9.8% 10%; --border: 24 9.8% 90%; --input: 24 9.8% 90%; --ring: 24 9.8% 10%; --background: 0 0% 100%; --foreground: 24 9.8% 10%; --destructive: 0 84.2% 60.2%; --destructive-foreground: 60 9.1% 97.8%; --radius: 0.5rem;" },
-  { name: "Red", key: "red", css: "--primary: 0 72.6% 50.6%; --primary-foreground: 0 85.7% 97.3%; --secondary: 0 70% 96.1%; --secondary-foreground: 0 72.6% 50.6%; --accent: 0 70% 96.1%; --accent-foreground: 0 72.6% 50.6%; --muted: 0 70% 96.1%; --muted-foreground: 0 62.8% 30.6%; --card: 0 0% 100%; --card-foreground: 0 72.6% 50.6%; --border: 0 70% 96.1%; --input: 0 70% 96.1%; --ring: 0 72.6% 50.6%; --background: 0 0% 100%; --foreground: 0 72.6% 50.6%; --destructive: 0 84.2% 60.2%; --destructive-foreground: 0 85.7% 97.3%; --radius: 0.5rem;" },
-  { name: "Rose", key: "rose", css: "--primary: 346.8 77.2% 49.8%; --primary-foreground: 355.7 100% 97.3%; --secondary: 356 100% 97%; --secondary-foreground: 346.8 77.2% 49.8%; --accent: 356 100% 97%; --accent-foreground: 346.8 77.2% 49.8%; --muted: 356 100% 97%; --muted-foreground: 345.8 95% 68.1%; --card: 0 0% 100%; --card-foreground: 346.8 77.2% 49.8%; --border: 356 100% 97%; --input: 356 100% 97%; --ring: 346.8 77.2% 49.8%; --background: 0 0% 100%; --foreground: 346.8 77.2% 49.8%; --destructive: 0 84.2% 60.2%; --destructive-foreground: 355.7 100% 97.3%; --radius: 0.5rem;" },
-  { name: "Orange", key: "orange", css: "--primary: 24.6 95% 53.1%; --primary-foreground: 60 9.1% 97.8%; --secondary: 24.6 95% 96.1%; --secondary-foreground: 24.6 95% 53.1%; --accent: 24.6 95% 96.1%; --accent-foreground: 24.6 95% 53.1%; --muted: 24.6 95% 96.1%; --muted-foreground: 24.6 95% 46.1%; --card: 0 0% 100%; --card-foreground: 24.6 95% 53.1%; --border: 24.6 95% 96.1%; --input: 24.6 95% 96.1%; --ring: 24.6 95% 53.1%; --background: 0 0% 100%; --foreground: 24.6 95% 53.1%; --destructive: 0 84.2% 60.2%; --destructive-foreground: 60 9.1% 97.8%; --radius: 0.5rem;" },
-  { name: "Amber", key: "amber", css: "--primary: 48 96% 53%; --primary-foreground: 26 83.3% 14.1%; --secondary: 48 96% 96.1%; --secondary-foreground: 48 96% 53%; --accent: 48 96% 96.1%; --accent-foreground: 48 96% 53%; --muted: 48 96% 96.1%; --muted-foreground: 48 96% 46.1%; --card: 0 0% 100%; --card-foreground: 48 96% 53%; --border: 48 96% 96.1%; --input: 48 96% 96.1%; --ring: 48 96% 53%; --background: 0 0% 100%; --foreground: 48 96% 53%; --destructive: 0 84.2% 60.2%; --destructive-foreground: 26 83.3% 14.1%; --radius: 0.5rem;" },
-  { name: "Yellow", key: "yellow", css: "--primary: 47.9 95.8% 53.1%; --primary-foreground: 26 92.5% 10.2%; --secondary: 47.9 95.8% 96.1%; --secondary-foreground: 47.9 95.8% 53.1%; --accent: 47.9 95.8% 96.1%; --accent-foreground: 47.9 95.8% 53.1%; --muted: 47.9 95.8% 96.1%; --muted-foreground: 47.9 95.8% 46.1%; --card: 0 0% 100%; --card-foreground: 47.9 95.8% 53.1%; --border: 47.9 95.8% 96.1%; --input: 47.9 95.8% 96.1%; --ring: 47.9 95.8% 53.1%; --background: 0 0% 100%; --foreground: 47.9 95.8% 53.1%; --destructive: 0 84.2% 60.2%; --destructive-foreground: 26 92.5% 10.2%; --radius: 0.5rem;" },
-  { name: "Lime", key: "lime", css: "--primary: 84.2 60.2% 47.6%; --primary-foreground: 84.2 60.2% 10%; --secondary: 84.2 60.2% 96.1%; --secondary-foreground: 84.2 60.2% 47.6%; --accent: 84.2 60.2% 96.1%; --accent-foreground: 84.2 60.2% 47.6%; --muted: 84.2 60.2% 96.1%; --muted-foreground: 84.2 60.2% 46.1%; --card: 0 0% 100%; --card-foreground: 84.2 60.2% 47.6%; --border: 84.2 60.2% 96.1%; --input: 84.2 60.2% 96.1%; --ring: 84.2 60.2% 47.6%; --background: 0 0% 100%; --foreground: 84.2 60.2% 47.6%; --destructive: 0 84.2% 60.2%; --destructive-foreground: 84.2 60.2% 10%; --radius: 0.5rem;" },
-  { name: "Green", key: "green", css: "--primary: 142.1 76.2% 36.3%; --primary-foreground: 355.7 100% 97.3%; --secondary: 142.1 76.2% 96.1%; --secondary-foreground: 142.1 76.2% 36.3%; --accent: 142.1 76.2% 96.1%; --accent-foreground: 142.1 76.2% 36.3%; --muted: 142.1 76.2% 96.1%; --muted-foreground: 142.1 76.2% 46.1%; --card: 0 0% 100%; --card-foreground: 142.1 76.2% 36.3%; --border: 142.1 76.2% 96.1%; --input: 142.1 76.2% 96.1%; --ring: 142.1 76.2% 36.3%; --background: 0 0% 100%; --foreground: 142.1 76.2% 36.3%; --destructive: 0 84.2% 60.2%; --destructive-foreground: 355.7 100% 97.3%; --radius: 0.5rem;" },
-  { name: "Emerald", key: "emerald", css: "--primary: 160.1 84.2% 39.8%; --primary-foreground: 0 0% 98%; --secondary: 160.1 84.2% 96.1%; --secondary-foreground: 160.1 84.2% 39.8%; --accent: 160.1 84.2% 96.1%; --accent-foreground: 160.1 84.2% 39.8%; --muted: 160.1 84.2% 96.1%; --muted-foreground: 160.1 84.2% 46.1%; --card: 0 0% 100%; --card-foreground: 160.1 84.2% 39.8%; --border: 160.1 84.2% 96.1%; --input: 160.1 84.2% 96.1%; --ring: 160.1 84.2% 39.8%; --background: 0 0% 100%; --foreground: 160.1 84.2% 39.8%; --destructive: 0 84.2% 60.2%; --destructive-foreground: 0 0% 98%; --radius: 0.5rem;" },
-  { name: "Teal", key: "teal", css: "--primary: 175.3 100% 26.3%; --primary-foreground: 0 0% 98%; --secondary: 175.3 100% 96.1%; --secondary-foreground: 175.3 100% 26.3%; --accent: 175.3 100% 96.1%; --accent-foreground: 175.3 100% 26.3%; --muted: 175.3 100% 96.1%; --muted-foreground: 175.3 100% 46.1%; --card: 0 0% 100%; --card-foreground: 175.3 100% 26.3%; --border: 175.3 100% 96.1%; --input: 175.3 100% 96.1%; --ring: 175.3 100% 26.3%; --background: 0 0% 100%; --foreground: 175.3 100% 26.3%; --destructive: 0 84.2% 60.2%; --destructive-foreground: 0 0% 98%; --radius: 0.5rem;" },
-  { name: "Cyan", key: "cyan", css: "--primary: 188.7 94.5% 42.9%; --primary-foreground: 0 0% 98%; --secondary: 188.7 94.5% 96.1%; --secondary-foreground: 188.7 94.5% 42.9%; --accent: 188.7 94.5% 96.1%; --accent-foreground: 188.7 94.5% 42.9%; --muted: 188.7 94.5% 96.1%; --muted-foreground: 188.7 94.5% 46.1%; --card: 0 0% 100%; --card-foreground: 188.7 94.5% 42.9%; --border: 188.7 94.5% 96.1%; --input: 188.7 94.5% 96.1%; --ring: 188.7 94.5% 42.9%; --background: 0 0% 100%; --foreground: 188.7 94.5% 42.9%; --destructive: 0 84.2% 60.2%; --destructive-foreground: 0 0% 98%; --radius: 0.5rem;" },
-  { name: "Sky", key: "sky", css: "--primary: 198.6 88.7% 48.4%; --primary-foreground: 0 0% 98%; --secondary: 198.6 88.7% 96.1%; --secondary-foreground: 198.6 88.7% 48.4%; --accent: 198.6 88.7% 96.1%; --accent-foreground: 198.6 88.7% 48.4%; --muted: 198.6 88.7% 96.1%; --muted-foreground: 198.6 88.7% 46.1%; --card: 0 0% 100%; --card-foreground: 198.6 88.7% 48.4%; --border: 198.6 88.7% 96.1%; --input: 198.6 88.7% 96.1%; --ring: 198.6 88.7% 48.4%; --background: 0 0% 100%; --foreground: 198.6 88.7% 48.4%; --destructive: 0 84.2% 60.2%; --destructive-foreground: 0 0% 98%; --radius: 0.5rem;" },
-  { name: "Blue", key: "blue", css: "--primary: 221.2 83.2% 53.3%; --primary-foreground: 210 40% 98%; --secondary: 221.2 83.2% 96.1%; --secondary-foreground: 221.2 83.2% 53.3%; --accent: 221.2 83.2% 96.1%; --accent-foreground: 221.2 83.2% 53.3%; --muted: 221.2 83.2% 96.1%; --muted-foreground: 221.2 83.2% 46.1%; --card: 0 0% 100%; --card-foreground: 221.2 83.2% 53.3%; --border: 221.2 83.2% 96.1%; --input: 221.2 83.2% 96.1%; --ring: 221.2 83.2% 53.3%; --background: 0 0% 100%; --foreground: 221.2 83.2% 53.3%; --destructive: 0 84.2% 60.2%; --destructive-foreground: 210 40% 98%; --radius: 0.5rem;" },
-  { name: "Indigo", key: "indigo", css: "--primary: 242.2 91.4% 42.2%; --primary-foreground: 0 0% 98%; --secondary: 242.2 91.4% 96.1%; --secondary-foreground: 242.2 91.4% 42.2%; --accent: 242.2 91.4% 96.1%; --accent-foreground: 242.2 91.4% 42.2%; --muted: 242.2 91.4% 96.1%; --muted-foreground: 242.2 91.4% 46.1%; --card: 0 0% 100%; --card-foreground: 242.2 91.4% 42.2%; --border: 242.2 91.4% 96.1%; --input: 242.2 91.4% 96.1%; --ring: 242.2 91.4% 42.2%; --background: 0 0% 100%; --foreground: 242.2 91.4% 42.2%; --destructive: 0 84.2% 60.2%; --destructive-foreground: 0 0% 98%; --radius: 0.5rem;" },
-  { name: "Violet", key: "violet", css: "--primary: 262.1 83.3% 57.8%; --primary-foreground: 210 40% 98%; --secondary: 262.1 83.3% 96.1%; --secondary-foreground: 262.1 83.3% 57.8%; --accent: 262.1 83.3% 96.1%; --accent-foreground: 262.1 83.3% 57.8%; --muted: 262.1 83.3% 96.1%; --muted-foreground: 262.1 83.3% 46.1%; --card: 0 0% 100%; --card-foreground: 262.1 83.3% 57.8%; --border: 262.1 83.3% 96.1%; --input: 262.1 83.3% 96.1%; --ring: 262.1 83.3% 57.8%; --background: 0 0% 100%; --foreground: 262.1 83.3% 57.8%; --destructive: 0 84.2% 60.2%; --destructive-foreground: 210 40% 98%; --radius: 0.5rem;" },
-  { name: "Purple", key: "purple", css: "--primary: 268.3 89.8% 55.5%; --primary-foreground: 0 0% 98%; --secondary: 268.3 89.8% 96.1%; --secondary-foreground: 268.3 89.8% 55.5%; --accent: 268.3 89.8% 96.1%; --accent-foreground: 268.3 89.8% 55.5%; --muted: 268.3 89.8% 96.1%; --muted-foreground: 268.3 89.8% 46.1%; --card: 0 0% 100%; --card-foreground: 268.3 89.8% 55.5%; --border: 268.3 89.8% 96.1%; --input: 268.3 89.8% 96.1%; --ring: 268.3 89.8% 55.5%; --background: 0 0% 100%; --foreground: 268.3 89.8% 55.5%; --destructive: 0 84.2% 60.2%; --destructive-foreground: 0 0% 98%; --radius: 0.5rem;" },
-  { name: "Fuchsia", key: "fuchsia", css: "--primary: 288.3 79.8% 57.1%; --primary-foreground: 0 0% 98%; --secondary: 288.3 79.8% 96.1%; --secondary-foreground: 288.3 79.8% 57.1%; --accent: 288.3 79.8% 96.1%; --accent-foreground: 288.3 79.8% 57.1%; --muted: 288.3 79.8% 96.1%; --muted-foreground: 288.3 79.8% 46.1%; --card: 0 0% 100%; --card-foreground: 288.3 79.8% 57.1%; --border: 288.3 79.8% 96.1%; --input: 288.3 79.8% 96.1%; --ring: 288.3 79.8% 57.1%; --background: 0 0% 100%; --foreground: 288.3 79.8% 57.1%; --destructive: 0 84.2% 60.2%; --destructive-foreground: 0 0% 98%; --radius: 0.5rem;" },
-  { name: "Pink", key: "pink", css: "--primary: 323.4 77.5% 55.8%; --primary-foreground: 0 0% 98%; --secondary: 323.4 77.5% 96.1%; --secondary-foreground: 323.4 77.5% 55.8%; --accent: 323.4 77.5% 96.1%; --accent-foreground: 323.4 77.5% 55.8%; --muted: 323.4 77.5% 96.1%; --muted-foreground: 323.4 77.5% 46.1%; --card: 0 0% 100%; --card-foreground: 323.4 77.5% 55.8%; --border: 323.4 77.5% 96.1%; --input: 323.4 77.5% 96.1%; --ring: 323.4 77.5% 55.8%; --background: 0 0% 100%; --foreground: 323.4 77.5% 55.8%; --destructive: 0 84.2% 60.2%; --destructive-foreground: 0 0% 98%; --radius: 0.5rem;" },
-];
-
 function DesignSettings() {
-  const applyTheme = (theme: typeof themes[0]) => {
-    const root = document.documentElement;
-    const vars = theme.css.split(";").filter(Boolean);
-    vars.forEach(v => {
-      const [key, val] = v.split(":").map(s => s.trim());
-      if (key && val) {
-        const isColorFunction = /^(oklch|hsl|rgb|#|var)\(/i.test(val) || val.startsWith("#");
-        const isRadius = key === "--radius";
-        const finalVal = isRadius
-          ? val
-          : isColorFunction
-            ? val
-            : `hsl(${val})`;
-        root.style.setProperty(key, finalVal);
-      }
-    });
-    toast.success(`主题已切换为 ${theme.name}`);
-  };
+  const { mode, setMode, theme: activeTheme, setTheme } = useTheme();
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <Link to="/">
-          <Button variant="outline" size="sm">返回</Button>
-        </Link>
-        <h1 className="text-2xl font-bold">设计设置</h1>
-        <div />
-      </div>
-      <p className="text-muted-foreground">选择你喜欢的配色方案，主题会立即生效。</p>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {themes.map(theme => (
-          <Card key={theme.key} className="transition-shadow hover:shadow-md">
-            <CardHeader>
-              <CardTitle className="capitalize">{theme.name}</CardTitle>
-              <CardDescription>点击应用此配色</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button onClick={() => applyTheme(theme)} className="w-full">
-                应用主题
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Live color tokens preview */}
-      <div className="space-y-3">
-        <h2 className="text-xl font-semibold">主题颜色预览</h2>
-        <p className="text-sm text-muted-foreground">当前主题下各关键颜色变量的可视化，便于选择与对比。</p>
-        <ColorTokensPreview />
-      </div>
-    </div>
-  );
-}
-
-function ColorTokensPreview() {
-  const tokens = [
-    { key: "--background", label: "background" },
-    { key: "--foreground", label: "foreground" },
-    { key: "--card", label: "card" },
-    { key: "--card-foreground", label: "card-foreground" },
-    { key: "--primary", label: "primary" },
-    { key: "--primary-foreground", label: "primary-foreground" },
-    { key: "--secondary", label: "secondary" },
-    { key: "--secondary-foreground", label: "secondary-foreground" },
-    { key: "--accent", label: "accent" },
-    { key: "--accent-foreground", label: "accent-foreground" },
-    { key: "--muted", label: "muted" },
-    { key: "--muted-foreground", label: "muted-foreground" },
-    { key: "--destructive", label: "destructive" },
-    { key: "--destructive-foreground", label: "destructive-foreground" },
-    { key: "--border", label: "border" },
-    { key: "--input", label: "input" },
-    { key: "--ring", label: "ring" },
-  ];
-
-  return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {tokens.map(t => (
-        <div key={t.key} className="rounded-lg border">
-          <div className="flex items-center justify-between border-b px-3 py-2 text-sm">
-            <span className="font-medium">{t.label}</span>
-            <code className="text-xs text-muted-foreground">{t.key}</code>
-          </div>
-          <div className="p-3">
-            <div className="flex items-center gap-3">
-              <div
-                className="h-10 w-10 rounded-md border"
-                style={{ backgroundColor: `hsl(var(${t.key}))` }}
-                aria-label={`${t.label} swatch`}
-              />
-              <div className="flex-1">
-                <div
-                  className="rounded-sm border px-2 py-1 text-xs"
-                  style={{
-                    backgroundColor: `hsl(var(${t.key}))`,
-                    color: `hsl(var(${inferForeground(t.key)}))`,
-                  }}
-                >
-                  按钮示例
-                </div>
-              </div>
-            </div>
-          </div>
+    <div className="space-y-6">
+        <div>
+            <h3 className="text-lg font-medium">Appearance</h3>
+            <p className="text-sm text-muted-foreground">
+                Customize the look and feel of the editor.
+            </p>
         </div>
-      ))}
+        <Separator />
+        
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* Left Column: Controls */}
+            <div className="lg:col-span-5 space-y-8">
+          
+          {/* Mode Section */}
+          <section className="space-y-4">
+             <div className="space-y-1">
+                <h2 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Theme Mode</h2>
+                <p className="text-sm text-muted-foreground">Choose how you want the app to look.</p>
+             </div>
+             <div className="grid grid-cols-3 gap-3">
+                <button
+                   onClick={() => setMode("light")}
+                   className={cn(
+                     "flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-muted bg-transparent p-4 hover:bg-accent hover:text-accent-foreground transition-all",
+                     mode === "light" && "border-primary bg-accent"
+                   )}
+                >
+                   <Sun className="size-6" />
+                   <span className="text-sm font-medium">Light</span>
+                </button>
+                <button
+                   onClick={() => setMode("dark")}
+                   className={cn(
+                     "flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-muted bg-transparent p-4 hover:bg-accent hover:text-accent-foreground transition-all",
+                     mode === "dark" && "border-primary bg-accent"
+                   )}
+                >
+                   <Moon className="size-6" />
+                   <span className="text-sm font-medium">Dark</span>
+                </button>
+                <button
+                   onClick={() => setMode("system")}
+                   className={cn(
+                     "flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-muted bg-transparent p-4 hover:bg-accent hover:text-accent-foreground transition-all",
+                     mode === "system" && "border-primary bg-accent"
+                   )}
+                >
+                   <Monitor className="size-6" />
+                   <span className="text-sm font-medium">System</span>
+                </button>
+             </div>
+          </section>
+
+          <Separator />
+
+          {/* Color Section */}
+          <section className="space-y-4">
+             <div className="space-y-1">
+                <h2 className="text-sm font-medium leading-none">Accent Color</h2>
+                <p className="text-sm text-muted-foreground">Select the primary color for buttons, links, and highlights.</p>
+             </div>
+             <div className="grid grid-cols-4 sm:grid-cols-6 gap-4">
+                {themes.map((t) => {
+                    const isActive = activeTheme === t.key;
+                    // Extract primary color for preview circle
+                    // css string format: "--primary: 222.2 84% 4.9%; ..."
+                    const match = t.css.match(/--primary:\s*([^;]+)/);
+                    const colorVal = match ? `hsl(${match[1]})` : '#000';
+                    
+                    return (
+                        <div key={t.key} className="flex flex-col items-center gap-2 group">
+                             <button
+                                onClick={() => setTheme(t.key)}
+                                className={cn(
+                                    "size-10 rounded-full flex items-center justify-center shadow-sm ring-offset-2 ring-offset-background transition-all hover:scale-110",
+                                    isActive && "ring-2 ring-primary"
+                                )}
+                                style={{ backgroundColor: colorVal }}
+                             >
+                                {isActive && <Check className="size-5 text-white drop-shadow-md" />}
+                             </button>
+                             <span className={cn("text-xs capitalize text-muted-foreground transition-colors", isActive && "text-foreground font-medium")}>
+                                {t.name}
+                             </span>
+                        </div>
+                    )
+                })}
+             </div>
+          </section>
+
+            </div>
+
+            {/* Right Column: Preview */}
+            <div className="lg:col-span-7">
+                <div className="sticky top-24">
+                    <Card className="overflow-hidden border-2 border-border/50 shadow-xl">
+                 <CardHeader className="border-b bg-muted/30 p-4">
+                    <div className="flex items-center gap-2">
+                        <div className="flex gap-1.5">
+                            <div className="size-3 rounded-full bg-red-500/20" />
+                            <div className="size-3 rounded-full bg-yellow-500/20" />
+                            <div className="size-3 rounded-full bg-green-500/20" />
+                        </div>
+                        <div className="mx-auto text-xs font-medium text-muted-foreground/50">Preview</div>
+                    </div>
+                 </CardHeader>
+                 <CardContent className="p-0 min-h-[400px] bg-background flex">
+                    {/* Mock Sidebar */}
+                    <div className="w-48 border-r border-border bg-sidebar text-sidebar-foreground p-3 hidden sm:flex flex-col gap-4">
+                        <div className="h-8 w-full bg-sidebar-accent/50 rounded-md animate-pulse" />
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-2 p-2 rounded-md bg-sidebar-accent text-sidebar-accent-foreground">
+                                <div className="size-4 rounded bg-primary/20" />
+                                <span className="text-xs font-medium">Chapter 1</span>
+                            </div>
+                            <div className="flex items-center gap-2 p-2 rounded-md text-muted-foreground hover:bg-sidebar-accent/50">
+                                <div className="size-4 rounded border border-muted-foreground/20" />
+                                <span className="text-xs">Scene 1</span>
+                            </div>
+                             <div className="flex items-center gap-2 p-2 rounded-md text-muted-foreground hover:bg-sidebar-accent/50">
+                                <div className="size-4 rounded border border-muted-foreground/20" />
+                                <span className="text-xs">Scene 2</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Mock Editor */}
+                    <div className="flex-1 p-8">
+                        <div className="max-w-lg mx-auto space-y-6">
+                             <div className="space-y-2">
+                                <h1 className="text-3xl font-serif font-bold text-foreground">The Beginning</h1>
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                    <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">Draft</span>
+                                    <span>•</span>
+                                    <span>Just now</span>
+                                </div>
+                             </div>
+                             <div className="space-y-4 font-serif text-lg leading-relaxed text-foreground/90">
+                                 <p>The wind howled through the ancient pines, carrying secrets from a forgotten age. <span className="bg-primary/20 text-primary-foreground px-1 rounded">Elara</span> pulled her cloak tighter, her eyes scanning the horizon.</p>
+                                 <p>“We shouldn’t be here,” Kael whispered, his hand trembling near his sword hilt.</p>
+                                 <p>She ignored him, stepping forward into the clearing. The ruins stood silent, bathed in the pale light of the twin moons.</p>
+                             </div>
+                             <div className="pt-4 flex gap-2">
+                                 <Button>Save Changes</Button>
+                                 <Button variant="secondary">Discard</Button>
+                                 <Button variant="ghost">Export</Button>
+                             </div>
+                        </div>
+                    </div>
+                 </CardContent>
+              </Card>
+              <div className="mt-4 text-center">
+                 <p className="text-xs text-muted-foreground">This preview reflects your current theme settings.</p>
+              </div>
+                </div>
+            </div>
+        </div>
     </div>
   );
-}
-
-function inferForeground(token: string): string {
-  switch (token) {
-    case "--primary":
-      return "--primary-foreground";
-    case "--secondary":
-      return "--secondary-foreground";
-    case "--accent":
-      return "--accent-foreground";
-    case "--muted":
-      return "--muted-foreground";
-    case "--destructive":
-      return "--destructive-foreground";
-    case "--card":
-      return "--card-foreground";
-    default:
-      return "--foreground";
-  }
 }

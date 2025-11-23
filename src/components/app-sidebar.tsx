@@ -1,32 +1,15 @@
 import {
-	BookMarked,
-	BookOpen,
-	CalendarRange,
-	ChartLine,
-	CheckCircle2,
-	Compass,
-	Feather,
-	Flame,
-	Lightbulb,
-	ListTree,
-	ScrollText,
-	SearchIcon,
-	Settings,
-	Users,
+  BookMarked,
+  Plus,
+  MoreHorizontal,
+  Upload,
+  Download,
+  Trash2,
+  LibraryBig
 } from "lucide-react";
-import type * as React from "react";
-import { useState, useMemo, useCallback, useRef } from "react";
+import * as React from "react";
+import { useCallback, useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { Button } from "@/components/ui/button";
-import {
-  UncontrolledTreeEnvironment,
-  Tree,
-  StaticTreeDataProvider,
-  type TreeItem
-} from "react-complex-tree";
-import "react-complex-tree/lib/style-modern.css";
-import { Plus, ArrowUp, ArrowDown, Pencil, Trash2, ChevronRight, ChevronDown, Upload, Download, MoreHorizontal } from "lucide-react";
-import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { db } from "@/db/curd";
 import { exportAll, triggerDownload, importFromJson, readFileAsText, createBook } from "@/services/projects";
@@ -34,59 +17,36 @@ import type { ProjectInterface, ChapterInterface, SceneInterface } from "@/db/sc
 import { Link } from "@tanstack/react-router";
 
 import {
-	Sidebar,
-	SidebarContent,
-	SidebarFooter,
-	SidebarGroup,
-	SidebarGroupContent,
-	SidebarGroupLabel,
-	SidebarMenu,
-	SidebarMenuButton,
-	SidebarMenuItem,
-	SidebarRail,
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarSeparator,
+  SidebarRail,
 } from "@/components/ui/sidebar";
-import { ButtonGroup } from "@/components/ui/button-group";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-const navigation = [
-	{
-		label: "Workspace Overview",
-		description: "Monitor the heart of your novel project",
-		items: [
-			{ icon: Compass, label: "Dashboard", note: "Project summary & stats" },
-			{ icon: ChartLine, label: "Progress Analytics", note: "Word count trends" },
-			{ icon: CalendarRange, label: "Writing Schedule", note: "Session planner" },
-		],
-	},
-	{
-		label: "Story Building",
-		description: "Outline plotlines and manage narrative structure",
-		items: [
-			{ icon: ListTree, label: "Chapters & Scenes", note: "Hierarchy & beats" },
-			{ icon: ScrollText, label: "Story Beats", note: "Acts, arcs, and pacing" },
-			{ icon: BookMarked, label: "Story Bible", note: "Lore & continuity" },
-		],
-	},
-	{
-		label: "Creative Resources",
-		description: "Keep research, references, and inspiration in reach",
-		items: [
-			{ icon: Users, label: "Characters", note: "Profiles & relationships" },
-			{ icon: BookOpen, label: "World Atlas", note: "Locations & cultures" },
-			{ icon: Lightbulb, label: "Inspiration Vault", note: "Prompts & snippets" },
-		],
-	},
-	{
-		label: "Productivity",
-		description: "Stay consistent and celebrate milestones",
-		items: [
-			{ icon: Feather, label: "Daily Goals", note: "Word target & streak" },
-			{ icon: Flame, label: "Focus Sessions", note: "Pomodoro & timers" },
-			{ icon: CheckCircle2, label: "Milestones", note: "Draft checkpoints" },
-		],
-	},
-];
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const projects = useLiveQuery<ProjectInterface[]>(() => db.getAllProjects(), []);
@@ -94,9 +54,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const scenes = useLiveQuery<SceneInterface[]>(() => db.getAllScenes(), []);
 
     const projectList = projects ?? [];
+    const [isActionsOpen, setIsActionsOpen] = useState(false);
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [newBookData, setNewBookData] = useState({ title: "", author: "", description: "" });
 
     async function handleDeleteAllBooks() {
-        if (!window.confirm("确认删除所有书籍及其章节、场景等数据吗？该操作不可恢复！")) return;
+        if (!window.confirm("Are you sure you want to delete ALL books? This action cannot be undone.")) return;
         try {
             await Promise.all([
                 db.attachments.clear(),
@@ -105,9 +68,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 db.chapters.clear(),
                 db.projects.clear(),
             ]);
-            toast.success("已删除所有书籍");
+            toast.success("All books deleted");
+            setIsActionsOpen(false);
         } catch (err) {
-            toast.error("删除失败，请重试");
+            toast.error("Failed to delete books");
         }
     }
 
@@ -115,43 +79,60 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const handleExport = useCallback(async () => {
         const json = await exportAll();
         triggerDownload(`novel-editor-backup-${new Date().toISOString().slice(0,10)}.json`, json);
+        setIsActionsOpen(false);
     }, []);
+    
     const handleImportClick = useCallback(() => {
         fileInputRef.current?.click();
+        setIsActionsOpen(false);
     }, []);
+    
     const handleImportFile = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
         try {
             const text = await readFileAsText(file);
             await importFromJson(text, { keepIds: false });
-            toast.success("导入成功");
+            toast.success("Library imported successfully");
         } catch (err) {
-            toast.error("导入失败");
+            toast.error("Import failed");
         } finally {
             if (fileInputRef.current) fileInputRef.current.value = "";
         }
     }, []);
 
-    const handleQuickCreate = useCallback(async () => {
-        const title = window.prompt("书名：");
-        if (!title) return;
-        const author = window.prompt("作者：", "Author");
-        if (!author) return;
-        try {
-            await createBook({ title, author, description: "" });
-        } catch (e) {
-            // createBook 已包含 toast
+    const handleCreateBook = async () => {
+        if (!newBookData.title.trim()) {
+            toast.error("Book title is required");
+            return;
         }
-    }, []);
+        try {
+            await createBook({
+                title: newBookData.title,
+                author: newBookData.author || "Me",
+                description: newBookData.description
+            });
+            setIsCreateOpen(false);
+            setNewBookData({ title: "", author: "", description: "" });
+        } catch (e) {
+            // createBook handles toast
+        }
+    };
 
     return (
-        <Sidebar {...props} className="pb-8">
-            <SidebarContent className="pb-2">
+        <Sidebar {...props} className="border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
+            <SidebarHeader className="h-12 flex items-center px-4 border-b border-sidebar-border/50">
+                 <div className="flex items-center gap-2 font-semibold text-foreground/80">
+                    <LibraryBig className="size-5" />
+                    <span>My Library</span>
+                 </div>
+            </SidebarHeader>
+            
+            <SidebarContent className="px-2 py-4">
                 <SidebarGroup>
-                    <div className="flex items-center justify-between pr-2">
-                        <SidebarGroupLabel>Books</SidebarGroupLabel>
-                    </div>
+                    <SidebarGroupLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-2 mb-2">
+                        Books ({projectList.length})
+                    </SidebarGroupLabel>
                     <SidebarGroupContent>
                         <SidebarMenu>
                             {projectList.map((project) => {
@@ -159,33 +140,108 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                 const sceneCount = (scenes ?? []).filter(s => s.project === project.id).length;
                                 return (
                                     <SidebarMenuItem key={project.id}>
-                                        <SidebarMenuButton asChild>
-                                            <Link to="/projects/$projectId" params={{ projectId: project.id }}>
-                                                <BookMarked className="size-4" />
-                                                <div className="flex flex-col items-start">
-                                                    <span className="text-sm font-medium">{project.title}</span>
-                                                    <span className="text-xs text-muted-foreground">{chapterCount} 章 · {sceneCount} 场景</span>
+                                        <SidebarMenuButton asChild className="h-auto py-3 px-3 rounded-md hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all group">
+                                            <Link to="/projects/$projectId" params={{ projectId: project.id }} className="flex items-start gap-3">
+                                                <div className="shrink-0 mt-0.5 text-muted-foreground group-hover:text-primary transition-colors">
+                                                    <BookMarked className="size-4" />
+                                                </div>
+                                                <div className="flex flex-col items-start gap-0.5 overflow-hidden">
+                                                    <span className="text-sm font-medium leading-tight truncate w-full">{project.title}</span>
+                                                    <span className="text-xs text-muted-foreground/70 truncate w-full font-light">
+                                                        {chapterCount} ch · {sceneCount} scenes
+                                                    </span>
                                                 </div>
                                             </Link>
                                         </SidebarMenuButton>
                                     </SidebarMenuItem>
                                 );
                             })}
-                            {projectList.length === 0 ? (
-                                <SidebarMenuItem>
-                                    <SidebarMenuButton asChild>
-                                        <Link to="/">
-                                            <Plus className="size-4" />
-                                            <span>创建你的第一本书</span>
-                                        </Link>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-                            ) : null}
+                            
+                            <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+                                <DialogTrigger asChild>
+                                    <SidebarMenuItem className="mt-2">
+                                        <SidebarMenuButton className="text-muted-foreground hover:text-foreground border border-dashed border-border hover:border-primary/50 justify-center group">
+                                            <Plus className="size-4 mr-2 group-hover:scale-110 transition-transform" />
+                                            <span>Create New Book</span>
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>Create New Book</DialogTitle>
+                                    </DialogHeader>
+                                    <div className="grid gap-4 py-4">
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="title">Book Title</Label>
+                                            <Input 
+                                                id="title" 
+                                                value={newBookData.title} 
+                                                onChange={(e) => setNewBookData({...newBookData, title: e.target.value})}
+                                                placeholder="e.g. The Lost Kingdom"
+                                            />
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="author">Author</Label>
+                                            <Input 
+                                                id="author" 
+                                                value={newBookData.author} 
+                                                onChange={(e) => setNewBookData({...newBookData, author: e.target.value})}
+                                                placeholder="Me"
+                                            />
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="desc">Description (Optional)</Label>
+                                            <Input 
+                                                id="desc" 
+                                                value={newBookData.description} 
+                                                onChange={(e) => setNewBookData({...newBookData, description: e.target.value})}
+                                                placeholder="A short summary..."
+                                            />
+                                        </div>
+                                    </div>
+                                    <DialogFooter>
+                                        <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
+                                        <Button onClick={handleCreateBook}>Create Book</Button>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>
             </SidebarContent>
-            {/* <SidebarRail /> */}
+
+            <SidebarFooter className="p-2 border-t border-sidebar-border/50">
+                <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    className="hidden" 
+                    accept=".json" 
+                    onChange={handleImportFile} 
+                />
+                <Popover open={isActionsOpen} onOpenChange={setIsActionsOpen}>
+                    <PopoverTrigger asChild>
+                        <SidebarMenuButton className="w-full justify-between text-muted-foreground hover:text-foreground">
+                            <span className="text-xs font-medium">Library Actions</span>
+                            <MoreHorizontal className="size-4" />
+                        </SidebarMenuButton>
+                    </PopoverTrigger>
+                    <PopoverContent side="right" align="start" className="w-48 p-1">
+                        <div className="grid gap-1">
+                            <button onClick={handleImportClick} className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground w-full text-left">
+                                <Upload className="size-4" /> Import Library
+                            </button>
+                            <button onClick={handleExport} className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground w-full text-left">
+                                <Download className="size-4" /> Export Library
+                            </button>
+                            <div className="h-px bg-border my-1" />
+                            <button onClick={handleDeleteAllBooks} className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-destructive/10 text-destructive w-full text-left">
+                                <Trash2 className="size-4" /> Delete All
+                            </button>
+                        </div>
+                    </PopoverContent>
+                </Popover>
+            </SidebarFooter>
+            <SidebarRail />
         </Sidebar>
     );
 }

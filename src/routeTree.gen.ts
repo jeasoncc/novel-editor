@@ -10,15 +10,36 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WorldRouteImport } from './routes/world'
+import { Route as StatisticsRouteImport } from './routes/statistics'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as OutlineRouteImport } from './routes/outline'
 import { Route as LogRouteImport } from './routes/log'
 import { Route as CharactersRouteImport } from './routes/characters'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SettingsGeneralRouteImport } from './routes/settings/general'
+import { Route as SettingsEditorRouteImport } from './routes/settings/editor'
 import { Route as SettingsDesignRouteImport } from './routes/settings/design'
+import { Route as SettingsAboutRouteImport } from './routes/settings/about'
 import { Route as ProjectsProjectIdRouteImport } from './routes/projects/$projectId'
 
 const WorldRoute = WorldRouteImport.update({
   id: '/world',
   path: '/world',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StatisticsRoute = StatisticsRouteImport.update({
+  id: '/statistics',
+  path: '/statistics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OutlineRoute = OutlineRouteImport.update({
+  id: '/outline',
+  path: '/outline',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LogRoute = LogRouteImport.update({
@@ -36,10 +57,25 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SettingsGeneralRoute = SettingsGeneralRouteImport.update({
+  id: '/general',
+  path: '/general',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsEditorRoute = SettingsEditorRouteImport.update({
+  id: '/editor',
+  path: '/editor',
+  getParentRoute: () => SettingsRoute,
+} as any)
 const SettingsDesignRoute = SettingsDesignRouteImport.update({
-  id: '/settings/design',
-  path: '/settings/design',
-  getParentRoute: () => rootRouteImport,
+  id: '/design',
+  path: '/design',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsAboutRoute = SettingsAboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => SettingsRoute,
 } as any)
 const ProjectsProjectIdRoute = ProjectsProjectIdRouteImport.update({
   id: '/projects/$projectId',
@@ -51,26 +87,44 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/characters': typeof CharactersRoute
   '/log': typeof LogRoute
+  '/outline': typeof OutlineRoute
+  '/settings': typeof SettingsRouteWithChildren
+  '/statistics': typeof StatisticsRoute
   '/world': typeof WorldRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
+  '/settings/about': typeof SettingsAboutRoute
   '/settings/design': typeof SettingsDesignRoute
+  '/settings/editor': typeof SettingsEditorRoute
+  '/settings/general': typeof SettingsGeneralRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/characters': typeof CharactersRoute
   '/log': typeof LogRoute
+  '/outline': typeof OutlineRoute
+  '/settings': typeof SettingsRouteWithChildren
+  '/statistics': typeof StatisticsRoute
   '/world': typeof WorldRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
+  '/settings/about': typeof SettingsAboutRoute
   '/settings/design': typeof SettingsDesignRoute
+  '/settings/editor': typeof SettingsEditorRoute
+  '/settings/general': typeof SettingsGeneralRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/characters': typeof CharactersRoute
   '/log': typeof LogRoute
+  '/outline': typeof OutlineRoute
+  '/settings': typeof SettingsRouteWithChildren
+  '/statistics': typeof StatisticsRoute
   '/world': typeof WorldRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
+  '/settings/about': typeof SettingsAboutRoute
   '/settings/design': typeof SettingsDesignRoute
+  '/settings/editor': typeof SettingsEditorRoute
+  '/settings/general': typeof SettingsGeneralRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -78,34 +132,54 @@ export interface FileRouteTypes {
     | '/'
     | '/characters'
     | '/log'
+    | '/outline'
+    | '/settings'
+    | '/statistics'
     | '/world'
     | '/projects/$projectId'
+    | '/settings/about'
     | '/settings/design'
+    | '/settings/editor'
+    | '/settings/general'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/characters'
     | '/log'
+    | '/outline'
+    | '/settings'
+    | '/statistics'
     | '/world'
     | '/projects/$projectId'
+    | '/settings/about'
     | '/settings/design'
+    | '/settings/editor'
+    | '/settings/general'
   id:
     | '__root__'
     | '/'
     | '/characters'
     | '/log'
+    | '/outline'
+    | '/settings'
+    | '/statistics'
     | '/world'
     | '/projects/$projectId'
+    | '/settings/about'
     | '/settings/design'
+    | '/settings/editor'
+    | '/settings/general'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CharactersRoute: typeof CharactersRoute
   LogRoute: typeof LogRoute
+  OutlineRoute: typeof OutlineRoute
+  SettingsRoute: typeof SettingsRouteWithChildren
+  StatisticsRoute: typeof StatisticsRoute
   WorldRoute: typeof WorldRoute
   ProjectsProjectIdRoute: typeof ProjectsProjectIdRoute
-  SettingsDesignRoute: typeof SettingsDesignRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -115,6 +189,27 @@ declare module '@tanstack/react-router' {
       path: '/world'
       fullPath: '/world'
       preLoaderRoute: typeof WorldRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/statistics': {
+      id: '/statistics'
+      path: '/statistics'
+      fullPath: '/statistics'
+      preLoaderRoute: typeof StatisticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/outline': {
+      id: '/outline'
+      path: '/outline'
+      fullPath: '/outline'
+      preLoaderRoute: typeof OutlineRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/log': {
@@ -138,12 +233,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/settings/general': {
+      id: '/settings/general'
+      path: '/general'
+      fullPath: '/settings/general'
+      preLoaderRoute: typeof SettingsGeneralRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/editor': {
+      id: '/settings/editor'
+      path: '/editor'
+      fullPath: '/settings/editor'
+      preLoaderRoute: typeof SettingsEditorRouteImport
+      parentRoute: typeof SettingsRoute
+    }
     '/settings/design': {
       id: '/settings/design'
-      path: '/settings/design'
+      path: '/design'
       fullPath: '/settings/design'
       preLoaderRoute: typeof SettingsDesignRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/about': {
+      id: '/settings/about'
+      path: '/about'
+      fullPath: '/settings/about'
+      preLoaderRoute: typeof SettingsAboutRouteImport
+      parentRoute: typeof SettingsRoute
     }
     '/projects/$projectId': {
       id: '/projects/$projectId'
@@ -155,13 +271,33 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface SettingsRouteChildren {
+  SettingsAboutRoute: typeof SettingsAboutRoute
+  SettingsDesignRoute: typeof SettingsDesignRoute
+  SettingsEditorRoute: typeof SettingsEditorRoute
+  SettingsGeneralRoute: typeof SettingsGeneralRoute
+}
+
+const SettingsRouteChildren: SettingsRouteChildren = {
+  SettingsAboutRoute: SettingsAboutRoute,
+  SettingsDesignRoute: SettingsDesignRoute,
+  SettingsEditorRoute: SettingsEditorRoute,
+  SettingsGeneralRoute: SettingsGeneralRoute,
+}
+
+const SettingsRouteWithChildren = SettingsRoute._addFileChildren(
+  SettingsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CharactersRoute: CharactersRoute,
   LogRoute: LogRoute,
+  OutlineRoute: OutlineRoute,
+  SettingsRoute: SettingsRouteWithChildren,
+  StatisticsRoute: StatisticsRoute,
   WorldRoute: WorldRoute,
   ProjectsProjectIdRoute: ProjectsProjectIdRoute,
-  SettingsDesignRoute: SettingsDesignRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

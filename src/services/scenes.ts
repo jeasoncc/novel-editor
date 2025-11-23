@@ -33,6 +33,36 @@ export async function reorderScenes(aId: string, aOrder: number, bId: string, bO
   ]);
 }
 
+export async function moveScene(projectId: string, sceneId: string, targetChapterId: string, newIndex: number) {
+  const scene = await db.getScene(sceneId);
+  if (!scene) return;
+
+  // 1. Get target list
+  const scenes = await db.getScenesByChapter(targetChapterId);
+  // Filter out the moving scene if it's already in the list (reordering within same chapter)
+  const sorted = scenes.filter(s => s.id !== sceneId).sort((a, b) => a.order - b.order);
+  
+  // 2. Insert into new position
+  const safeIndex = Math.max(0, Math.min(newIndex, sorted.length));
+  
+  // If moving to new chapter, update the object
+  if (scene.chapter !== targetChapterId) {
+      await db.updateScene(sceneId, { chapter: targetChapterId });
+      scene.chapter = targetChapterId;
+  }
+  
+  sorted.splice(safeIndex, 0, scene);
+
+  // 3. Update orders
+  await Promise.all(sorted.map((s, i) => {
+    const newOrder = i + 1;
+    if (s.order !== newOrder) {
+      return db.updateScene(s.id, { order: newOrder });
+    }
+    return Promise.resolve();
+  }));
+}
+
 export async function deleteScene(id: string) {
   return db.deleteScene(id);
 }

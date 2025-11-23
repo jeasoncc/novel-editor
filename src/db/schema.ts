@@ -159,6 +159,21 @@ export interface RoleInterface {
 	createDate: string; // 创建时间
 }
 
+// ---------- 世界观 ----------
+/**
+ * 存储项目世界观信息，例如地点、势力、物品、设定条目等
+ */
+export interface WorldEntryInterface {
+	id: string; // 世界观条目唯一标识，使用 UUID
+	project: string; // 所属项目 ID
+	name: string; // 条目名称，例如地点名、组织名、物品名
+	category: string; // 分类：location / faction / item / concept 等
+	summary: string; // 简要描述
+	tags?: string[]; // 标签
+	createDate: string; // 创建时间
+	updatedAt: string; // 最近更新时间
+}
+
 // ---------- 附件 ----------
 /**
  * 存储项目、章节或场景相关的附件信息
