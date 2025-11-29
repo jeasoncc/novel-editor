@@ -21,13 +21,7 @@ export const Route = createFileRoute("/")({
 });
 
 function RouteComponent() {
-  const search = Route.useSearch<{ view?: RightPanelView }>();
   const setRightPanelView = useUIStore(s => s.setRightPanelView);
-
-  useEffect(() => {
-    if (!search?.view) return;
-    setRightPanelView(search.view ?? null);
-  }, [search?.view, setRightPanelView]);
 	const [loading, setLoading] = useState(false);
 	const projects = useLiveQuery<ProjectInterface[]>(() => db.getAllProjects(), []);
 	const chapters = useLiveQuery<ChapterInterface[]>(() => db.getAllChapters(), []);

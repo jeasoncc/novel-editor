@@ -1,5 +1,5 @@
 import type * as React from "react";
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,8 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/db/curd";
 import { exportAll, importFromJson, readFileAsText, triggerDownload, createBook, exportAsMarkdown } from "@/services/projects";
 import { openCreateBookDialog } from "@/components/blocks/createBookDialog";
-import { BookMarked, Settings, ListTree, Users, BookOpen, Upload, Download, MoreHorizontal, Trash2, Plus, TrendingUp, FileJson, FileText } from "lucide-react";
+import { ExportDialog } from "@/components/blocks/export-dialog";
+import { BookMarked, Settings, ListTree, Users, BookOpen, Upload, Download, MoreHorizontal, Trash2, Plus, TrendingUp, FileJson, FileText, FileOutput } from "lucide-react";
 import { useConfirm } from "@/components/ui/confirm";
 import { useSelectionStore } from "@/stores/selection";
 
@@ -18,6 +19,7 @@ export function ActivityBar(): React.ReactElement {
   const selectedProjectId = useSelectionStore(s => s.selectedProjectId);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const confirm = useConfirm();
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
 
   const handleExportBackup = useCallback(async () => {
     try {
@@ -184,6 +186,10 @@ export function ActivityBar(): React.ReactElement {
             </Tooltip>
             <PopoverContent side="right" align="start" className="w-56 p-1">
                 <div className="grid gap-1">
+                    <button onClick={() => setExportDialogOpen(true)} className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground w-full text-left">
+                        <FileOutput className="size-4" /> 导出作品 (PDF/Word/TXT)
+                    </button>
+                    <div className="h-px bg-border my-1" />
                     <button onClick={handleExportBackup} className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground w-full text-left">
                         <FileJson className="size-4" /> 导出备份 (JSON)
                     </button>
@@ -240,6 +246,14 @@ export function ActivityBar(): React.ReactElement {
           <TooltipContent side="right">设置</TooltipContent>
         </Tooltip>
       </TooltipProvider>
+
+      {/* 导出对话框 */}
+      <ExportDialog
+        open={exportDialogOpen}
+        onOpenChange={setExportDialogOpen}
+        projectId={selectedProjectId || projects[0]?.id || ""}
+        projectTitle={projects.find(p => p.id === (selectedProjectId || projects[0]?.id))?.title}
+      />
     </aside>
   );
 }

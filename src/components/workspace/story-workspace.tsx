@@ -27,6 +27,7 @@ import { StoryRightSidebar } from "@/components/story-right-sidebar";
 import { useConfirm } from "@/components/ui/confirm";
 import { useSelectionStore, type SelectionState } from "@/stores/selection";
 import { useOutlineStore } from "@/stores/outline";
+import { useSettings } from "@/hooks/use-settings";
 import { createBook, exportAll, importFromJson, readFileAsText, triggerDownload } from "@/services/projects";
 import { openCreateBookDialog } from "@/components/blocks/createBookDialog";
 //
@@ -41,7 +42,8 @@ interface StoryWorkspaceProps {
 	onCreateProject?: () => void;
 }
 
-const SCENE_AUTO_SAVE_MS = 800;
+// 默认自动保存延迟（毫秒）
+const DEFAULT_AUTO_SAVE_MS = 800;
 
 export function StoryWorkspace({
 	projects,
@@ -57,6 +59,11 @@ export function StoryWorkspace({
 	const setSelectedChapterId = useSelectionStore((s: SelectionState) => s.setSelectedChapterId);
 	const selectedSceneId = useSelectionStore((s: SelectionState) => s.selectedSceneId);
 	const setSelectedSceneId = useSelectionStore((s: SelectionState) => s.setSelectedSceneId);
+
+	// 获取自动保存设置
+	const { autoSave, autoSaveInterval } = useSettings();
+	// 计算自动保存延迟（设置中是秒，转换为毫秒，最小800ms）
+	const autoSaveDelayMs = autoSave ? Math.max(DEFAULT_AUTO_SAVE_MS, autoSaveInterval * 1000) : DEFAULT_AUTO_SAVE_MS;
 
 	const [chapterEditId, setChapterEditId] = useState<string | null>(null);
 	const [chapterEditTitle, setChapterEditTitle] = useState("");
@@ -228,6 +235,7 @@ export function StoryWorkspace({
 		() =>
 			debounce(
 				async (sceneId: string, serialized: SerializedEditorState) => {
+					if (!autoSave) return; // 如果禁用自动保存，不执行
 					setIsSaving(true);
 					try {
 						await db.updateScene(sceneId, {
@@ -240,9 +248,9 @@ export function StoryWorkspace({
 						setIsSaving(false);
 					}
 				},
-				SCENE_AUTO_SAVE_MS,
+				autoSaveDelayMs,
 			),
-		[],
+		[autoSave, autoSaveDelayMs],
 	);
 
 	useEffect(
