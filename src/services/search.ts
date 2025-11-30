@@ -60,7 +60,7 @@ export class SearchEngine {
 			]);
 
 			// 构建场景索引
-			this.sceneIndex = lunr(function () {
+			this.sceneIndex = lunr(function (this: lunr.Builder) {
 				this.ref("id");
 				this.field("title", { boost: 10 });
 				this.field("content");
@@ -80,7 +80,7 @@ export class SearchEngine {
 			});
 
 			// 构建角色索引
-			this.roleIndex = lunr(function () {
+			this.roleIndex = lunr(function (this: lunr.Builder) {
 				this.ref("id");
 				this.field("name", { boost: 10 });
 				this.field("alias", { boost: 5 });
@@ -104,7 +104,7 @@ export class SearchEngine {
 			});
 
 			// 构建世界观索引
-			this.worldIndex = lunr(function () {
+			this.worldIndex = lunr(function (this: lunr.Builder) {
 				this.ref("id");
 				this.field("name", { boost: 10 });
 				this.field("summary");

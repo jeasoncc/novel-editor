@@ -179,33 +179,36 @@ export const useEditorHistory = create<EditorHistoryState>()(
 		}),
 		{
 			name: "novel-editor-history",
-			// 自定义序列化（Map 需要特殊处理）
-			serialize: (state) => {
-				return JSON.stringify({
-					...state,
-					state: {
-						...state.state,
-						undoStack: Array.from(state.state.undoStack.entries()),
-						redoStack: Array.from(state.state.redoStack.entries()),
-					},
-				});
-			},
-			deserialize: (str) => {
-				const parsed = JSON.parse(str);
-				return {
-					...parsed,
-					state: {
-						...parsed.state,
-						undoStack: new Map(parsed.state.undoStack),
-						redoStack: new Map(parsed.state.redoStack),
-					},
-				};
-			},
 			// 只持久化必要的数据
 			partialize: (state) => ({
-				undoStack: state.undoStack,
-				redoStack: state.redoStack,
+				undoStack: Array.from(state.undoStack.entries()),
+				redoStack: Array.from(state.redoStack.entries()),
 			}),
+			// 自定义存储以处理 Map
+			storage: {
+				getItem: (name) => {
+					const str = localStorage.getItem(name);
+					if (!str) return null;
+					const parsed = JSON.parse(str);
+					return {
+						state: {
+							...parsed.state,
+							undoStack: new Map(parsed.state.undoStack),
+							redoStack: new Map(parsed.state.redoStack),
+						},
+					};
+				},
+				setItem: (name, value) => {
+					const serialized = {
+						state: {
+							undoStack: Array.from((value.state as any).undoStack.entries()),
+							redoStack: Array.from((value.state as any).redoStack.entries()),
+						},
+					};
+					localStorage.setItem(name, JSON.stringify(serialized));
+				},
+				removeItem: (name) => localStorage.removeItem(name),
+			},
 		}
 	)
 );

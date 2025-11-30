@@ -73,8 +73,10 @@ export function StoryWorkspace({
 
 	// 获取自动保存设置
 	const { autoSave, autoSaveInterval } = useSettings();
-	// 计算自动保存延迟（设置中是秒，转换为毫秒，最小800ms）
-	const autoSaveDelayMs = autoSave ? Math.max(DEFAULT_AUTO_SAVE_MS, autoSaveInterval * 1000) : DEFAULT_AUTO_SAVE_MS;
+	// 计算自动保存延迟（设置中是秒，转换为毫秒）
+	const autoSaveDelayMs = autoSave 
+		? Math.max(DEFAULT_AUTO_SAVE_MS, autoSaveInterval * 1000) 
+		: 0; // 禁用时设为0
 
 	const [chapterEditId, setChapterEditId] = useState<string | null>(null);
 	const [chapterEditTitle, setChapterEditTitle] = useState("");
@@ -282,46 +284,110 @@ export function StoryWorkspace({
 		setSceneWordCount(countWords(text));
 	}, [activeScene?.id]);
 
-	const debouncedSave = useMemo(
-		() =>
-			debounce(
-				async (sceneId: string, serialized: SerializedEditorState) => {
-					if (!autoSave) return; // 如果禁用自动保存，不执行
-					setIsSaving(true);
-					setSaveStatus("saving");
-					try {
-						await db.updateScene(sceneId, {
-							content: JSON.stringify(serialized),
-						});
-						setSaveStatus("saved");
-					} catch (error) {
-						loggerError("Failed to save scene", error);
-						setSaveStatus("error");
-						toast.error("保存场景内容失败");
-					} finally {
-						setIsSaving(false);
-					}
-				},
-				autoSaveDelayMs,
-			),
-		[autoSave, autoSaveDelayMs],
-	);
+	// 使用 ref 存储 debounce 函数，避免依赖变化时重新创建
+	const debouncedSaveRef = useRef<ReturnType<typeof debounce> | null>(null);
+	const saveTimeoutRef = useRef<number | null>(null);
 
-	useEffect(
-		() => () => {
-			debouncedSave.cancel();
-		},
-		[debouncedSave],
-	);
+	// 创建保存函数
+	const performSave = useCallback(async (sceneId: string, serialized: SerializedEditorState) => {
+		if (!autoSave) return;
+		
+		setIsSaving(true);
+		setSaveStatus("saving");
+		
+		// 清除之前的超时
+		if (saveTimeoutRef.current) {
+			clearTimeout(saveTimeoutRef.current);
+		}
+		
+		// 设置10秒超时
+		saveTimeoutRef.current = window.setTimeout(() => {
+			setSaveStatus("error");
+			setIsSaving(false);
+			toast.error("保存超时，请检查网络连接");
+		}, 10000);
+		
+		try {
+			await db.updateScene(sceneId, {
+				content: JSON.stringify(serialized),
+			});
+			clearTimeout(saveTimeoutRef.current);
+			setSaveStatus("saved");
+			
+			// 2秒后隐藏"已保存"状态
+			setTimeout(() => {
+				if (saveStatus === "saved") {
+					setSaveStatus("saved");
+				}
+			}, 2000);
+		} catch (error) {
+			clearTimeout(saveTimeoutRef.current);
+			console.error("Failed to save scene:", error);
+			setSaveStatus("error");
+			toast.error("保存场景内容失败");
+		} finally {
+			setIsSaving(false);
+		}
+	}, [autoSave]);
+
+	// 当设置变化时，重新创建 debounce 函数
+	useEffect(() => {
+		if (autoSaveDelayMs > 0) {
+			debouncedSaveRef.current = debounce(performSave, autoSaveDelayMs);
+		}
+		
+		return () => {
+			// 组件卸载或设置变化时，立即执行待处理的保存
+			if (debouncedSaveRef.current) {
+				// @ts-ignore - lodash debounce 有 flush 方法但类型定义不完整
+				debouncedSaveRef.current.flush?.();
+				debouncedSaveRef.current.cancel();
+			}
+			if (saveTimeoutRef.current) {
+				clearTimeout(saveTimeoutRef.current);
+			}
+		};
+	}, [autoSaveDelayMs, performSave]);
+
+	// 场景切换前强制保存
+	useEffect(() => {
+		return () => {
+			if (debouncedSaveRef.current) {
+				// @ts-ignore
+				debouncedSaveRef.current.flush?.();
+			}
+		};
+	}, [activeScene?.id]);
+
+	// 页面关闭前保存
+	useEffect(() => {
+		const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+			if (debouncedSaveRef.current) {
+				// @ts-ignore
+				debouncedSaveRef.current.flush?.();
+			}
+			
+			if (saveStatus === 'saving') {
+				e.preventDefault();
+				e.returnValue = '有未保存的内容，确定要离开吗？';
+			}
+		};
+
+		window.addEventListener('beforeunload', handleBeforeUnload);
+		return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+	}, [saveStatus]);
 
 	const handleSerializedChange = useCallback(
 		(serialized: SerializedEditorState) => {
-			if (!activeScene) return;
-            const text = extractTextFromSerialized(serialized);
+			if (!activeScene || !debouncedSaveRef.current) return;
+			
+			const text = extractTextFromSerialized(serialized);
 			setSceneWordCount(countWords(text));
-			debouncedSave(activeScene.id, serialized);
+			
+			// 使用 ref 中的 debounce 函数
+			debouncedSaveRef.current(activeScene.id, serialized);
 		},
-		[activeScene, debouncedSave],
+		[activeScene],
 	);
 
 	const projectStats = useMemo(() => {

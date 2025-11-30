@@ -31,7 +31,7 @@ export const useSettings = create<SettingsState>()(
       // Defaults
       language: "zh",
       autoSave: true,
-      autoSaveInterval: 60,
+      autoSaveInterval: 3, // 3秒更合理（之前是60秒太长）
       spellCheck: false,
       
       fontFamily: "Merriweather",
