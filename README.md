@@ -5,7 +5,9 @@ Novel Editor is a modern, cross-platform writing environment built with **Tauri*
 > 🇨🇳 Read this document in Chinese: [`README.zh-CN.md`](./README.zh-CN.md)
 
 ---
-![描述文本](https://i.imgur.com/example.png)
+![](https://s3.bmp.ovh/imgs/2025/11/30/17e3f22342be954f.png)
+
+![](https://s3.bmp.ovh/imgs/2025/11/30/20c87f8ef08b246d.png)
 ## Highlights
 
 - ✍️ **Immersive writing**: Rich Lexical-based editor with formatting, keyboard shortcuts, and an optional focus mode.
