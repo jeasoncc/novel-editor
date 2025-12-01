@@ -58,7 +58,7 @@ const statusConfig = {
   },
   planned: {
     icon: Circle,
-    color: "text-gray-600 dark:text-gray-400",
+    color: "text-gray-600 dark:text-gray-300",
     bgColor: "bg-gray-50 dark:bg-gray-800",
     label: "计划中",
   },
@@ -68,7 +68,7 @@ export function RoadmapSection() {
   return (
     <section
       id="roadmap"
-      className="py-24 md:py-32 bg-gray-50 dark:bg-gray-950 relative overflow-hidden"
+      className="py-24 md:py-32 bg-gray-50 dark:bg-black relative overflow-hidden"
     >
       {/* Decorative background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -145,9 +145,9 @@ export function RoadmapSection() {
                               {item.items.map((roadmapItem, itemIndex) => (
                                 <li
                                   key={itemIndex}
-                                  className="flex items-start gap-3 text-gray-600 dark:text-gray-400"
+                                  className="flex items-start gap-3 text-gray-600 dark:text-gray-300"
                                 >
-                                  <span className="text-gray-400 dark:text-gray-500 mt-1.5 shrink-0">
+                                  <span className="text-gray-400 dark:text-gray-400 mt-1.5 shrink-0">
                                     •
                                   </span>
                                   <span className="leading-relaxed">

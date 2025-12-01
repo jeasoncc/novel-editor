@@ -33,7 +33,7 @@ export function ScrollIndicator({ targetId }: { targetId?: string }) {
       className={cn(
         "fixed bottom-8 left-1/2 -translate-x-1/2 z-40",
         "flex flex-col items-center gap-2",
-        "text-gray-600 dark:text-gray-400",
+        "text-gray-600 dark:text-gray-300",
         "hover:text-gray-900 dark:hover:text-white",
         "transition-all duration-300",
         "group",

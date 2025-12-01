@@ -52,7 +52,7 @@ const ourPledge = {
 
 export default function ConductPage() {
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <div className="min-h-screen bg-white dark:bg-black">
       {/* Hero Section */}
       <section className="py-20 md:py-32 border-b border-gray-200/50 dark:border-gray-800/50">
         <div className="container mx-auto px-4">
@@ -64,7 +64,7 @@ export default function ConductPage() {
               <h1 className="text-5xl md:text-6xl font-black mb-6 text-gray-900 dark:text-white tracking-tight">
                 行为准则
               </h1>
-              <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-400 leading-relaxed font-light">
+              <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 leading-relaxed font-light">
                 我们致力于为所有人提供一个友好、安全和包容的环境
               </p>
             </div>
@@ -94,7 +94,7 @@ export default function ConductPage() {
                     {ourPledge.positive.map((item, index) => (
                       <li
                         key={index}
-                        className="flex items-start gap-3 text-gray-600 dark:text-gray-400"
+                        className="flex items-start gap-3 text-gray-600 dark:text-gray-300"
                       >
                         <span className="text-green-600 dark:text-green-400 mt-1">•</span>
                         <span>{item}</span>
@@ -117,7 +117,7 @@ export default function ConductPage() {
                     {ourPledge.negative.map((item, index) => (
                       <li
                         key={index}
-                        className="flex items-start gap-3 text-gray-600 dark:text-gray-400"
+                        className="flex items-start gap-3 text-gray-600 dark:text-gray-300"
                       >
                         <span className="text-red-600 dark:text-red-400 mt-1">•</span>
                         <span>{item}</span>
@@ -154,7 +154,7 @@ export default function ConductPage() {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                    <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                       {principle.description}
                     </p>
                   </CardContent>
@@ -174,7 +174,7 @@ export default function ConductPage() {
                 <CardTitle className="text-2xl">执行准则</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="prose prose-lg dark:prose-invert max-w-none text-gray-600 dark:text-gray-400">
+                <div className="prose prose-lg dark:prose-invert max-w-none text-gray-600 dark:text-gray-300">
                   <p>
                     项目维护者有责任澄清和执行我们的行为准则标准，并将会对任何不当、威胁、冒犯或有害的行为采取适当和公平的纠正措施。
                   </p>
@@ -200,7 +200,7 @@ export default function ConductPage() {
                 <CardTitle className="text-2xl text-center">报告问题</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="prose prose-lg dark:prose-invert max-w-none text-gray-600 dark:text-gray-400">
+                <div className="prose prose-lg dark:prose-invert max-w-none text-gray-600 dark:text-gray-300">
                   <p>
                     如果你遇到违反行为准则的情况，请通过以下方式报告：
                   </p>
@@ -237,7 +237,7 @@ export default function ConductPage() {
               <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900 dark:text-white">
                 加入我们的社区
               </h2>
-              <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
+              <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
                 让我们一起创造一个友好和包容的开源社区
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">

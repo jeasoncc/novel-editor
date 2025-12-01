@@ -19,7 +19,7 @@ export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useTheme();
 
   // 优化滚动事件处理，使用节流
   useEffect(() => {
@@ -45,8 +45,11 @@ export function Header() {
   }, []);
 
   const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
+    const currentTheme = resolvedTheme || theme;
+    setTheme(currentTheme === "dark" ? "light" : "dark");
   };
+
+  const currentTheme = resolvedTheme || theme;
 
   // 防止闪烁，等待组件挂载后再显示主题切换按钮
   if (!mounted) {
@@ -115,9 +118,9 @@ export function Header() {
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
         isScrolled
-          ? "bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 shadow-sm"
+          ? "bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800/80 shadow-sm"
           : "bg-transparent",
-        "supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-gray-900/60"
+        "supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-black/60"
       )}
     >
       <nav className="container mx-auto px-4 py-4">
@@ -172,7 +175,7 @@ export function Header() {
               onClick={toggleTheme}
               aria-label="Toggle theme"
             >
-              {theme === "dark" ? (
+              {currentTheme === "dark" ? (
                 <Sun className="w-5 h-5" />
               ) : (
                 <Moon className="w-5 h-5" />
@@ -188,7 +191,7 @@ export function Header() {
               onClick={toggleTheme}
               aria-label="Toggle theme"
             >
-              {theme === "dark" ? (
+              {currentTheme === "dark" ? (
                 <Sun className="w-5 h-5" />
               ) : (
                 <Moon className="w-5 h-5" />

@@ -33,7 +33,7 @@ const footerLinks = {
 
 export function Footer() {
   return (
-    <footer className="border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+    <footer className="border-t border-gray-200 dark:border-gray-800/80 bg-white dark:bg-black">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-8">
           {/* Brand */}
@@ -44,7 +44,7 @@ export function Footer() {
                 Novel Editor
               </span>
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
               专业的长篇小说写作工具
             </p>
             <div className="flex gap-3">

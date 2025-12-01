@@ -44,7 +44,7 @@ const quickLinks = [
 
 export default function DocsPage() {
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <div className="min-h-screen bg-white dark:bg-black">
       {/* Hero Section */}
       <section className="py-20 md:py-32 border-b border-gray-200/50 dark:border-gray-800/50 bg-gradient-to-b from-white via-gray-50/30 to-white dark:from-gray-900 dark:via-gray-800/30 dark:to-gray-900">
         <div className="container mx-auto px-4">
@@ -56,7 +56,7 @@ export default function DocsPage() {
               <h1 className="text-5xl md:text-6xl font-black mb-6 text-gray-900 dark:text-white tracking-tight">
                 文档中心
               </h1>
-              <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-400 leading-relaxed font-light">
+              <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 leading-relaxed font-light">
                 探索 Novel Editor 的所有功能和特性，学习如何使用它来提升你的写作效率。
               </p>
             </div>

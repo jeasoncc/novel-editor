@@ -42,7 +42,7 @@ const contributionTypes = [
 
 export default function ContributorsPage() {
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <div className="min-h-screen bg-white dark:bg-black">
       {/* Hero Section */}
       <section className="py-20 md:py-32 border-b border-gray-200/50 dark:border-gray-800/50">
         <div className="container mx-auto px-4">
@@ -54,7 +54,7 @@ export default function ContributorsPage() {
               <h1 className="text-5xl md:text-6xl font-black mb-6 text-gray-900 dark:text-white tracking-tight">
                 贡献者
               </h1>
-              <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-400 leading-relaxed font-light">
+              <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 leading-relaxed font-light">
                 感谢所有为 Novel Editor 做出贡献的优秀开发者
               </p>
             </div>
@@ -74,11 +74,11 @@ export default function ContributorsPage() {
                 <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4 text-center">
                   感谢所有贡献者！
                 </h2>
-                <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-center mb-6">
+                <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-center mb-6">
                   Novel Editor 是一个开源项目，它的成功离不开社区的每一个贡献。
                   无论是代码、文档、反馈还是分享，都让这个项目变得更好。
                 </p>
-                <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-center">
+                <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-center">
                   我们真诚地感谢所有为项目做出贡献的开发者、文档编写者、问题报告者和其他社区成员。
                 </p>
               </CardContent>
@@ -106,7 +106,7 @@ export default function ContributorsPage() {
                     <CardTitle className="text-xl">{type.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                    <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                       {type.description}
                     </p>
                   </CardContent>
@@ -126,15 +126,15 @@ export default function ContributorsPage() {
             </h2>
           </ScrollReveal>
           <div className="text-center mb-8">
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
               完整的贡献者列表可以在 GitHub 上查看。我们正在努力集成 GitHub API 来实时显示所有贡献者。
             </p>
             <Card className="max-w-2xl mx-auto">
               <CardContent className="pt-10 pb-10">
-                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                <p className="text-gray-600 dark:text-gray-300 mb-4">
                   感谢所有为项目做出贡献的开发者！
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   贡献者数据将从 GitHub API 自动获取，展示所有为项目做出贡献的开发者。
                 </p>
               </CardContent>
@@ -152,7 +152,7 @@ export default function ContributorsPage() {
                 <CardTitle className="text-2xl text-center">如何成为贡献者</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="prose prose-lg dark:prose-invert max-w-none text-gray-600 dark:text-gray-400">
+                <div className="prose prose-lg dark:prose-invert max-w-none text-gray-600 dark:text-gray-300">
                   <p>
                     想要成为贡献者？有多种方式可以参与项目：
                   </p>
@@ -189,7 +189,7 @@ export default function ContributorsPage() {
               <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900 dark:text-white">
                 加入我们的社区
               </h2>
-              <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
+              <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
                 让我们一起打造更好的 Novel Editor
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">

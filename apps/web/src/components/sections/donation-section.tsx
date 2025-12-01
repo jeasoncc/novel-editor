@@ -36,7 +36,7 @@ const donationMethods = [
 
 export function DonationSection() {
   return (
-    <section className="py-24 md:py-32 bg-gray-50 dark:bg-gray-950 relative overflow-hidden">
+    <section className="py-24 md:py-32 bg-gray-50 dark:bg-black relative overflow-hidden">
       {/* Decorative background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 right-1/4 w-96 h-96 bg-gray-200/20 dark:bg-gray-800/20 rounded-full blur-3xl"></div>
@@ -101,7 +101,7 @@ export function DonationSection() {
         {/* Thank you message */}
         <ScrollReveal direction="up" delay={400}>
           <div className="max-w-3xl mx-auto text-center">
-            <Card className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800">
+            <Card className="bg-white dark:bg-black border-2 border-gray-200 dark:border-gray-800">
               <CardContent className="pt-8 pb-8">
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 mb-4">
                   <Heart className="w-8 h-8 text-red-500 fill-red-500 animate-pulse" />

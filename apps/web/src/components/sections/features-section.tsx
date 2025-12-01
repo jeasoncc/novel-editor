@@ -105,11 +105,11 @@ const features = [
 
 export function FeaturesSection() {
   return (
-    <section id="features" className="py-24 md:py-32 bg-gray-50 dark:bg-gray-950 relative overflow-hidden">
+    <section id="features" className="py-24 md:py-32 bg-gray-50 dark:bg-black relative overflow-hidden">
       {/* Decorative background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-gray-200/20 dark:bg-gray-800/20 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-gray-200/20 dark:bg-gray-800/20 rounded-full blur-3xl"></div>
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-gray-200/20 dark:bg-white/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-gray-200/20 dark:bg-white/5 rounded-full blur-3xl"></div>
       </div>
       <div className="container mx-auto px-4 relative z-10">
         <ScrollReveal>
@@ -130,7 +130,7 @@ export function FeaturesSection() {
             >
               <Card className="group h-full hover:-translate-y-2 transition-all duration-300 relative overflow-hidden">
                 {/* Decorative corner - 更精细 */}
-                <div className="absolute top-0 right-0 w-20 h-20 bg-gray-100/30 dark:bg-gray-800/30 rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 group-hover:scale-110 transition-transform duration-300"></div>
+                <div className="absolute top-0 right-0 w-20 h-20 bg-gray-100/30 dark:bg-white/10 rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 group-hover:scale-110 transition-transform duration-300"></div>
                 {/* 多层渐变叠加 */}
                 <div className="absolute inset-0 bg-gradient-to-br from-gray-50/0 via-transparent to-gray-100/0 dark:from-gray-800/0 dark:to-gray-900/0 opacity-0 group-hover:opacity-100 group-hover:from-gray-50/50 dark:group-hover:from-gray-800/30 transition-all duration-500 pointer-events-none"></div>
                 {/* 精细的边框高光 */}
@@ -139,8 +139,8 @@ export function FeaturesSection() {
                 <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/0 via-white/5 to-white/0 opacity-0 group-hover:opacity-100 group-hover:animate-shimmer pointer-events-none"></div>
                 <CardHeader className="pb-4 relative z-10">
                   <div className="relative">
-                    <div className="absolute -inset-1 bg-gray-200/50 dark:bg-gray-700/50 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <div className="w-14 h-14 rounded-xl bg-gray-100/80 dark:bg-gray-800/80 backdrop-blur-sm flex items-center justify-center mb-4 group-hover:bg-gray-200 dark:group-hover:bg-gray-700 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-sm relative z-10">
+                    <div className="absolute -inset-1 bg-gray-200/50 dark:bg-white/10 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="w-14 h-14 rounded-xl bg-gray-100/80 dark:bg-gray-900/80 backdrop-blur-sm flex items-center justify-center mb-4 group-hover:bg-gray-200 dark:group-hover:bg-gray-800 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-sm relative z-10">
                       <div className="text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
                         {feature.icon}
                       </div>

@@ -53,7 +53,7 @@ const contributionTypes = [
 
 export default function ContributingPage() {
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <div className="min-h-screen bg-white dark:bg-black">
       {/* Hero Section */}
       <section className="py-20 md:py-32 border-b border-gray-200/50 dark:border-gray-800/50">
         <div className="container mx-auto px-4">
@@ -65,7 +65,7 @@ export default function ContributingPage() {
               <h1 className="text-5xl md:text-6xl font-black mb-6 text-gray-900 dark:text-white tracking-tight">
                 贡献指南
               </h1>
-              <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-400 leading-relaxed font-light">
+              <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 leading-relaxed font-light">
                 Novel Editor 是一个开源项目，欢迎你的参与和贡献
               </p>
             </div>
@@ -108,7 +108,7 @@ export default function ContributingPage() {
                       {type.steps.map((step, stepIndex) => (
                         <li
                           key={stepIndex}
-                          className="flex items-start gap-3 text-gray-600 dark:text-gray-400"
+                          className="flex items-start gap-3 text-gray-600 dark:text-gray-300"
                         >
                           <span className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-sm font-semibold text-gray-900 dark:text-white">
                             {stepIndex + 1}
@@ -179,7 +179,7 @@ export default function ContributingPage() {
               <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900 dark:text-white">
                 准备好贡献了吗？
               </h2>
-              <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
+              <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
                 访问 GitHub 查看项目，提交你的第一个贡献
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">

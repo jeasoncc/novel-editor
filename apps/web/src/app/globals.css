@@ -6,14 +6,18 @@
 }
 
 .dark {
-  --background: #0a0a0a;
+  --background: #000000;
   --foreground: #ffffff;
 }
 
-/* 增强暗色模式的整体背景 */
-.dark body {
-  background-color: #0a0a0a;
-  color: #ffffff;
+/* 强制暗色模式背景 */
+html.dark {
+  background-color: #000000 !important;
+}
+
+html.dark body {
+  background-color: #000000 !important;
+  color: #ffffff !important;
 }
 
 body {
@@ -28,6 +32,11 @@ body {
   /* 优化滚动性能 */
   scroll-behavior: smooth;
   overscroll-behavior-y: contain;
+}
+
+/* 暗色模式全局强制样式 */
+html.dark * {
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 /* 中文字体优化 */

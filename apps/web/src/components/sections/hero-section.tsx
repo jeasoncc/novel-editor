@@ -22,21 +22,21 @@ export function HeroSection() {
           backgroundSize: "40px 40px",
         }}></div>
         {/* Gradient overlay for depth */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-gray-50/30 dark:to-gray-800/20 pointer-events-none"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-gray-50/30 dark:to-gray-900/40 pointer-events-none"></div>
         {/* Decorative corner elements - 更多层次和动画 */}
-        <div className="absolute top-0 left-0 w-64 h-64 bg-gray-100/5 dark:bg-gray-800/5 rounded-full blur-3xl animate-float-gentle"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-gray-100/5 dark:bg-gray-800/5 rounded-full blur-3xl animate-float-gentle" style={{ animationDelay: "1s" }}></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gray-100/3 dark:bg-gray-800/3 rounded-full blur-3xl animate-breathe"></div>
+        <div className="absolute top-0 left-0 w-64 h-64 bg-gray-100/5 dark:bg-white/5 rounded-full blur-3xl animate-float-gentle"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-gray-100/5 dark:bg-white/5 rounded-full blur-3xl animate-float-gentle" style={{ animationDelay: "1s" }}></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gray-100/3 dark:bg-white/3 rounded-full blur-3xl animate-breathe"></div>
         {/* 额外的装饰元素 */}
-        <div className="absolute top-1/4 right-1/4 w-48 h-48 bg-gray-100/4 dark:bg-gray-800/4 rounded-full blur-3xl animate-subtle-pulse"></div>
-        <div className="absolute bottom-1/4 left-1/4 w-56 h-56 bg-gray-100/4 dark:bg-gray-800/4 rounded-full blur-3xl animate-subtle-pulse" style={{ animationDelay: "2s" }}></div>
+        <div className="absolute top-1/4 right-1/4 w-48 h-48 bg-gray-100/4 dark:bg-white/4 rounded-full blur-3xl animate-subtle-pulse"></div>
+        <div className="absolute bottom-1/4 left-1/4 w-56 h-56 bg-gray-100/4 dark:bg-white/4 rounded-full blur-3xl animate-subtle-pulse" style={{ animationDelay: "2s" }}></div>
       </div>
 
       <div className="container mx-auto px-4 py-20 md:py-32 relative z-10">
         <div className="text-center max-w-4xl mx-auto">
           {/* Badge */}
           <ScrollReveal direction="fade" delay={100}>
-            <div className="inline-flex items-center gap-2.5 px-6 py-3 mb-12 bg-gray-100/90 dark:bg-gray-800/90 backdrop-blur-lg rounded-full text-gray-900 dark:text-white text-sm font-medium border border-gray-300/60 dark:border-gray-700/60 hover:border-gray-400 dark:hover:border-gray-600 transition-all duration-300 hover:scale-105 cursor-default shadow-[0_2px_8px_rgba(0,0,0,0.08)] dark:shadow-[0_2px_8px_rgba(255,255,255,0.05)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)] dark:hover:shadow-[0_4px_12px_rgba(255,255,255,0.08)] relative overflow-hidden group/badge">
+            <div className="inline-flex items-center gap-2.5 px-6 py-3 mb-12 bg-gray-100/90 dark:bg-gray-900/90 backdrop-blur-lg rounded-full text-gray-900 dark:text-white text-sm font-medium border border-gray-300/60 dark:border-gray-700/80 hover:border-gray-400 dark:hover:border-gray-500 transition-all duration-300 hover:scale-105 cursor-default shadow-[0_2px_8px_rgba(0,0,0,0.08)] dark:shadow-[0_2px_8px_rgba(255,255,255,0.1)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)] dark:hover:shadow-[0_4px_12px_rgba(255,255,255,0.15)] relative overflow-hidden group/badge">
               {/* Subtle shine effect */}
               <div className="absolute inset-0 -translate-x-full group-hover/badge:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
               {/* 精细的边框高光 */}
@@ -64,7 +64,7 @@ export function HeroSection() {
 
           {/* Description */}
           <ScrollReveal direction="up" delay={300}>
-            <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-400 mb-16 max-w-3xl mx-auto leading-[1.7] font-light tracking-tight">
+            <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-16 max-w-3xl mx-auto leading-[1.7] font-light tracking-tight">
               Novel Editor 是一款基于{" "}
               <span className="font-semibold text-gray-900 dark:text-white relative inline-block">
                 <span className="relative z-10">Tauri</span>

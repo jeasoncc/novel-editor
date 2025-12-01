@@ -393,7 +393,7 @@ export function DownloadSection({ hideHeader = false }: DownloadSectionProps) {
 
   return (
     <section
-      className="py-16 md:py-24 bg-white dark:bg-gray-900 relative overflow-hidden"
+      className="py-16 md:py-24 bg-white dark:bg-black relative overflow-hidden"
     >
       {/* 精致的背景装饰 - 增强版 */}
       <div className="absolute inset-0">

@@ -53,7 +53,7 @@ export function ChangelogSection() {
   return (
     <section
       id="changelog"
-      className="py-24 md:py-32 bg-white dark:bg-gray-900 relative overflow-hidden"
+      className="py-24 md:py-32 bg-white dark:bg-black relative overflow-hidden"
     >
       {/* Decorative background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">

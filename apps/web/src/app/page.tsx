@@ -11,7 +11,7 @@ import { CTASection } from "@/components/sections/cta-section";
 
 export default function Home() {
   return (
-    <>
+    <div className="bg-white dark:bg-black min-h-screen">
       <HeroSection />
       <FeaturesSection />
       <ScreenshotsSection />
@@ -22,6 +22,6 @@ export default function Home() {
       <ChangelogSection />
       <RoadmapSection />
       <CTASection />
-    </>
+    </div>
   );
 }

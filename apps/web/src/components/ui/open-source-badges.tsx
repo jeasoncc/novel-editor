@@ -40,7 +40,7 @@ export function OpenSourceBadges({ className }: OpenSourceBadgesProps) {
           href={badge.href}
           target={badge.href.startsWith("http") ? "_blank" : undefined}
           rel={badge.href.startsWith("http") ? "noopener noreferrer" : undefined}
-          className="group inline-flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-gray-400 dark:hover:border-gray-600 transition-all duration-300 hover:shadow-md"
+          className="group inline-flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-gray-300 dark:border-gray-700 bg-white dark:bg-black hover:border-gray-400 dark:hover:border-gray-600 transition-all duration-300 hover:shadow-md"
         >
           <div className="text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
             {badge.icon}

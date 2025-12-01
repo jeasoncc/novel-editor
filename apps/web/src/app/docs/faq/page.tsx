@@ -64,7 +64,7 @@ function FAQItem({
           </span>
           <ChevronDown
             className={cn(
-              "w-5 h-5 text-gray-500 dark:text-gray-400 shrink-0 transition-transform duration-300",
+              "w-5 h-5 text-gray-500 dark:text-gray-300 shrink-0 transition-transform duration-300",
               isOpen && "transform rotate-180"
             )}
           />
@@ -76,7 +76,7 @@ function FAQItem({
           )}
         >
           <CardContent className="pt-0 pb-6 px-6">
-            <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+            <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
               {answer}
             </p>
           </CardContent>
@@ -88,7 +88,7 @@ function FAQItem({
 
 export default function FAQPage() {
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <div className="min-h-screen bg-white dark:bg-black">
       {/* Hero Section */}
       <section className="py-20 md:py-32 border-b border-gray-200/50 dark:border-gray-800/50">
         <div className="container mx-auto px-4">
@@ -100,7 +100,7 @@ export default function FAQPage() {
               <h1 className="text-5xl md:text-6xl font-black mb-6 text-gray-900 dark:text-white tracking-tight">
                 常见问题
               </h1>
-              <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-400 leading-relaxed font-light">
+              <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 leading-relaxed font-light">
                 快速找到你需要的答案
               </p>
             </div>

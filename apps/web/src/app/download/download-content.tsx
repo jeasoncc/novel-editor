@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 export function DownloadPageContent() {
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <div className="min-h-screen bg-white dark:bg-black">
       {/* Hero Section - 极致精致版 */}
       <section className="py-24 md:py-36 border-b border-gray-200/50 dark:border-gray-800/50 bg-gradient-to-b from-white via-gray-50/40 to-white dark:from-gray-900 dark:via-gray-800/40 dark:to-gray-900 relative overflow-hidden">
         {/* 精致的背景装饰 - 极致多层次 */}
@@ -44,7 +44,7 @@ export function DownloadPageContent() {
                 <Download className="w-14 h-14 text-gray-900 dark:text-white group-hover/icon:scale-110 group-hover/icon:-rotate-12 transition-all duration-500 relative z-10" />
                 {/* 装饰性闪烁 - 增强 */}
                 <div className="absolute -top-2 -right-2">
-                  <Sparkles className="w-7 h-7 text-gray-600 dark:text-gray-400 animate-pulse" />
+                  <Sparkles className="w-7 h-7 text-gray-600 dark:text-gray-300 animate-pulse" />
                 </div>
                 {/* 多层背景光晕 */}
                 <div className="absolute inset-0 rounded-full bg-gray-200/60 dark:bg-gray-700/60 opacity-0 group-hover/icon:opacity-100 transition-opacity duration-500 blur-2xl"></div>
@@ -72,7 +72,7 @@ export function DownloadPageContent() {
               </h1>
               
               {/* 描述 - 增强版 */}
-              <p className="text-xl md:text-2xl lg:text-3xl text-gray-600 dark:text-gray-400 leading-relaxed font-light mb-12 max-w-3xl mx-auto">
+              <p className="text-xl md:text-2xl lg:text-3xl text-gray-600 dark:text-gray-300 leading-relaxed font-light mb-12 max-w-3xl mx-auto">
                 选择适合你的平台，立即开始创作之旅
               </p>
               

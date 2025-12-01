@@ -51,7 +51,7 @@ const techStack = [
 
 export function TechStackSection() {
   return (
-    <section className="py-24 md:py-32 bg-gray-50 dark:bg-gray-950">
+    <section className="py-24 md:py-32 bg-gray-50 dark:bg-black">
       <div className="container mx-auto px-4">
         <ScrollReveal>
           <SectionHeader

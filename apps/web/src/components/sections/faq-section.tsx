@@ -115,7 +115,7 @@ export function FAQSection() {
                         "w-6 h-6 transition-all duration-500 flex-shrink-0",
                         openIndex === index 
                           ? "transform rotate-180 text-gray-900 dark:text-white scale-110" 
-                          : "text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300"
+                          : "text-gray-500 dark:text-gray-300 group-hover:text-gray-700 dark:group-hover:text-gray-300"
                       )}
                     />
                   </button>
@@ -127,7 +127,7 @@ export function FAQSection() {
                         : "max-h-0 opacity-0 -translate-y-2"
                     )}
                   >
-                    <p className="text-gray-600 dark:text-gray-400 leading-[1.8] text-[15px] pt-1 font-light">
+                    <p className="text-gray-600 dark:text-gray-300 leading-[1.8] text-[15px] pt-1 font-light">
                       {faq.answer}
                     </p>
                   </div>

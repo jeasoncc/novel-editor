@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-white dark:bg-black flex items-center justify-center px-4">
       <div className="text-center max-w-2xl mx-auto">
         {/* 404 Number */}
         <div className="mb-8">
@@ -23,7 +23,7 @@ export default function NotFound() {
         <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900 dark:text-white">
           页面未找到
         </h2>
-        <p className="text-lg text-gray-600 dark:text-gray-400 mb-8 leading-relaxed">
+        <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
           抱歉，您访问的页面不存在。可能已被移动或删除。
         </p>
 
@@ -43,23 +43,23 @@ export default function NotFound() {
 
         {/* Helpful Links */}
         <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-800">
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">可能需要的内容：</p>
+          <p className="text-sm text-gray-500 dark:text-gray-300 mb-4">可能需要的内容：</p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Link
               href="/download"
-              className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition"
+              className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition"
             >
               下载
             </Link>
             <Link
               href="/docs"
-              className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition"
+              className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition"
             >
               文档
             </Link>
             <Link
               href="/about"
-              className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition"
+              className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition"
             >
               关于
             </Link>
@@ -67,7 +67,7 @@ export default function NotFound() {
               href="https://github.com/jeasoncc/novel-editor"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition"
+              className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition"
             >
               GitHub
             </Link>

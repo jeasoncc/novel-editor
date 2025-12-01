@@ -50,7 +50,7 @@ const useCases = [
 
 export function UseCasesSection() {
   return (
-    <section className="py-24 md:py-32 bg-white dark:bg-gray-900 relative overflow-hidden">
+    <section className="py-24 md:py-32 bg-white dark:bg-black relative overflow-hidden">
       {/* Subtle background pattern */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 opacity-[0.015] dark:opacity-[0.03]">

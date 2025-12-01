@@ -27,7 +27,7 @@ const termsSections = [
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <div className="min-h-screen bg-white dark:bg-black">
       {/* Hero Section */}
       <section className="py-20 md:py-32 border-b border-gray-200/50 dark:border-gray-800/50">
         <div className="container mx-auto px-4">
@@ -39,7 +39,7 @@ export default function TermsPage() {
               <h1 className="text-5xl md:text-6xl font-black mb-6 text-gray-900 dark:text-white tracking-tight">
                 使用条款
               </h1>
-              <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-400 leading-relaxed font-light">
+              <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 leading-relaxed font-light">
                 请在使用 Novel Editor 前仔细阅读本使用条款
               </p>
             </div>
@@ -55,7 +55,7 @@ export default function TermsPage() {
               <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900 dark:text-white">
                 使用条款
               </h2>
-              <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
+              <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
                 最后更新：{new Date().toLocaleDateString("zh-CN")}
               </p>
             </div>
@@ -75,7 +75,7 @@ export default function TermsPage() {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                      <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                         {section.content}
                       </p>
                     </CardContent>
@@ -88,7 +88,7 @@ export default function TermsPage() {
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
                 完整条款
               </h3>
-              <div className="space-y-4 text-gray-600 dark:text-gray-400 leading-relaxed">
+              <div className="space-y-4 text-gray-600 dark:text-gray-300 leading-relaxed">
                 <p>
                   通过使用 Novel Editor，你同意遵守以下条款：
                 </p>

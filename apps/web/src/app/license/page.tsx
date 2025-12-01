@@ -46,7 +46,7 @@ SOFTWARE.`;
 
 export default function LicensePage() {
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <div className="min-h-screen bg-white dark:bg-black">
       {/* Hero Section */}
       <section className="py-20 md:py-32 border-b border-gray-200/50 dark:border-gray-800/50">
         <div className="container mx-auto px-4">
@@ -58,7 +58,7 @@ export default function LicensePage() {
               <h1 className="text-5xl md:text-6xl font-black mb-6 text-gray-900 dark:text-white tracking-tight">
                 许可证
               </h1>
-              <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-400 leading-relaxed font-light">
+              <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 leading-relaxed font-light">
                 Novel Editor 基于 MIT 许可证发布，完全开源和自由
               </p>
             </div>
@@ -82,7 +82,7 @@ export default function LicensePage() {
                     <CardTitle className="text-xl">{info.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                    <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                       {info.description}
                     </p>
                   </CardContent>
@@ -98,7 +98,7 @@ export default function LicensePage() {
                 <CardTitle className="text-2xl">MIT 许可证全文</CardTitle>
               </CardHeader>
               <CardContent>
-                <pre className="whitespace-pre-wrap text-sm text-gray-600 dark:text-gray-400 font-mono leading-relaxed bg-gray-50 dark:bg-gray-800 p-6 rounded-lg overflow-x-auto">
+                <pre className="whitespace-pre-wrap text-sm text-gray-600 dark:text-gray-300 font-mono leading-relaxed bg-gray-50 dark:bg-gray-800 p-6 rounded-lg overflow-x-auto">
                   {mitLicense}
                 </pre>
               </CardContent>
@@ -112,7 +112,7 @@ export default function LicensePage() {
                 这意味着什么？
               </h2>
               <div className="prose prose-lg dark:prose-invert max-w-none">
-                <div className="space-y-4 text-gray-600 dark:text-gray-400 leading-relaxed">
+                <div className="space-y-4 text-gray-600 dark:text-gray-300 leading-relaxed">
                   <p>
                     <strong className="text-gray-900 dark:text-white">✅ 你可以：</strong>
                   </p>
@@ -144,7 +144,7 @@ export default function LicensePage() {
           {/* CTA */}
           <div className="max-w-2xl mx-auto mt-16 text-center">
             <ScrollReveal direction="up" delay={500}>
-              <p className="text-lg text-gray-600 dark:text-gray-400 mb-6">
+              <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">
                 想要查看源代码或参与贡献？
               </p>
               <Button size="lg" asChild>

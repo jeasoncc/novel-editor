@@ -6,7 +6,7 @@ import { ScrollReveal } from "@/components/ui/scroll-reveal";
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <div className="min-h-screen bg-white dark:bg-black">
       {/* Hero Section */}
       <section className="py-20 md:py-32 border-b border-gray-200/50 dark:border-gray-800/50 bg-gradient-to-b from-white via-gray-50/30 to-white dark:from-gray-900 dark:via-gray-800/30 dark:to-gray-900">
         <div className="container mx-auto px-4">
@@ -18,7 +18,7 @@ export default function AboutPage() {
               <h1 className="text-5xl md:text-6xl font-black mb-6 text-gray-900 dark:text-white tracking-tight">
                 关于 Novel Editor
               </h1>
-              <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-400 leading-relaxed font-light">
+              <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 leading-relaxed font-light">
                 Novel Editor 是一款现代化的跨平台桌面写作应用，专为长篇小说创作而设计。
                 我们致力于为创作者提供最好的写作体验。
               </p>
@@ -36,11 +36,11 @@ export default function AboutPage() {
                 我们的使命
               </h2>
               <div className="prose prose-lg dark:prose-invert max-w-none">
-                <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                   Novel Editor 的使命是帮助创作者专注于创作本身，而不是被工具困扰。
                   我们相信，一个好的写作工具应该是透明、可靠、易于使用的。
                 </p>
-                <p className="text-gray-600 dark:text-gray-400 leading-relaxed mt-4">
+                <p className="text-gray-600 dark:text-gray-300 leading-relaxed mt-4">
                   通过现代化的技术栈和精心设计的用户体验，我们打造了一款真正适合长篇小说创作的工具。
                   无论你是网络小说作者、独立作者，还是学生创作者，Novel Editor 都能帮助你更好地创作。
                 </p>
@@ -113,7 +113,7 @@ export default function AboutPage() {
               <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900 dark:text-white">
                 加入我们
               </h2>
-              <p className="text-xl text-gray-600 dark:text-gray-400 mb-8 leading-relaxed">
+              <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
                 Novel Editor 是一个开源项目，欢迎参与贡献。
                 无论是代码、文档、反馈还是分享，都是对我们的支持。
               </p>

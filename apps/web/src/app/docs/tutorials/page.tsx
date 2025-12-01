@@ -90,7 +90,7 @@ const sections = [
 
 export default function TutorialsPage() {
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <div className="min-h-screen bg-white dark:bg-black">
       {/* Hero Section */}
       <section className="py-20 md:py-32 border-b border-gray-200/50 dark:border-gray-800/50">
         <div className="container mx-auto px-4">
@@ -102,7 +102,7 @@ export default function TutorialsPage() {
               <h1 className="text-5xl md:text-6xl font-black mb-6 text-gray-900 dark:text-white tracking-tight">
                 使用教程
               </h1>
-              <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-400 leading-relaxed font-light">
+              <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 leading-relaxed font-light">
                 从入门到精通，掌握 Novel Editor 的所有功能
               </p>
             </div>
@@ -142,7 +142,7 @@ export default function TutorialsPage() {
                         </CardHeader>
                         <CardContent>
                           {item.text && (
-                            <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                            <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                               {item.text}
                             </p>
                           )}
@@ -151,9 +151,9 @@ export default function TutorialsPage() {
                               {item.items.map((listItem, listIndex) => (
                                 <li
                                   key={listIndex}
-                                  className="text-gray-600 dark:text-gray-400 leading-relaxed flex items-start gap-2"
+                                  className="text-gray-600 dark:text-gray-300 leading-relaxed flex items-start gap-2"
                                 >
-                                  <span className="text-gray-400 dark:text-gray-500 mt-1.5">
+                                  <span className="text-gray-400 dark:text-gray-400 mt-1.5">
                                     •
                                   </span>
                                   <span>{listItem}</span>

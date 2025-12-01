@@ -96,7 +96,7 @@ const apiCategories = [
 
 export default function ApiPage() {
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <div className="min-h-screen bg-white dark:bg-black">
       {/* Hero Section */}
       <section className="py-20 md:py-32 border-b border-gray-200/50 dark:border-gray-800/50">
         <div className="container mx-auto px-4">
@@ -108,7 +108,7 @@ export default function ApiPage() {
               <h1 className="text-5xl md:text-6xl font-black mb-6 text-gray-900 dark:text-white tracking-tight">
                 API 参考
               </h1>
-              <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-400 leading-relaxed font-light">
+              <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 leading-relaxed font-light">
                 完整的 API 文档，帮助你扩展和自定义 Novel Editor
               </p>
             </div>
@@ -158,16 +158,16 @@ export default function ApiPage() {
                           className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
                         >
                           <div className="flex items-start gap-4 mb-2">
-                            <code className="text-sm font-mono font-semibold text-gray-900 dark:text-white bg-white dark:bg-gray-900 px-2 py-1 rounded">
+                            <code className="text-sm font-mono font-semibold text-gray-900 dark:text-white bg-white dark:bg-black px-2 py-1 rounded">
                               {endpoint.name}
                             </code>
                           </div>
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                          <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
                             {endpoint.description}
                           </p>
                           <div className="grid md:grid-cols-2 gap-3 text-sm">
                             <div>
-                              <span className="text-gray-500 dark:text-gray-500 font-medium">
+                              <span className="text-gray-500 dark:text-gray-400 font-medium">
                                 参数:
                               </span>
                               <code className="ml-2 text-gray-700 dark:text-gray-300 font-mono">
@@ -175,7 +175,7 @@ export default function ApiPage() {
                               </code>
                             </div>
                             <div>
-                              <span className="text-gray-500 dark:text-gray-500 font-medium">
+                              <span className="text-gray-500 dark:text-gray-400 font-medium">
                                 返回:
                               </span>
                               <code className="ml-2 text-gray-700 dark:text-gray-300 font-mono">

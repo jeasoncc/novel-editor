@@ -16,7 +16,7 @@ const securityPolicy = [
     title: "支持的版本",
     description: "我们目前支持以下版本的 Novel Editor，并提供安全更新：",
     content: (
-      <ul className="list-disc list-inside space-y-2 text-gray-600 dark:text-gray-400">
+      <ul className="list-disc list-inside space-y-2 text-gray-600 dark:text-gray-300">
         <li>最新主版本（当前开发分支）</li>
         <li>最新的稳定发布版本</li>
       </ul>
@@ -27,7 +27,7 @@ const securityPolicy = [
     title: "报告安全漏洞",
     description: "我们非常重视安全问题。如果您发现了安全漏洞，请按照以下步骤报告：",
     content: (
-      <ol className="list-decimal list-inside space-y-3 text-gray-600 dark:text-gray-400">
+      <ol className="list-decimal list-inside space-y-3 text-gray-600 dark:text-gray-300">
         <li>
           <strong className="text-gray-900 dark:text-white">不要公开披露漏洞</strong>
           <br />
@@ -61,7 +61,7 @@ const securityPolicy = [
     title: "响应时间",
     description: "我们承诺：",
     content: (
-      <ul className="list-disc list-inside space-y-2 text-gray-600 dark:text-gray-400">
+      <ul className="list-disc list-inside space-y-2 text-gray-600 dark:text-gray-300">
         <li>在 48 小时内确认收到您的报告</li>
         <li>在 7 天内提供初步评估</li>
         <li>在确认漏洞后，尽快发布修复补丁</li>
@@ -96,7 +96,7 @@ const vulnerabilityTypes = [
 
 export default function SecurityPage() {
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <div className="min-h-screen bg-white dark:bg-black">
       {/* Hero Section */}
       <section className="py-20 md:py-32 border-b border-gray-200/50 dark:border-gray-800/50">
         <div className="container mx-auto px-4">
@@ -108,7 +108,7 @@ export default function SecurityPage() {
               <h1 className="text-5xl md:text-6xl font-black mb-6 text-gray-900 dark:text-white tracking-tight">
                 安全政策
               </h1>
-              <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-400 leading-relaxed font-light">
+              <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 leading-relaxed font-light">
                 我们非常重视安全性，并致力于保护用户数据
               </p>
             </div>
@@ -130,7 +130,7 @@ export default function SecurityPage() {
                       </div>
                       <div className="flex-1">
                         <CardTitle className="text-2xl mb-2">{policy.title}</CardTitle>
-                        <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                        <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                           {policy.description}
                         </p>
                       </div>
@@ -160,11 +160,11 @@ export default function SecurityPage() {
                     <CardTitle className="text-xl">{item.type}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-gray-600 dark:text-gray-400 mb-4">{item.description}</p>
+                    <p className="text-gray-600 dark:text-gray-300 mb-4">{item.description}</p>
                     <p className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
                       示例：
                     </p>
-                    <ul className="list-disc list-inside space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                    <ul className="list-disc list-inside space-y-1 text-sm text-gray-600 dark:text-gray-300">
                       {item.examples.map((example, i) => (
                         <li key={i}>{example}</li>
                       ))}
@@ -186,7 +186,7 @@ export default function SecurityPage() {
                 <CardTitle className="text-2xl text-center">负责任的披露</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="prose prose-lg dark:prose-invert max-w-none text-gray-600 dark:text-gray-400">
+                <div className="prose prose-lg dark:prose-invert max-w-none text-gray-600 dark:text-gray-300">
                   <p>
                     我们遵循负责任的安全披露原则。报告者应该：
                   </p>
@@ -214,7 +214,7 @@ export default function SecurityPage() {
               <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900 dark:text-white">
                 报告安全问题
               </h2>
-              <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
+              <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
                 如果您发现了安全漏洞，请通过安全渠道联系我们
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">

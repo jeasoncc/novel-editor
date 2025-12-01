@@ -21,7 +21,7 @@ export function SectionHeader({
       {subtitle && (
         <div className="relative inline-flex items-center gap-4 mb-8">
           <div className="w-12 h-px bg-gradient-to-r from-transparent via-gray-300/60 dark:via-gray-700/60 to-gray-300/60 dark:to-gray-700/60"></div>
-          <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-[0.25em] relative px-2">
+          <p className="text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-[0.25em] relative px-2">
             {subtitle}
           </p>
           <div className="w-12 h-px bg-gradient-to-l from-transparent via-gray-300/60 dark:via-gray-700/60 to-gray-300/60 dark:to-gray-700/60"></div>
@@ -35,7 +35,7 @@ export function SectionHeader({
         <span className="absolute inset-0 blur-xl opacity-15 dark:opacity-10 bg-gray-900 dark:bg-white -z-10"></span>
       </h2>
       {description && (
-        <p className="text-lg md:text-xl lg:text-2xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-[1.7] font-light">
+        <p className="text-lg md:text-xl lg:text-2xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-[1.7] font-light">
           {description}
         </p>
       )}

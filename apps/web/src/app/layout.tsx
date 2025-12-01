@@ -118,17 +118,12 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icon.svg" />
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
-        <meta name="theme-color" content="#111827" media="(prefers-color-scheme: dark)" />
+        <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
         <StructuredData />
       </head>
-      <body className={`${inter.variable} ${notoSansSC.variable} font-sans antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
+      <body className={`${inter.variable} ${notoSansSC.variable} font-sans antialiased bg-white dark:bg-black`}>
+        <ThemeProvider>
           <ErrorBoundary>
             <PageLoader />
             <ScrollProgress />

@@ -68,7 +68,7 @@ const testimonials = [
 
 export function TestimonialsSection() {
   return (
-    <section className="py-24 md:py-32 bg-gray-50 dark:bg-gray-950 relative overflow-hidden">
+    <section className="py-24 md:py-32 bg-gray-50 dark:bg-black relative overflow-hidden">
       {/* 精致的背景装饰 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/3 right-0 w-96 h-96 bg-gray-200/30 dark:bg-gray-800/30 rounded-full blur-3xl animate-pulse" style={{ animationDuration: "4s" }}></div>
@@ -124,7 +124,7 @@ export function TestimonialsSection() {
                       ))}
                     </div>
                     {testimonial.time && (
-                      <div className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
+                      <div className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-400">
                         <Clock className="w-3 h-3" />
                         <span>{testimonial.time}</span>
                       </div>
@@ -168,12 +168,12 @@ export function TestimonialsSection() {
                           {testimonial.name}
                         </div>
                         {testimonial.verified && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 font-medium">
+                          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 font-medium">
                             已认证
                           </span>
                         )}
                       </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                      <div className="text-xs text-gray-500 dark:text-gray-300 truncate mt-0.5">
                         {testimonial.role}
                       </div>
                     </div>
