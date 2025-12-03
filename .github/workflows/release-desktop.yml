@@ -9,6 +9,11 @@ on:
       - "v*.*.*"           # 支持旧格式 (v0.1.0)
       - "desktop-v*.*.*"   # 支持新格式 (desktop-v0.1.0)
 
+# 避免重复构建（特别是多个 tag 同时推送时）
+concurrency:
+  group: release-desktop-${{ github.ref }}
+  cancel-in-progress: false  # 发布流程不取消，确保完整性
+
 jobs:
   publish-tauri:
     permissions:

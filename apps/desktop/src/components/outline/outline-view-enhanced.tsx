@@ -240,7 +240,7 @@ export function OutlineViewEnhanced({
 	}, []);
 
 	const handleSelectScene = useCallback((scene: SceneInterface) => {
-		setSelectedNode({ ...scene, type: "scene" });
+		setSelectedNode({ ...scene, type: "scene" } as any);
 		setShowDetailPanel(true);
 	}, []);
 

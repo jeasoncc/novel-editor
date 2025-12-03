@@ -14,10 +14,9 @@ export function caretFromPoint(
 			node: range.startContainer,
 			offset: range.startOffset,
 		};
-		// @ts-expect-error
-	} else if (document.caretPositionFromPoint !== "undefined") {
-		// @ts-expect-error FF - no types
-		const range = document.caretPositionFromPoint(x, y);
+	} else if ((document as any).caretPositionFromPoint !== "undefined") {
+		// FF - no types
+		const range = (document as any).caretPositionFromPoint(x, y);
 		if (range === null) {
 			return null;
 		}

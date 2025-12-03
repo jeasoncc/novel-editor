@@ -1,14 +1,22 @@
 name: CI
 
 on:
-  push:
-    branches:
-      - main
-      - develop
+  # 只在 PR 时运行 CI，确保代码质量
   pull_request:
     branches:
       - main
       - develop
+  # 在 develop 分支运行，用于开发测试
+  push:
+    branches:
+      - develop
+  # 保留手动触发选项
+  workflow_dispatch:
+
+# 避免重复运行
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   lint-and-type-check:

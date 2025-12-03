@@ -9,6 +9,11 @@ on:
       - 'apps/web/**'
       - '.github/workflows/deploy-web.yml'
 
+# 避免重复部署
+concurrency:
+  group: deploy-web-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
