@@ -1,14 +1,10 @@
+"use client";
 import { Shield, AlertTriangle, Mail, Github } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "安全政策",
-  description: "Novel Editor 安全政策 - 报告安全漏洞的指南",
-};
 
 const securityPolicy = [
   {

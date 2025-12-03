@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, ImgHTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 
-interface LazyImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, "src"> {
+interface LazyImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, "src" | "width" | "height"> {
   src: string;
   alt: string;
   className?: string;
@@ -13,6 +13,8 @@ interface LazyImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, "src"
   priority?: boolean;
   fill?: boolean;
   sizes?: string;
+  width?: number;
+  height?: number;
 }
 
 export function LazyImage({

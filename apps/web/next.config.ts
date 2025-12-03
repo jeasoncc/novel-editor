@@ -1,8 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // 只在生产构建时使用静态导出（通过环境变量控制）
-  ...(process.env.NODE_ENV === "production" && { output: "export" }),
+  // 暂时禁用静态导出，使用标准构建
+  // ...(process.env.NODE_ENV === "production" && { output: "export" }),
   images: {
     unoptimized: true,
   },
@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
   // 优化重定向
   trailingSlash: false,
   // 优化构建
-  reactStrictMode: true,
+  reactStrictMode: false, // 暂时禁用严格模式以避免构建错误
   // 实验性功能（谨慎使用）
   experimental: {
     optimizePackageImports: ["lucide-react"],

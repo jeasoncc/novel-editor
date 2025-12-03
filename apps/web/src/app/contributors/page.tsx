@@ -1,14 +1,10 @@
+"use client";
 import { Users, Heart, Github, GitBranch } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "贡献者",
-  description: "感谢所有为 Novel Editor 做出贡献的开发者",
-};
 
 // 注意：在实际项目中，这些数据应该从 GitHub API 获取
 const contributors = [

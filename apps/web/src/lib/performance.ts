@@ -9,13 +9,17 @@ export function requestIdleCallback(
   callback: IdleRequestCallback,
   options?: IdleRequestOptions
 ): number {
-  if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+  if (typeof window === "undefined") {
+    return 0;
+  }
+  
+  if ("requestIdleCallback" in window) {
     return window.requestIdleCallback(callback, options);
   }
   
   // 降级方案
   const start = Date.now();
-  return window.setTimeout(() => {
+  return (window as Window).setTimeout(() => {
     callback({
       didTimeout: false,
       timeRemaining() {
@@ -29,10 +33,14 @@ export function requestIdleCallback(
  * 取消 idle callback
  */
 export function cancelIdleCallback(handle: number): void {
-  if (typeof window !== "undefined" && "cancelIdleCallback" in window) {
+  if (typeof window === "undefined") {
+    return;
+  }
+  
+  if ("cancelIdleCallback" in window) {
     window.cancelIdleCallback(handle);
   } else {
-    window.clearTimeout(handle);
+    (window as Window).clearTimeout(handle);
   }
 }
 

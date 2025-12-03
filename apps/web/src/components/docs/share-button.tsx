@@ -65,13 +65,13 @@ export function ShareButton() {
         </>
       ) : (
         <>
-          {navigator.share ? (
+          {hasShareAPI ? (
             <Share2 className="w-4 h-4" />
           ) : (
             <LinkIcon className="w-4 h-4" />
           )}
           <span className="text-sm hidden lg:inline">
-            {navigator.share ? "分享" : "复制链接"}
+            {hasShareAPI ? "分享" : "复制链接"}
           </span>
         </>
       )}

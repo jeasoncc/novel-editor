@@ -1,14 +1,10 @@
+"use client";
 import { Users, Heart, Handshake, MessageSquare } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "行为准则",
-  description: "Novel Editor 社区行为准则 - 创造一个友好和包容的社区环境",
-};
 
 const principles = [
   {

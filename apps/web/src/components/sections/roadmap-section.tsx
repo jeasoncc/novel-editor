@@ -92,7 +92,7 @@ export function RoadmapSection() {
 
             <div className="space-y-12">
               {roadmapItems.map((item, index) => {
-                const config = statusConfig[item.status];
+                const config = statusConfig[item.status as keyof typeof statusConfig];
                 const Icon = config.icon;
 
                 return (

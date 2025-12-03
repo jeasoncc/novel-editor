@@ -1,3 +1,4 @@
+"use client";
 import { Code, FileText, Database, Settings, Layers } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SectionHeader } from "@/components/ui/section-header";

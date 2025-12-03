@@ -1,3 +1,4 @@
+"use client";
 import { Scale, Code, FileText, Github } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
