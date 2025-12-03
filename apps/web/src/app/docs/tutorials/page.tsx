@@ -144,12 +144,12 @@ export default function TutorialsPage() {
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
-                          {item.text && (
+                          {"text" in item && item.text && (
                             <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                               <FormattedText text={item.text} />
                             </p>
                           )}
-                          {item.items && (
+                          {"items" in item && item.items && (
                             <ul className="space-y-2">
                               {item.items.map((listItem, listIndex) => (
                                 <li

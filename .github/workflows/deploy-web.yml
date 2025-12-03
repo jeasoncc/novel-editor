@@ -28,9 +28,20 @@ jobs:
         working-directory: apps/web
         run: bun run build
 
+      - name: Verify build output
+        working-directory: apps/web
+        run: |
+          if [ ! -d "out" ]; then
+            echo "Build failed: out directory not found"
+            exit 1
+          fi
+          echo "Build successful"
+          ls -la out/
+
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
         if: github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./apps/web/out
+          cname: false
