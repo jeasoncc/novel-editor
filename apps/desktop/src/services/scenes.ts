@@ -61,6 +61,13 @@ export async function createCanvasScene(params: {
 	});
 }
 
+export async function updateScene(
+	id: string,
+	updates: Partial<SceneInterface>,
+) {
+	return db.updateScene(id, updates);
+}
+
 export async function renameScene(id: string, title: string) {
 	return db.updateScene(id, { title });
 }

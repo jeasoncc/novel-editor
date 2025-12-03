@@ -1,8 +1,6 @@
-import { BookOpen, GraduationCap, Code, HelpCircle, GitBranch } from "lucide-react";
+import { BookOpen, GraduationCap, Code, HelpCircle, GitBranch, FileText } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-import { SectionHeader } from "@/components/ui/section-header";
-import { ScrollReveal } from "@/components/ui/scroll-reveal";
 
 const docCategories = [
   {
@@ -11,6 +9,20 @@ const docCategories = [
     description: "从入门到精通的完整教程，帮助你快速上手 Novel Editor。",
     href: "/docs/tutorials",
     color: "bg-blue-50 dark:bg-blue-900/20",
+  },
+  {
+    icon: <BookOpen className="w-8 h-8" />,
+    title: "操作手册",
+    description: "详细的功能使用指南，涵盖所有功能的操作步骤和技巧。",
+    href: "/docs/manual",
+    color: "bg-indigo-50 dark:bg-indigo-900/20",
+  },
+  {
+    icon: <Code className="w-8 h-8" />,
+    title: "Wiki 文档",
+    description: "深入了解架构设计、功能实现和技术细节的完整文档。",
+    href: "/docs/wiki",
+    color: "bg-teal-50 dark:bg-teal-900/20",
   },
   {
     icon: <Code className="w-8 h-8" />,
@@ -38,98 +50,76 @@ const docCategories = [
 const quickLinks = [
   { name: "快速开始", href: "/docs/tutorials#getting-started" },
   { name: "功能概览", href: "/docs/tutorials#features" },
-  { name: "键盘快捷键", href: "/docs/tutorials#shortcuts" },
-  { name: "导出功能", href: "/docs/tutorials#export" },
+  { name: "操作手册", href: "/docs/manual" },
+  { name: "Wiki 文档", href: "/docs/wiki" },
+  { name: "键盘快捷键", href: "/docs/manual#keyboard" },
+  { name: "导出功能", href: "/docs/manual#export" },
 ];
 
 export default function DocsPage() {
   return (
-    <div className="min-h-screen bg-white dark:bg-black">
-      {/* Hero Section */}
-      <section className="py-20 md:py-32 border-b border-gray-200/50 dark:border-gray-800/50 bg-gradient-to-b from-white via-gray-50/30 to-white dark:from-gray-900 dark:via-gray-800/30 dark:to-gray-900">
-        <div className="container mx-auto px-4">
-          <ScrollReveal>
-            <div className="max-w-3xl mx-auto text-center">
-              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-100 dark:bg-gray-800 mb-6 border-2 border-gray-300 dark:border-gray-700">
-                <BookOpen className="w-10 h-10 text-gray-900 dark:text-white" />
-              </div>
-              <h1 className="text-5xl md:text-6xl font-black mb-6 text-gray-900 dark:text-white tracking-tight">
-                文档中心
-              </h1>
-              <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 leading-relaxed font-light">
-                探索 Novel Editor 的所有功能和特性，学习如何使用它来提升你的写作效率。
-              </p>
-            </div>
-          </ScrollReveal>
-        </div>
-      </section>
+    <div className="prose prose-gray dark:prose-invert max-w-none">
+      <div className="mb-12">
+        <h1 className="text-4xl font-bold mb-4 text-gray-900 dark:text-white">
+          欢迎使用 Novel Editor 文档
+        </h1>
+        <p className="text-xl text-gray-600 dark:text-gray-300 leading-relaxed">
+          探索 Novel Editor 的所有功能和特性，学习如何使用它来提升你的写作效率。
+        </p>
+      </div>
 
       {/* Quick Links */}
-      <section className="py-12 border-b border-gray-200 dark:border-gray-800">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              快速链接
-            </h2>
-            <div className="flex flex-wrap gap-3">
-              {quickLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm font-medium"
-                >
-                  {link.name}
-                </Link>
-              ))}
-            </div>
-          </div>
+      <div className="mb-12 p-6 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+          快速链接
+        </h2>
+        <div className="flex flex-wrap gap-3">
+          {quickLinks.map((link) => (
+            <Link
+              key={link.name}
+              href={link.href}
+              className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-sm font-medium border border-gray-200 dark:border-gray-700"
+            >
+              {link.name}
+            </Link>
+          ))}
         </div>
-      </section>
+      </div>
 
       {/* Documentation Categories */}
-      <section className="py-24 md:py-32">
-        <div className="container mx-auto px-4">
-          <ScrollReveal>
-            <SectionHeader
-              title="文档分类"
-              description="选择你感兴趣的文档类别，深入了解 Novel Editor"
-              subtitle="Documentation"
-            />
-          </ScrollReveal>
-
-          <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto mt-16">
-            {docCategories.map((category, index) => (
-              <ScrollReveal
-                key={category.title}
-                direction="up"
-                delay={index * 100}
-              >
-                <Link href={category.href}>
-                  <Card className="group h-full hover:-translate-y-2 transition-all duration-300 relative overflow-hidden">
-                    <CardHeader className="pb-4">
-                      <div
-                        className={`w-16 h-16 ${category.color} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}
-                      >
-                        <div className="text-gray-900 dark:text-white">
-                          {category.icon}
-                        </div>
-                      </div>
-                      <CardTitle className="text-2xl group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
-                        {category.title}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <CardDescription className="text-base leading-relaxed">
-                        {category.description}
-                      </CardDescription>
-                    </CardContent>
-                  </Card>
-                </Link>
-              </ScrollReveal>
-            ))}
-          </div>
+      <div>
+        <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">
+          文档分类
+        </h2>
+        <p className="text-gray-600 dark:text-gray-300 mb-8">
+          选择你感兴趣的文档类别，深入了解 Novel Editor
+        </p>
+        <div className="grid md:grid-cols-2 gap-6">
+          {docCategories.map((category) => (
+            <Link key={category.title} href={category.href}>
+              <Card className="group h-full hover:shadow-lg transition-all duration-300">
+                <CardHeader className="pb-4">
+                  <div
+                    className={`w-12 h-12 ${category.color} rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}
+                  >
+                    <div className="text-gray-900 dark:text-white">
+                      {category.icon}
+                    </div>
+                  </div>
+                  <CardTitle className="text-xl group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+                    {category.title}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-sm leading-relaxed">
+                    {category.description}
+                  </CardDescription>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
         </div>
-      </section>
+      </div>
     </div>
   );
 }

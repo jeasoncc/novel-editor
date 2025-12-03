@@ -653,3 +653,35 @@ html [data-radix-focus-guard]:focus {
   outline: none !important;
   box-shadow: none !important;
 }
+
+
+/* ========================================
+   角色提及样式
+   ======================================== */
+
+/* 提及节点样式 */
+.mention {
+  @apply inline-block px-1 py-0.5 mx-0.5 rounded bg-primary/10 text-primary font-medium cursor-pointer transition-colors;
+}
+
+.mention:hover {
+  @apply bg-primary/20;
+}
+
+/* 提及菜单样式 */
+.mentions-menu {
+  @apply min-w-[200px] max-w-[300px];
+}
+
+.mentions-menu .item {
+  @apply list-none;
+}
+
+.mentions-menu .item.selected {
+  @apply bg-accent;
+}
+
+/* Typeahead 弹出框样式 */
+.typeahead-popover {
+  @apply z-50;
+}

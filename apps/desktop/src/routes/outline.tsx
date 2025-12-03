@@ -2,7 +2,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useCallback, useEffect } from "react";
-import { OutlineView } from "@/components/outline/outline-view";
+import { OutlineViewEnhanced as OutlineView } from "@/components/outline/outline-view-enhanced";
 import { db } from "@/db/curd";
 import type {
 	ChapterInterface,

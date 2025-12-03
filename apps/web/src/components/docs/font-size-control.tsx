@@ -1,0 +1,100 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { Minus, Plus, Type } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+type FontSize = "sm" | "base" | "lg" | "xl";
+
+const fontSizeClasses: Record<FontSize, string> = {
+  sm: "prose-sm",
+  base: "prose-base",
+  lg: "prose-lg",
+  xl: "prose-xl",
+};
+
+const fontSizeLabels: Record<FontSize, string> = {
+  sm: "小",
+  base: "中",
+  lg: "大",
+  xl: "特大",
+};
+
+export function FontSizeControl() {
+  const [fontSize, setFontSize] = useState<FontSize>("lg");
+
+  useEffect(() => {
+    // 从 localStorage 读取字体大小
+    const saved = localStorage.getItem("docs-font-size") as FontSize;
+    if (saved && fontSizeClasses[saved]) {
+      setFontSize(saved);
+      applyFontSize(saved);
+    }
+  }, []);
+
+  const applyFontSize = (size: FontSize) => {
+    const article = document.querySelector("article");
+    if (!article) return;
+
+    // 移除所有字体大小类
+    Object.values(fontSizeClasses).forEach((cls) => {
+      article.classList.remove(cls);
+    });
+
+    // 添加新的字体大小类
+    article.classList.add(fontSizeClasses[size]);
+  };
+
+  const handleDecrease = () => {
+    const sizes: FontSize[] = ["xl", "lg", "base", "sm"];
+    const currentIndex = sizes.indexOf(fontSize);
+    if (currentIndex < sizes.length - 1) {
+      const newSize = sizes[currentIndex + 1];
+      setFontSize(newSize);
+      applyFontSize(newSize);
+      localStorage.setItem("docs-font-size", newSize);
+    }
+  };
+
+  const handleIncrease = () => {
+    const sizes: FontSize[] = ["xl", "lg", "base", "sm"];
+    const currentIndex = sizes.indexOf(fontSize);
+    if (currentIndex > 0) {
+      const newSize = sizes[currentIndex - 1];
+      setFontSize(newSize);
+      applyFontSize(newSize);
+      localStorage.setItem("docs-font-size", newSize);
+    }
+  };
+
+  return (
+    <div className="fixed bottom-32 right-[calc(50%-32rem+1rem)] z-50 hidden xl:flex items-center gap-2 bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-lg shadow-lg p-2">
+      <Type className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+      <Button
+        onClick={handleDecrease}
+        variant="ghost"
+        size="sm"
+        className="h-8 w-8 p-0"
+        disabled={fontSize === "sm"}
+        aria-label="减小字体"
+      >
+        <Minus className="w-4 h-4" />
+      </Button>
+      <span className="text-sm text-gray-600 dark:text-gray-400 min-w-[2rem] text-center">
+        {fontSizeLabels[fontSize]}
+      </span>
+      <Button
+        onClick={handleIncrease}
+        variant="ghost"
+        size="sm"
+        className="h-8 w-8 p-0"
+        disabled={fontSize === "xl"}
+        aria-label="增大字体"
+      >
+        <Plus className="w-4 h-4" />
+      </Button>
+    </div>
+  );
+}
+

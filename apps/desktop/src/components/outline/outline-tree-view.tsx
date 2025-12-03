@@ -57,6 +57,8 @@ interface OutlineTreeViewProps {
 	showStatus?: boolean;
 	onNavigateToScene?: (sceneId: string) => void;
 	onAddScene?: (chapterId: string) => void;
+	onSelectChapter?: (chapter: ChapterInterface) => void;
+	onSelectScene?: (scene: SceneInterface) => void;
 	onRenameChapter?: (chapterId: string, newTitle: string) => void;
 	onRenameScene?: (sceneId: string, newTitle: string) => void;
 	onDeleteChapter?: (chapterId: string, title: string) => void;
@@ -76,6 +78,8 @@ export function OutlineTreeView({
 	showStatus = true,
 	onNavigateToScene,
 	onAddScene,
+	onSelectChapter,
+	onSelectScene,
 	onRenameChapter,
 	onRenameScene,
 	onDeleteChapter,

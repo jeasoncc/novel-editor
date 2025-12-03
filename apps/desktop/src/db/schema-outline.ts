@@ -4,36 +4,57 @@
 
 import type { ChapterInterface, SceneInterface } from "./schema";
 
+// ---------- 剧情点 ----------
+export interface PlotPoint {
+	id: string;
+	type: "setup" | "conflict" | "climax" | "resolution";
+	description: string;
+	order: number;
+}
+
+// ---------- 状态类型 ----------
+export type OutlineStatus = 
+	| "draft" 
+	| "in-progress" 
+	| "completed" 
+	| "needs-revision" 
+	| "on-hold";
+
 // ---------- 大纲节点元数据 ----------
 /**
  * 为章节和场景添加大纲专用的元数据
  */
 export interface OutlineMetadata {
 	// 状态标记
-	status?: "draft" | "in-progress" | "completed" | "needs-revision"; // 创作状态
+	status?: OutlineStatus;
 
 	// 可视化标签
 	color?: string; // 节点颜色标记（用于视觉分类）
 	icon?: string; // 自定义图标
 
-	// 大纲摘要
-	summary?: string; // 章节/场景摘要（用于大纲视图显示）
+	// 大纲摘要（富文本）
+	summary?: string; // JSON 序列化的 SerializedEditorState
 	notes?: string; // 创作笔记（不显示在正文中）
 
 	// 情节要素
-	plotPoints?: string[]; // 关键剧情点
+	plotPoints?: PlotPoint[]; // 关键剧情点
 	characters?: string[]; // 涉及的角色ID
 	locations?: string[]; // 涉及的地点ID
 
 	// 统计信息（自动计算）
 	wordCount?: number; // 字数统计
 	targetWordCount?: number; // 目标字数
+	progress?: number; // 进度 0-100
 
 	// 时间线
 	storyTime?: string; // 故事内时间（例如"第三天上午"）
 
 	// 标签系统
 	tags?: string[]; // 自定义标签（如"高潮"、"转折点"、"伏笔"）
+	
+	// 元数据
+	createdAt?: string;
+	updatedAt?: string;
 }
 
 // ---------- 扩展的章节接口 ----------

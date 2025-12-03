@@ -29,6 +29,13 @@ export async function createChapter(params: {
 	});
 }
 
+export async function updateChapter(
+	id: string,
+	updates: Partial<ChapterInterface>,
+) {
+	return db.updateChapter(id, updates);
+}
+
 export async function renameChapter(id: string, title: string) {
 	return db.updateChapter(id, { title });
 }

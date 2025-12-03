@@ -41,6 +41,7 @@ interface OutlineCardsViewProps {
 	scenes: SceneInterface[];
 	onNavigateToScene?: (sceneId: string) => void;
 	onAddScene?: (chapterId: string) => void;
+	onSelectScene?: (scene: SceneInterface) => void;
 	onRenameScene?: (sceneId: string, newTitle: string) => void;
 	onDeleteScene?: (sceneId: string, title: string) => void;
 }
@@ -48,6 +49,7 @@ interface OutlineCardsViewProps {
 export function OutlineCardsView({
 	chapters,
 	scenes,
+	onSelectScene,
 	onNavigateToScene,
 	onAddScene,
 	onRenameScene,
