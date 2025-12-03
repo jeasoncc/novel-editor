@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Maximize2, Minimize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useSafeLocalStorage } from "./hooks/use-safe-local-storage";
 
 interface FocusModeProps {
   onToggle?: (focused: boolean) => void;
@@ -11,20 +12,21 @@ interface FocusModeProps {
 
 export function FocusMode({ onToggle }: FocusModeProps) {
   const [isFocused, setIsFocused] = useState(false);
+  const { get, set } = useSafeLocalStorage();
 
   useEffect(() => {
     // 从 localStorage 读取状态
-    const saved = localStorage.getItem("docs-focus-mode");
+    const saved = get("docs-focus-mode");
     if (saved === "true") {
       setIsFocused(true);
       onToggle?.(true);
     }
-  }, [onToggle]);
+  }, [get, onToggle]);
 
   const toggleFocusMode = () => {
     const newFocused = !isFocused;
     setIsFocused(newFocused);
-    localStorage.setItem("docs-focus-mode", String(newFocused));
+    set("docs-focus-mode", String(newFocused));
     onToggle?.(newFocused);
   };
 

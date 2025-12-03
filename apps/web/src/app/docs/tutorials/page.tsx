@@ -1,7 +1,10 @@
+"use client";
+
 import { BookOpen, Download, FileText, Keyboard, Layers, Search, Save, Zap } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SectionHeader } from "@/components/ui/section-header";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
+import { FormattedText } from "@/components/docs/formatted-text";
 
 const sections = [
   {
@@ -143,7 +146,7 @@ export default function TutorialsPage() {
                         <CardContent>
                           {item.text && (
                             <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                              {item.text}
+                              <FormattedText text={item.text} />
                             </p>
                           )}
                           {item.items && (
@@ -156,7 +159,7 @@ export default function TutorialsPage() {
                                   <span className="text-gray-400 dark:text-gray-400 mt-1.5">
                                     •
                                   </span>
-                                  <span>{listItem}</span>
+                                  <span><FormattedText text={listItem} /></span>
                                 </li>
                               ))}
                             </ul>
@@ -174,6 +177,7 @@ export default function TutorialsPage() {
     </div>
   );
 }
+
 
 
 

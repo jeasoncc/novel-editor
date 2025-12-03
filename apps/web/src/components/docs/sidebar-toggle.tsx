@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useSafeLocalStorage } from "./hooks/use-safe-local-storage";
 
 interface SidebarToggleProps {
   onToggle: (collapsed: boolean) => void;
@@ -11,21 +12,22 @@ interface SidebarToggleProps {
 
 export function SidebarToggle({ onToggle }: SidebarToggleProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const { get, set } = useSafeLocalStorage();
 
   useEffect(() => {
     // 从 localStorage 读取折叠状态
-    const saved = localStorage.getItem("docs-sidebar-collapsed");
+    const saved = get("docs-sidebar-collapsed");
     if (saved === "true") {
       setCollapsed(true);
       onToggle(true);
     }
-  }, [onToggle]);
+  }, [get, onToggle]);
 
   const handleToggle = () => {
     const newCollapsed = !collapsed;
     setCollapsed(newCollapsed);
     onToggle(newCollapsed);
-    localStorage.setItem("docs-sidebar-collapsed", String(newCollapsed));
+    set("docs-sidebar-collapsed", String(newCollapsed));
   };
 
   return (

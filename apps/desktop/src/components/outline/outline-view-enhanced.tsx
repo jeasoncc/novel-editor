@@ -34,7 +34,7 @@ import {
 import { OutlineCardsView } from "./outline-cards-view";
 import { OutlineTreeView } from "./outline-tree-view";
 import { OutlineDetailPanel } from "./outline-detail-panel";
-import { DiagramView } from "./diagram-view";
+import { DiagramViewRedesigned } from "./diagram-view-redesigned";
 import { useRolesByProject } from "@/services/roles";
 
 interface OutlineViewProps {
@@ -256,11 +256,11 @@ export function OutlineViewEnhanced({
 	}
 
 	return (
-		<div className="flex h-full">
+		<div className="flex h-full outline-view">
 			{/* 主内容区 */}
 			<div className="flex-1 flex flex-col min-w-0">
 				{/* 顶部工具栏 */}
-				<div className="flex items-center gap-2 p-4 border-b">
+				<div className="flex items-center gap-2 px-6 py-3 border-b border-border/30 bg-muted/5">
 					<h2 className="text-lg font-semibold">大纲视图</h2>
 
 					<div className="flex-1" />
@@ -318,7 +318,7 @@ export function OutlineViewEnhanced({
 				</div>
 
 				{/* 搜索栏和添加按钮 */}
-				<div className="flex items-center gap-2 p-4 border-b">
+				<div className="flex items-center gap-2 px-6 py-3 border-b border-border/30 bg-muted/5">
 					<div className="relative flex-1">
 						<Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
 						<Input
@@ -341,7 +341,7 @@ export function OutlineViewEnhanced({
 
 				{/* 视图内容 */}
 				{viewMode === "diagram" ? (
-					<DiagramView
+					<DiagramViewRedesigned
 						chapters={filteredChapters}
 						scenes={filteredScenes}
 						characters={roles}
@@ -382,7 +382,7 @@ export function OutlineViewEnhanced({
 				)}
 
 				{/* 底部统计 */}
-				<div className="flex items-center justify-between p-4 border-t text-sm text-muted-foreground">
+				<div className="flex items-center justify-between px-6 py-3 border-t border-border/30 bg-muted/5 text-sm text-muted-foreground">
 					<span>
 						共 {projectChapters.length} 章节 · {projectScenes.length} 场景
 					</span>
@@ -392,7 +392,7 @@ export function OutlineViewEnhanced({
 
 			{/* 详情面板 */}
 			{showDetailPanel && selectedNode && (
-				<div className="w-[400px] shrink-0">
+				<div className="w-[400px] shrink-0 border-l border-border/30 bg-muted/5">
 					<OutlineDetailPanel
 						node={selectedNode}
 						onClose={() => setShowDetailPanel(false)}

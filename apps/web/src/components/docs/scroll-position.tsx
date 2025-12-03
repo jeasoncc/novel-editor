@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
+import { useSafeSessionStorage } from "./hooks/use-safe-session-storage";
 
 /**
  * 记住阅读位置，页面加载时自动恢复
@@ -9,6 +10,7 @@ import { usePathname } from "next/navigation";
 export function ScrollPosition() {
   const pathname = usePathname();
   const hasRestoredRef = useRef(false);
+  const { get, set } = useSafeSessionStorage();
 
   useEffect(() => {
     const mainContent = document.querySelector('main[class*="overflow-y-auto"]') as HTMLElement;
@@ -16,7 +18,7 @@ export function ScrollPosition() {
 
     // 恢复滚动位置
     if (!hasRestoredRef.current) {
-      const savedPosition = sessionStorage.getItem(`docs-scroll-${pathname}`);
+      const savedPosition = get(`docs-scroll-${pathname}`);
       if (savedPosition) {
         const position = parseInt(savedPosition, 10);
         // 延迟恢复，确保内容已加载
@@ -35,7 +37,7 @@ export function ScrollPosition() {
       clearTimeout(scrollTimer);
       scrollTimer = setTimeout(() => {
         const scrollTop = mainContent.scrollTop;
-        sessionStorage.setItem(`docs-scroll-${pathname}`, String(scrollTop));
+        set(`docs-scroll-${pathname}`, String(scrollTop));
       }, 500); // 滚动停止 500ms 后保存
     };
 
@@ -44,7 +46,7 @@ export function ScrollPosition() {
     // 页面卸载时保存
     const handleBeforeUnload = () => {
       const scrollTop = mainContent.scrollTop;
-      sessionStorage.setItem(`docs-scroll-${pathname}`, String(scrollTop));
+      set(`docs-scroll-${pathname}`, String(scrollTop));
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
@@ -56,7 +58,7 @@ export function ScrollPosition() {
         clearTimeout(scrollTimer);
       }
     };
-  }, [pathname]);
+  }, [pathname, get, set]);
 
   return null;
 }

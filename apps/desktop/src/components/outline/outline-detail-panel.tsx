@@ -97,9 +97,9 @@ export function OutlineDetailPanel({
 	}, [metadata.wordCount, metadata.targetWordCount, metadata.progress]);
 
 	return (
-		<div className="h-full flex flex-col bg-background border-l">
+		<div className="h-full flex flex-col bg-background">
 			{/* 标题栏 */}
-			<div className="flex items-center justify-between p-4 border-b">
+			<div className="flex items-center justify-between px-6 py-3 border-b border-border/30 bg-muted/5">
 				<div className="flex items-center gap-2">
 					<FileText className="size-5 text-muted-foreground" />
 					<h3 className="font-semibold">
@@ -120,7 +120,7 @@ export function OutlineDetailPanel({
 			</div>
 
 			<ScrollArea className="flex-1">
-				<div className="p-4 space-y-6">
+				<div className="p-6 space-y-6">
 					{/* 标题 */}
 					<div className="space-y-2">
 						<Label>标题</Label>
@@ -162,7 +162,7 @@ export function OutlineDetailPanel({
 					{/* 摘要 */}
 					<div className="space-y-2">
 						<Label>摘要</Label>
-						<div className="border rounded-lg">
+						<div className="border border-border/30 rounded-lg overflow-hidden">
 							<MinimalEditor
 								key={node.id}
 								editorSerializedState={summaryState}
@@ -263,7 +263,7 @@ export function OutlineDetailPanel({
 			</ScrollArea>
 
 			{/* 底部信息 */}
-			<div className="p-4 border-t text-xs text-muted-foreground space-y-1">
+			<div className="px-6 py-3 border-t border-border/30 bg-muted/5 text-xs text-muted-foreground space-y-1">
 				{metadata.createdAt && (
 					<div className="flex items-center gap-2">
 						<Calendar className="size-3" />

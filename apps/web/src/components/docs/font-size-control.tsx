@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Minus, Plus, Type } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useSafeLocalStorage } from "./hooks/use-safe-local-storage";
 
 type FontSize = "sm" | "base" | "lg" | "xl";
 
@@ -23,18 +24,23 @@ const fontSizeLabels: Record<FontSize, string> = {
 
 export function FontSizeControl() {
   const [fontSize, setFontSize] = useState<FontSize>("lg");
+  const { get, set: setStorage } = useSafeLocalStorage();
 
   useEffect(() => {
     // 从 localStorage 读取字体大小
-    const saved = localStorage.getItem("docs-font-size") as FontSize;
+    const saved = get("docs-font-size") as FontSize;
     if (saved && fontSizeClasses[saved]) {
       setFontSize(saved);
       applyFontSize(saved);
     }
-  }, []);
+  }, [get]);
 
   const applyFontSize = (size: FontSize) => {
-    const article = document.querySelector("article");
+    // 使用更具体的选择器查找文章元素
+    const article = document.querySelector("article.docs-article") || 
+                    document.querySelector("article[class*='prose']") ||
+                    document.querySelector("article");
+    
     if (!article) return;
 
     // 移除所有字体大小类
@@ -44,6 +50,17 @@ export function FontSizeControl() {
 
     // 添加新的字体大小类
     article.classList.add(fontSizeClasses[size]);
+    
+    // 同时应用到文档容器
+    const container = article.closest('.docs-article') || article;
+    Object.values(fontSizeClasses).forEach((cls) => {
+      if (container !== article) {
+        container.classList.remove(cls);
+      }
+    });
+    if (container !== article) {
+      container.classList.add(fontSizeClasses[size]);
+    }
   };
 
   const handleDecrease = () => {
@@ -53,7 +70,7 @@ export function FontSizeControl() {
       const newSize = sizes[currentIndex + 1];
       setFontSize(newSize);
       applyFontSize(newSize);
-      localStorage.setItem("docs-font-size", newSize);
+      setStorage("docs-font-size", newSize);
     }
   };
 
@@ -64,7 +81,7 @@ export function FontSizeControl() {
       const newSize = sizes[currentIndex - 1];
       setFontSize(newSize);
       applyFontSize(newSize);
-      localStorage.setItem("docs-font-size", newSize);
+      setStorage("docs-font-size", newSize);
     }
   };
 

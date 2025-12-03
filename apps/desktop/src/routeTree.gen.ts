@@ -22,6 +22,7 @@ import { Route as SettingsTypographyRouteImport } from './routes/settings/typogr
 import { Route as SettingsIconsRouteImport } from './routes/settings/icons'
 import { Route as SettingsGeneralRouteImport } from './routes/settings/general'
 import { Route as SettingsEditorRouteImport } from './routes/settings/editor'
+import { Route as SettingsDiagramsRouteImport } from './routes/settings/diagrams'
 import { Route as SettingsDesignRouteImport } from './routes/settings/design'
 import { Route as SettingsDataRouteImport } from './routes/settings/data'
 import { Route as SettingsAboutRouteImport } from './routes/settings/about'
@@ -92,6 +93,11 @@ const SettingsEditorRoute = SettingsEditorRouteImport.update({
   path: '/editor',
   getParentRoute: () => SettingsRoute,
 } as any)
+const SettingsDiagramsRoute = SettingsDiagramsRouteImport.update({
+  id: '/diagrams',
+  path: '/diagrams',
+  getParentRoute: () => SettingsRoute,
+} as any)
 const SettingsDesignRoute = SettingsDesignRouteImport.update({
   id: '/design',
   path: '/design',
@@ -127,6 +133,7 @@ export interface FileRoutesByFullPath {
   '/settings/about': typeof SettingsAboutRoute
   '/settings/data': typeof SettingsDataRoute
   '/settings/design': typeof SettingsDesignRoute
+  '/settings/diagrams': typeof SettingsDiagramsRoute
   '/settings/editor': typeof SettingsEditorRoute
   '/settings/general': typeof SettingsGeneralRoute
   '/settings/icons': typeof SettingsIconsRoute
@@ -146,6 +153,7 @@ export interface FileRoutesByTo {
   '/settings/about': typeof SettingsAboutRoute
   '/settings/data': typeof SettingsDataRoute
   '/settings/design': typeof SettingsDesignRoute
+  '/settings/diagrams': typeof SettingsDiagramsRoute
   '/settings/editor': typeof SettingsEditorRoute
   '/settings/general': typeof SettingsGeneralRoute
   '/settings/icons': typeof SettingsIconsRoute
@@ -166,6 +174,7 @@ export interface FileRoutesById {
   '/settings/about': typeof SettingsAboutRoute
   '/settings/data': typeof SettingsDataRoute
   '/settings/design': typeof SettingsDesignRoute
+  '/settings/diagrams': typeof SettingsDiagramsRoute
   '/settings/editor': typeof SettingsEditorRoute
   '/settings/general': typeof SettingsGeneralRoute
   '/settings/icons': typeof SettingsIconsRoute
@@ -187,6 +196,7 @@ export interface FileRouteTypes {
     | '/settings/about'
     | '/settings/data'
     | '/settings/design'
+    | '/settings/diagrams'
     | '/settings/editor'
     | '/settings/general'
     | '/settings/icons'
@@ -206,6 +216,7 @@ export interface FileRouteTypes {
     | '/settings/about'
     | '/settings/data'
     | '/settings/design'
+    | '/settings/diagrams'
     | '/settings/editor'
     | '/settings/general'
     | '/settings/icons'
@@ -225,6 +236,7 @@ export interface FileRouteTypes {
     | '/settings/about'
     | '/settings/data'
     | '/settings/design'
+    | '/settings/diagrams'
     | '/settings/editor'
     | '/settings/general'
     | '/settings/icons'
@@ -337,6 +349,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsEditorRouteImport
       parentRoute: typeof SettingsRoute
     }
+    '/settings/diagrams': {
+      id: '/settings/diagrams'
+      path: '/diagrams'
+      fullPath: '/settings/diagrams'
+      preLoaderRoute: typeof SettingsDiagramsRouteImport
+      parentRoute: typeof SettingsRoute
+    }
     '/settings/design': {
       id: '/settings/design'
       path: '/design'
@@ -372,6 +391,7 @@ interface SettingsRouteChildren {
   SettingsAboutRoute: typeof SettingsAboutRoute
   SettingsDataRoute: typeof SettingsDataRoute
   SettingsDesignRoute: typeof SettingsDesignRoute
+  SettingsDiagramsRoute: typeof SettingsDiagramsRoute
   SettingsEditorRoute: typeof SettingsEditorRoute
   SettingsGeneralRoute: typeof SettingsGeneralRoute
   SettingsIconsRoute: typeof SettingsIconsRoute
@@ -382,6 +402,7 @@ const SettingsRouteChildren: SettingsRouteChildren = {
   SettingsAboutRoute: SettingsAboutRoute,
   SettingsDataRoute: SettingsDataRoute,
   SettingsDesignRoute: SettingsDesignRoute,
+  SettingsDiagramsRoute: SettingsDiagramsRoute,
   SettingsEditorRoute: SettingsEditorRoute,
   SettingsGeneralRoute: SettingsGeneralRoute,
   SettingsIconsRoute: SettingsIconsRoute,

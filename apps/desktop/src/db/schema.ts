@@ -123,6 +123,7 @@ export interface ChapterInterface {
 	order: number; // 章节顺序，用于排序
 	open: boolean; // 当前章节是否展开显示
 	showEdit: boolean; // 是否显示编辑界面
+	outline?: any; // 大纲元数据（OutlineMetadata）
 }
 
 // ---------- 场景类型 ----------
@@ -143,6 +144,7 @@ export interface SceneInterface {
 	createDate?: string; // 创建时间，可选
 	showEdit: boolean; // 是否显示编辑界面
 	type?: SceneType; // 场景类型：text（默认）或 canvas（绘图）
+	outline?: any; // 大纲元数据（OutlineMetadata）
 	filePath?: string; // 文件路径，用于 canvas 类型场景的保存位置
 }
 

@@ -1,6 +1,8 @@
+"use client";
+
 import { BookOpen, Code, Layers, Zap, Database, Palette, Keyboard } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
+import { FormattedText } from "@/components/docs/formatted-text";
 
 const wikiSections = [
   {
@@ -217,66 +219,60 @@ const wikiSections = [
 
 export default function WikiPage() {
   return (
-    <div>
-      <div className="mb-12">
-        <h1 className="text-4xl font-bold mb-4 text-gray-900 dark:text-white">
+    <div className="max-w-4xl">
+      <div className="mb-10">
+        <h1 className="text-2xl font-semibold mb-2 text-gray-900 dark:text-white tracking-tight">
           Wiki 文档
         </h1>
-        <p className="text-xl text-gray-600 dark:text-gray-300 leading-relaxed">
+        <p className="text-base text-gray-600 dark:text-gray-400 leading-relaxed">
           深入了解 Novel Editor 的架构设计、功能实现和技术细节
         </p>
       </div>
 
       {/* Content */}
-      <div>
+      <div className="space-y-12">
         {wikiSections.map((section) => (
           <section
             key={section.id}
-            className="scroll-mt-24 mb-16 last:mb-0"
+            className="scroll-mt-24 mb-12 last:mb-0"
           >
-            <div className="mb-8">
+            <div className="mb-6">
               <h2
                 id={section.id}
-                className="text-3xl font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-3"
+                className="text-xl font-semibold text-gray-900 dark:text-white mb-0 flex items-center gap-2.5"
               >
-                <span className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0 text-gray-900 dark:text-white">
+                <span className="text-gray-400 dark:text-gray-600 text-lg">
                   {section.icon}
                 </span>
                 {section.title}
               </h2>
             </div>
 
-            <div className="space-y-8">
+            <div className="space-y-6">
               {section.content.map((item, itemIndex) => (
-                <Card key={itemIndex} className="mb-6">
-                  <CardHeader>
-                    <CardTitle className="text-xl">
-                      <h3 className="m-0">{item.subtitle}</h3>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {item.text && (
-                      <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                        {item.text}
-                      </p>
-                    )}
-                    {item.items && (
-                      <ul className="space-y-2">
-                        {item.items.map((listItem, listIndex) => (
-                          <li
-                            key={listIndex}
-                            className="text-gray-600 dark:text-gray-300 leading-relaxed flex items-start gap-2"
-                          >
-                            <span className="text-gray-400 dark:text-gray-400 mt-1.5">
-                              •
-                            </span>
-                            <span>{listItem}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </CardContent>
-                </Card>
+                <div key={itemIndex}>
+                  <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-3">
+                    {item.subtitle}
+                  </h3>
+                  {item.text && (
+                    <p className="text-gray-600 dark:text-gray-400 leading-7 text-sm mb-0">
+                      <FormattedText text={item.text} />
+                    </p>
+                  )}
+                  {item.items && (
+                    <ul className="space-y-2 mt-3 ml-4">
+                      {item.items.map((listItem, listIndex) => (
+                        <li
+                          key={listIndex}
+                          className="text-gray-600 dark:text-gray-400 leading-6 text-sm"
+                          style={{ listStyleType: 'disc' }}
+                        >
+                          <FormattedText text={listItem} />
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               ))}
             </div>
           </section>

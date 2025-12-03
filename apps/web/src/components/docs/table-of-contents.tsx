@@ -30,11 +30,23 @@ export function TableOfContents({ className }: TableOfContentsProps) {
       elements.forEach((element) => {
         let id = element.id;
         if (!id && element.textContent) {
-          // 从文本内容生成 ID
-          id = element.textContent
+          // 从文本内容生成安全的 URL 兼容 ID
+          const text = element.textContent.trim();
+          const index = Array.from(elements).indexOf(element);
+          
+          // 生成一个安全的 ID（只包含字母、数字、连字符和下划线）
+          // 对于包含中文的标题，使用索引作为备用
+          id = text
             .toLowerCase()
             .replace(/[^\w\u4e00-\u9fa5]+/g, "-")
-            .replace(/^-+|-+$/g, "");
+            .replace(/^-+|-+$/g, "")
+            .substring(0, 50); // 限制长度
+          
+          // 如果 ID 包含非 ASCII 字符或为空，使用索引
+          if (!id || !/^[a-zA-Z0-9_-]+$/.test(id)) {
+            id = `heading-${index}`;
+          }
+          
           element.id = id;
         }
         
@@ -119,8 +131,26 @@ export function TableOfContents({ className }: TableOfContentsProps) {
             
             if (scrollPosition >= offsetTop) {
               setActiveId(heading.id);
-              if (window.location.hash !== `#${heading.id}`) {
-                window.history.replaceState(null, "", `#${heading.id}`);
+              // 只在 ID 有效且当前 hash 不同时才更新
+              if (heading.id && /^[a-zA-Z0-9_-]+$/.test(heading.id)) {
+                const newHash = `#${heading.id}`;
+                if (window.location.hash !== newHash) {
+                  // 检查是否在安全的环境中（HTTPS 或 localhost）
+                  const isSecureContext = window.isSecureContext || 
+                    window.location.protocol === 'https:' || 
+                    window.location.hostname === 'localhost' ||
+                    window.location.hostname === '127.0.0.1';
+                  
+                  if (isSecureContext) {
+                    try {
+                      // 使用 try-catch 包装，防止安全错误
+                      window.history.replaceState(null, "", newHash);
+                    } catch (error) {
+                      // 静默处理错误，不影响用户体验
+                      // 某些浏览器环境可能不支持此操作
+                    }
+                  }
+                }
               }
               break;
             }
@@ -143,10 +173,6 @@ export function TableOfContents({ className }: TableOfContentsProps) {
 
   // 使用智能滚动条 Hook
   useScrollbar(scrollContainerRef);
-
-  if (headings.length === 0) {
-    return null;
-  }
 
   const handleClick = useCallback((id: string, e: React.MouseEvent) => {
     e.preventDefault();
@@ -175,6 +201,10 @@ export function TableOfContents({ className }: TableOfContentsProps) {
     
     setActiveId(id);
   }, []);
+
+  if (headings.length === 0) {
+    return null;
+  }
 
   return (
     <aside

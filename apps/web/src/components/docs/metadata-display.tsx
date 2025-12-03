@@ -1,8 +1,8 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Calendar, Clock, Edit3 } from "lucide-react";
 import { docNavItems, type NavItem } from "./doc-nav-data";
+import { cn } from "@/lib/utils";
 
 function findDocItem(pathname: string): NavItem | null {
   function search(items: NavItem[]): NavItem | null {
@@ -27,21 +27,34 @@ export function MetadataDisplay() {
 
   // 这里可以从 CMS 或 API 获取元数据
   // 目前使用模拟数据
-  const lastUpdated = "2024年1月"; // 可以从页面 frontmatter 获取
+  const lastUpdated = "2024年1月15日"; // 可以从页面 frontmatter 获取
+  const author = "文档团队"; // 可以从页面 frontmatter 获取
+  const version = "v1.0.0"; // 可以从页面 frontmatter 获取
 
   return (
-    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-6 pb-6 border-b border-gray-200 dark:border-gray-800">
+    <div className={cn(
+      "flex flex-wrap items-center gap-x-6 gap-y-2 text-sm",
+      "mb-8 pb-6 border-b",
+      "border-gray-200 dark:border-gray-800",
+      "animate-fade-in"
+    )}>
       {lastUpdated && (
-        <div className="flex items-center gap-2">
-          <Calendar className="w-4 h-4" />
-          <span>最后更新：{lastUpdated}</span>
-        </div>
+        <span className="text-gray-500 dark:text-gray-500">
+          {lastUpdated}
+        </span>
       )}
-      <div className="flex items-center gap-2">
-        <Edit3 className="w-4 h-4" />
-        <span>文档版本：v1.0</span>
-      </div>
+      
+      {author && (
+        <span className="text-gray-500 dark:text-gray-500">
+          {author}
+        </span>
+      )}
+      
+      <span className="text-gray-500 dark:text-gray-500">
+        {version}
+      </span>
     </div>
   );
 }
+
 

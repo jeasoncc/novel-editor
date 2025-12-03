@@ -4,7 +4,7 @@ import {
 	Outlet,
 	useLocation,
 } from "@tanstack/react-router";
-import { ArrowLeft, Info, Palette, Settings2, Type, Sparkles } from "lucide-react";
+import { ArrowLeft, Info, Palette, Settings2, Type, Sparkles, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/settings")({
@@ -24,6 +24,11 @@ function SettingsLayout() {
 			to: "/settings/icons",
 			label: "Icons",
 			icon: Sparkles,
+		},
+		{
+			to: "/settings/diagrams",
+			label: "Diagrams",
+			icon: BarChart3,
 		},
 		{
 			to: "/settings/general",

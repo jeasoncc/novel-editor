@@ -258,3 +258,4 @@ await countUpAnimation(numberElement, 10000, 2000);
 
 
 
+

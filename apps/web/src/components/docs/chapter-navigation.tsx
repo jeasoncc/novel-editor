@@ -25,6 +25,11 @@ export function ChapterNavigation() {
   const pathname = usePathname();
 
   const { prev, next } = useMemo(() => {
+    // 在 /docs 路径上不计算
+    if (pathname === "/docs") {
+      return { prev: null, next: null };
+    }
+
     const allItems = flattenNavItems(docNavItems);
     const currentIndex = allItems.findIndex(
       (item) => item.href === pathname || pathname.startsWith(item.href + "/")
@@ -41,6 +46,8 @@ export function ChapterNavigation() {
     return { prev, next };
   }, [pathname]);
 
+  // 在 /docs 路径上不显示（必须在所有 hooks 之后）
+  if (pathname === "/docs") return null;
   if (!prev && !next) return null;
 
   return (
@@ -100,4 +107,5 @@ export function ChapterNavigation() {
     </nav>
   );
 }
+
 

@@ -52,12 +52,12 @@ export function KeyboardHelp() {
         variant="ghost"
         size="sm"
         className={cn(
-          "fixed bottom-20 z-50 rounded-full p-3 shadow-lg",
+          "fixed bottom-20 z-40 rounded-full p-3 shadow-lg",
           "bg-white dark:bg-black border border-gray-200 dark:border-gray-800",
           "hover:bg-gray-100 dark:hover:bg-gray-800",
           "text-gray-600 dark:text-gray-400",
-          // 确保不在目录区域内，在内容区域右侧
-          "lg:right-8 xl:right-[calc(50%-32rem+1rem)]"
+          // 确保不在目录区域内，在内容区域右侧，不遮挡内容
+          "right-4 lg:right-8 xl:right-[calc((100vw-64rem)/2+64rem+1rem)]"
         )}
         aria-label="显示快捷键帮助"
         title="显示快捷键 (?)"

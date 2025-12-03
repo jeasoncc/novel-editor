@@ -318,10 +318,49 @@ canvas:focus {
    组件样式
    ======================================== */
 
-/* 滚动条 */
-.scrollbar-thin::-webkit-scrollbar {
+/* ========================================
+   全局滚动条优化 - 虚化隐藏
+   ======================================== */
+
+/* 全局滚动条样式 - 默认隐藏 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+*::-webkit-scrollbar {
   width: 8px;
   height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 4px;
+  transition: background 0.3s ease;
+}
+
+/* 悬停时才显示滚动条 */
+*:hover::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--muted-foreground) 15%, transparent);
+}
+
+*:hover::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--muted-foreground) 25%, transparent);
+}
+
+/* Firefox 滚动条 */
+*:hover {
+  scrollbar-color: color-mix(in srgb, var(--muted-foreground) 15%, transparent) transparent;
+}
+
+/* 滚动条细化样式类 */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
 .scrollbar-thin::-webkit-scrollbar-track {
@@ -329,12 +368,17 @@ canvas:focus {
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--muted-foreground) 20%, transparent);
-  border-radius: 4px;
+  background: transparent;
+  border-radius: 3px;
+  transition: background 0.3s ease;
 }
 
-.scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background: color-mix(in srgb, var(--muted-foreground) 30%, transparent);
+.scrollbar-thin:hover::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--muted-foreground) 12%, transparent);
+}
+
+.scrollbar-thin:hover::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--muted-foreground) 20%, transparent);
 }
 
 /* 键盘快捷键 */
@@ -684,4 +728,357 @@ html [data-radix-focus-guard]:focus {
 /* Typeahead 弹出框样式 */
 .typeahead-popover {
   @apply z-50;
+}
+
+/* ========================================
+   Mermaid 图表样式
+   ======================================== */
+
+/* Mermaid 容器 */
+.mermaid {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+/* Mermaid 全局样式优化 */
+.mermaid svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* 优化节点样式 - 圆角和阴影 */
+.mermaid .node rect,
+.mermaid .node circle,
+.mermaid .node ellipse,
+.mermaid .node polygon {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+  stroke-width: 2px;
+  rx: 8px;
+  ry: 8px;
+}
+
+/* 优化连线样式 */
+.mermaid .edgePath .path {
+  stroke-width: 2px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* 优化箭头 */
+.mermaid .arrowheadPath {
+  fill: currentColor;
+}
+
+/* 优化文字样式 */
+.mermaid .nodeLabel,
+.mermaid .edgeLabel {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Mermaid 状态样式类 - 现代化配色 */
+.mermaid .completed {
+  fill: #d1fae5 !important;
+  stroke: #10b981 !important;
+  stroke-width: 2.5px !important;
+}
+
+.mermaid .inProgress {
+  fill: #dbeafe !important;
+  stroke: #3b82f6 !important;
+  stroke-width: 2.5px !important;
+}
+
+.mermaid .needsRevision {
+  fill: #fef3c7 !important;
+  stroke: #f59e0b !important;
+  stroke-width: 2.5px !important;
+}
+
+.mermaid .onHold {
+  fill: #f3f4f6 !important;
+  stroke: #9ca3af !important;
+  stroke-width: 2.5px !important;
+}
+
+.mermaid .draft {
+  fill: #ffffff !important;
+  stroke: #d1d5db !important;
+  stroke-width: 2.5px !important;
+}
+
+/* Mermaid 剧情点样式 - 渐变效果 */
+.mermaid .setup {
+  fill: #dbeafe !important;
+  stroke: #3b82f6 !important;
+  stroke-width: 2.5px !important;
+}
+
+.mermaid .conflict {
+  fill: #fed7aa !important;
+  stroke: #f97316 !important;
+  stroke-width: 2.5px !important;
+}
+
+.mermaid .climax {
+  fill: #fecaca !important;
+  stroke: #ef4444 !important;
+  stroke-width: 2.5px !important;
+}
+
+.mermaid .resolution {
+  fill: #d1fae5 !important;
+  stroke: #10b981 !important;
+  stroke-width: 2.5px !important;
+}
+
+/* 深色模式下的 Mermaid 样式 */
+.dark .mermaid .completed {
+  fill: #064e3b !important;
+  stroke: #34d399 !important;
+  stroke-width: 2.5px !important;
+}
+
+.dark .mermaid .inProgress {
+  fill: #1e3a8a !important;
+  stroke: #60a5fa !important;
+  stroke-width: 2.5px !important;
+}
+
+.dark .mermaid .needsRevision {
+  fill: #78350f !important;
+  stroke: #fbbf24 !important;
+  stroke-width: 2.5px !important;
+}
+
+.dark .mermaid .onHold {
+  fill: #374151 !important;
+  stroke: #9ca3af !important;
+  stroke-width: 2.5px !important;
+}
+
+.dark .mermaid .draft {
+  fill: #1f2937 !important;
+  stroke: #6b7280 !important;
+  stroke-width: 2.5px !important;
+}
+
+.dark .mermaid .setup {
+  fill: #1e3a8a !important;
+  stroke: #60a5fa !important;
+  stroke-width: 2.5px !important;
+}
+
+.dark .mermaid .conflict {
+  fill: #7c2d12 !important;
+  stroke: #fb923c !important;
+  stroke-width: 2.5px !important;
+}
+
+.dark .mermaid .climax {
+  fill: #7f1d1d !important;
+  stroke: #f87171 !important;
+  stroke-width: 2.5px !important;
+}
+
+.dark .mermaid .resolution {
+  fill: #064e3b !important;
+  stroke: #34d399 !important;
+  stroke-width: 2.5px !important;
+}
+
+/* 优化 subgraph 样式 */
+.mermaid .cluster rect {
+  fill: transparent !important;
+  stroke: var(--border) !important;
+  stroke-width: 2px !important;
+  stroke-dasharray: 5, 5 !important;
+  rx: 12px !important;
+  ry: 12px !important;
+}
+
+.dark .mermaid .cluster rect {
+  stroke: var(--border) !important;
+}
+
+/* 优化 cluster 标签 */
+.mermaid .cluster-label {
+  font-weight: 600 !important;
+  font-size: 15px !important;
+  fill: var(--foreground) !important;
+}
+
+/* ========================================
+   Mermaid 错误提示优化
+   ======================================== */
+
+/* 隐藏 Mermaid 库自动生成的错误提示（我们在组件中自己处理） */
+#d2h-675094 {
+  display: none !important;
+}
+
+/* 隐藏所有 Mermaid 生成的错误提示容器 */
+[id^="d2h-"] {
+  display: none !important;
+}
+
+/* 隐藏 Mermaid 错误图标和文本 */
+.error-icon,
+.error-text {
+  display: none !important;
+}
+
+/* 如果 Mermaid 使用 fixed 定位的错误提示 */
+body > div[style*="position: fixed"][style*="bottom"] {
+  display: none !important;
+}
+
+/* ========================================
+   图表视图优化
+   ======================================== */
+
+/* 优化标签页样式 */
+[role="tablist"] [role="tab"] {
+  transition: all 0.2s ease;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+[role="tablist"] [role="tab"][data-state="active"] {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* 优化图表容器的滚动条 */
+.diagram-container::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.diagram-container::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 5px;
+}
+
+.diagram-container::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--muted-foreground) 25%, transparent);
+  border-radius: 5px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.diagram-container::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--muted-foreground) 35%, transparent);
+  background-clip: padding-box;
+}
+
+/* 优化按钮组样式 */
+.diagram-toolbar {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  background: var(--muted);
+  border-radius: 0.5rem;
+}
+
+.diagram-toolbar button {
+  transition: all 0.15s ease;
+}
+
+.diagram-toolbar button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.diagram-toolbar button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* ========================================
+   大纲视图边框优化
+   ======================================== */
+
+/* 优化所有边框 - 更柔和、更透明 */
+.outline-view [class*="border-b"],
+.outline-view [class*="border-t"],
+.outline-view [class*="border-l"],
+.outline-view [class*="border-r"],
+.outline-view [class*="border"] {
+  border-color: color-mix(in srgb, var(--border) 30%, transparent) !important;
+}
+
+/* 卡片边框优化 */
+.outline-card {
+  border: 1px solid color-mix(in srgb, var(--border) 25%, transparent);
+  transition: all 0.2s ease;
+}
+
+.outline-card:hover {
+  border-color: color-mix(in srgb, var(--border) 40%, transparent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* 树形视图项边框 */
+.outline-tree-item {
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.outline-tree-item:hover {
+  border-color: color-mix(in srgb, var(--border) 20%, transparent);
+  background: color-mix(in srgb, var(--muted) 30%, transparent);
+}
+
+/* 详情面板分隔线 */
+.outline-detail-separator {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--border) 20%, transparent) 50%,
+    transparent 100%
+  );
+  height: 1px;
+  border: none;
+}
+
+/* 输入框边框优化 */
+.outline-view input,
+.outline-view textarea,
+.outline-view select {
+  border-color: color-mix(in srgb, var(--border) 30%, transparent);
+  transition: border-color 0.2s ease;
+}
+
+.outline-view input:hover,
+.outline-view textarea:hover,
+.outline-view select:hover {
+  border-color: color-mix(in srgb, var(--border) 50%, transparent);
+}
+
+.outline-view input:focus,
+.outline-view textarea:focus,
+.outline-view select:focus {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 10%, transparent);
+}
+
+/* 虚线边框优化 */
+[class*="border-dashed"] {
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--border) 20%, transparent) !important;
+}
+
+/* 分隔线优化 */
+hr,
+.separator {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--border) 25%, transparent) 20%,
+    color-mix(in srgb, var(--border) 25%, transparent) 80%,
+    transparent 100%
+  );
+  border: none;
+  height: 1px;
 }

@@ -44,7 +44,24 @@ export function ScrollSmooth() {
         }
         
         // 更新 URL 而不触发滚动
-        window.history.pushState(null, "", link.hash);
+        // 验证 hash 是否有效（只包含安全的字符）
+        if (link.hash && /^#[a-zA-Z0-9_-]+$/.test(link.hash)) {
+          // 检查是否在安全的环境中（HTTPS 或 localhost）
+          const isSecureContext = window.isSecureContext || 
+            window.location.protocol === 'https:' || 
+            window.location.hostname === 'localhost' ||
+            window.location.hostname === '127.0.0.1';
+          
+          if (isSecureContext) {
+            try {
+              // 使用 try-catch 包装，防止安全错误
+              window.history.pushState(null, "", link.hash);
+            } catch (error) {
+              // 静默处理错误，不影响用户体验
+              // 某些浏览器环境可能不支持此操作
+            }
+          }
+        }
       }
     };
 

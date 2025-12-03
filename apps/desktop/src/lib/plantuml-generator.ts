@@ -3,6 +3,7 @@
  * 根据大纲数据自动生成各种 PlantUML 图表
  */
 
+import pako from "pako";
 import type { ChapterInterface, SceneInterface } from "@/db/schema";
 import type { RoleInterface } from "@/db/schema";
 
@@ -147,8 +148,8 @@ export function generatePlotFlow(chapter: ChapterInterface): string {
 		uml += ":暂无剧情点;\n";
 	} else {
 		plotPoints
-			.sort((a, b) => a.order - b.order)
-			.forEach((point) => {
+			.sort((a: any, b: any) => a.order - b.order)
+			.forEach((point: any) => {
 				const color = getPlotPointColor(point.type);
 				uml += `:${point.description}${color};\n`;
 			});
@@ -288,16 +289,57 @@ function sanitizeId(id: string): string {
 }
 
 /**
+ * PlantUML 专用的 Base64 编码表
+ */
+const PLANTUML_ENCODE_TABLE = 
+	"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_";
+
+/**
+ * 将3个字节编码为4个字符
+ */
+function encode3bytes(b1: number, b2: number, b3: number): string {
+	const c1 = b1 >> 2;
+	const c2 = ((b1 & 0x3) << 4) | (b2 >> 4);
+	const c3 = ((b2 & 0xf) << 2) | (b3 >> 6);
+	const c4 = b3 & 0x3f;
+	return (
+		PLANTUML_ENCODE_TABLE.charAt(c1 & 0x3f) +
+		PLANTUML_ENCODE_TABLE.charAt(c2 & 0x3f) +
+		PLANTUML_ENCODE_TABLE.charAt(c3 & 0x3f) +
+		PLANTUML_ENCODE_TABLE.charAt(c4 & 0x3f)
+	);
+}
+
+/**
  * 编码 PlantUML 为 URL 安全的字符串
- * 使用 PlantUML 服务器的编码方式
+ * 使用 PlantUML 服务器的编码方式（DEFLATE 压缩 + 特殊 Base64）
  */
 export function encodePlantUML(plantumlCode: string): string {
-	// 简化版本：使用 base64 编码
-	// 实际项目中应该使用 plantuml-encoder 库
-	const encoded = btoa(
-		unescape(encodeURIComponent(plantumlCode))
-	);
-	return encoded.replace(/\+/g, "-").replace(/\//g, "_");
+	try {
+		// 1. 将字符串转换为 UTF-8 字节数组
+		const encoder = new TextEncoder();
+		const utf8Bytes = encoder.encode(plantumlCode);
+		
+		// 2. 使用 DEFLATE 压缩
+		const compressed = pako.deflateRaw(utf8Bytes, { level: 9 });
+		
+		// 3. 使用 PlantUML 的特殊 Base64 编码
+		let result = "";
+		for (let i = 0; i < compressed.length; i += 3) {
+			if (i + 2 === compressed.length) {
+				result += encode3bytes(compressed[i], compressed[i + 1], 0);
+			} else if (i + 1 === compressed.length) {
+				result += encode3bytes(compressed[i], 0, 0);
+			} else {
+				result += encode3bytes(compressed[i], compressed[i + 1], compressed[i + 2]);
+			}
+		}
+
+		return result;
+	} catch (error) {
+		console.error("PlantUML encoding error:", error);
+		return "";
+	}
 }
 
 /**

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Clock } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const WORDS_PER_MINUTE = 200; // 平均阅读速度：200 字/分钟
@@ -19,9 +19,13 @@ function calculateReadingTime(text: string): number {
 }
 
 export function ReadingTime() {
+  const pathname = usePathname();
   const [readingTime, setReadingTime] = useState<number | null>(null);
 
   useEffect(() => {
+    // 在 /docs 路径上不执行
+    if (pathname === "/docs") return;
+
     const updateReadingTime = () => {
       const article = document.querySelector("article");
       if (!article) return;
@@ -48,20 +52,22 @@ export function ReadingTime() {
       clearTimeout(timer);
       observer.disconnect();
     };
-  }, []);
+  }, [pathname]);
 
+  // 在 /docs 路径上不显示（必须在所有 hooks 之后）
+  if (pathname === "/docs") return null;
   if (readingTime === null || readingTime === 0) return null;
 
   return (
     <div
       className={cn(
-        "flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400",
-        "mb-4 px-1"
+        "text-sm text-gray-500 dark:text-gray-500",
+        "mb-8"
       )}
     >
-      <Clock className="w-4 h-4" />
-      <span>预计阅读时间：{readingTime} 分钟</span>
+      {readingTime} 分钟阅读
     </div>
   );
 }
+
 

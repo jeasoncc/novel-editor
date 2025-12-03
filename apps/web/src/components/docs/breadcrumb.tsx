@@ -3,7 +3,6 @@
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
 import Link from "next/link";
-import { ChevronRight, Home } from "lucide-react";
 import { docNavItems, type NavItem } from "./doc-nav-data";
 
 function findPathToItem(
@@ -47,17 +46,19 @@ export function Breadcrumb() {
   if (breadcrumbItems.length <= 1) return null;
 
   return (
-    <nav className="flex items-center gap-2 text-sm mb-6" aria-label="面包屑导航">
+    <nav 
+      className="flex items-center gap-1.5 text-sm mb-8 text-gray-500 dark:text-gray-400" 
+      aria-label="面包屑导航"
+    >
       <Link
         href="/docs"
-        className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+        className="hover:text-gray-900 dark:hover:text-gray-300 transition-colors"
       >
-        <Home className="w-4 h-4" />
-        <span>文档</span>
+        文档
       </Link>
       {breadcrumbItems.slice(1).map((item, index) => (
-        <div key={item.href} className="flex items-center gap-2">
-          <ChevronRight className="w-4 h-4 text-gray-400" />
+        <div key={item.href} className="flex items-center gap-1.5">
+          <span className="text-gray-300 dark:text-gray-700">/</span>
           {index === breadcrumbItems.length - 2 ? (
             <span className="text-gray-900 dark:text-white font-medium">
               {item.title}
@@ -65,7 +66,7 @@ export function Breadcrumb() {
           ) : (
             <Link
               href={item.href}
-              className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+              className="hover:text-gray-900 dark:hover:text-gray-300 transition-colors"
             >
               {item.title}
             </Link>

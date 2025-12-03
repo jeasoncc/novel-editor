@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { useMediaQuery } from "./hooks/use-media-query";
 import { useScrollbar } from "./hooks/use-scrollbar";
+import { useSafeLocalStorage } from "./hooks/use-safe-local-storage";
 import { DocNav } from "./doc-nav";
 import { TableOfContents } from "./table-of-contents";
 import { DocSearch } from "./doc-search";
@@ -31,6 +32,11 @@ import { KeyboardSearch } from "./keyboard-search";
 import { MetadataDisplay } from "./metadata-display";
 import { DocsErrorBoundary } from "./error-boundary";
 import { ShareButton } from "./share-button";
+import { DocumentTags } from "./document-tags";
+import { RelatedDocuments } from "./related-documents";
+import { PageTransition } from "./page-transition";
+import { DocumentStats } from "./document-stats";
+import { DocumentFeedback } from "./document-feedback";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -47,14 +53,15 @@ export function DocsLayout({ children }: DocsLayoutProps) {
   
   // 使用响应式 hook
   const isMobile = useMediaQuery("(max-width: 1023px)");
+  const { get: getLocalStorage } = useSafeLocalStorage();
 
   useEffect(() => {
     // 从 localStorage 读取专注模式状态
-    const saved = localStorage.getItem("docs-focus-mode");
+    const saved = getLocalStorage("docs-focus-mode");
     if (saved === "true") {
       setFocusMode(true);
     }
-  }, []);
+  }, [getLocalStorage]);
 
   // 移动端切换时自动关闭侧边栏
   useEffect(() => {
@@ -207,43 +214,47 @@ export function DocsLayout({ children }: DocsLayoutProps) {
             "overscroll-contain"
           )}
         >
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
-            {/* Breadcrumb */}
-            <Breadcrumb />
-            
-            {/* Metadata Display */}
-            {pathname !== "/docs" && <MetadataDisplay />}
-            
-            {/* Reading Time */}
-            {pathname !== "/docs" && <ReadingTime />}
-            
-            {/* Search (only on docs pages, not on /docs) */}
-            {pathname !== "/docs" && (
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10 pb-24 lg:pb-24">
+            <PageTransition>
+              {/* Breadcrumb */}
+              <Breadcrumb />
+              
+              {/* Metadata Display - 始终渲染，组件内部处理条件 */}
+              <MetadataDisplay />
+              
+              {/* Document Tags */}
+              <DocumentTags />
+              
+              {/* Document Stats */}
+              <DocumentStats />
+              
+              {/* Reading Time - 始终渲染，组件内部处理条件 */}
+              <ReadingTime />
+              
+              {/* Search - 始终渲染，组件内部处理条件 */}
               <div className="mb-6 lg:hidden">
                 <DocSearch />
               </div>
-            )}
 
-            <article className="prose prose-lg prose-gray dark:prose-invert max-w-none 
-              prose-headings:font-bold prose-headings:text-gray-900 dark:prose-headings:text-white 
-              prose-headings:scroll-mt-20
-              prose-p:text-gray-600 dark:prose-p:text-gray-300 
-              prose-a:text-gray-900 dark:prose-a:text-white hover:prose-a:text-gray-700 dark:hover:prose-a:text-gray-200 
-              prose-code:text-gray-900 dark:prose-code:text-white prose-code:bg-gray-100 dark:prose-code:bg-gray-800 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
-              prose-pre:bg-gray-900 dark:prose-pre:bg-gray-950
-              prose-strong:text-gray-900 dark:prose-strong:text-white
-              prose-ul:text-gray-600 dark:prose-ul:text-gray-300
-              prose-ol:text-gray-600 dark:prose-ol:text-gray-300
-              prose-blockquote:border-l-gray-300 dark:prose-blockquote:border-l-gray-700
-              prose-table:text-sm
-              prose-th:border-gray-300 dark:prose-th:border-gray-700
-              prose-td:border-gray-200 dark:prose-td:border-gray-800
-              prose-hr:border-gray-200 dark:prose-hr:border-gray-800">
-              {children}
-            </article>
-            
-            {/* Chapter Navigation */}
-            {pathname !== "/docs" && <ChapterNavigation />}
+              <article className="docs-article prose prose-lg dark:prose-invert max-w-none 
+                prose-headings:scroll-mt-20 prose-headings:font-semibold
+                prose-p:text-gray-600 dark:prose-p:text-gray-400 prose-p:leading-7
+                prose-a:text-blue-600 dark:prose-a:text-blue-400 hover:prose-a:text-blue-700 dark:hover:prose-a:text-blue-300 prose-a:no-underline hover:prose-a:underline
+                prose-strong:text-gray-900 dark:prose-strong:text-white prose-strong:font-semibold
+                prose-code:text-gray-900 dark:prose-code:text-gray-100 prose-code:bg-gray-100 dark:prose-code:bg-gray-800 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
+                prose-pre:bg-gray-900 dark:prose-pre:bg-gray-950 prose-pre:border prose-pre:border-gray-800 dark:prose-pre:border-gray-700">
+                {children}
+              </article>
+              
+              {/* Related Documents */}
+              <RelatedDocuments />
+              
+              {/* Document Feedback */}
+              <DocumentFeedback />
+              
+              {/* Chapter Navigation - 始终渲染，组件内部处理条件 */}
+              <ChapterNavigation />
+            </PageTransition>
           </div>
         </main>
 

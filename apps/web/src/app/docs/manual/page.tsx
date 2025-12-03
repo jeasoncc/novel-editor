@@ -1,3 +1,5 @@
+"use client";
+
 import {
   BookOpen,
   FileText,
@@ -13,8 +15,8 @@ import {
   Trash2,
   Keyboard,
 } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
+import { FormattedText } from "@/components/docs/formatted-text";
 
 const manualSections = [
   {
@@ -498,49 +500,43 @@ export default function ManualPage() {
               </h2>
             </div>
 
-            <div className="space-y-8">
+            <div className="space-y-5">
                     {section.content.map((item, itemIndex) => (
-                      <Card key={itemIndex} className="mb-6">
-                        <CardHeader>
-                          <CardTitle className="text-xl">
-                            <h3 className="m-0">{item.subtitle}</h3>
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          {item.text && (
-                            <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                              {item.text}
-                            </p>
-                          )}
-                          {item.steps && (
-                            <ol className="space-y-2 list-decimal list-inside">
-                              {item.steps.map((step, stepIndex) => (
-                                <li
-                                  key={stepIndex}
-                                  className="text-gray-600 dark:text-gray-300 leading-relaxed"
-                                >
-                                  {step}
-                                </li>
-                              ))}
-                            </ol>
-                          )}
-                          {item.items && (
-                            <ul className="space-y-2">
-                              {item.items.map((listItem, listIndex) => (
-                                <li
-                                  key={listIndex}
-                                  className="text-gray-600 dark:text-gray-300 leading-relaxed flex items-start gap-2"
-                                >
-                                  <span className="text-gray-400 dark:text-gray-400 mt-1.5">
-                                    •
-                                  </span>
-                                  <span>{listItem}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-                        </CardContent>
-                      </Card>
+                      <div key={itemIndex} className="border-l-2 border-gray-200 dark:border-gray-800 pl-5 py-1">
+                        <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-3">
+                          {item.subtitle}
+                        </h3>
+                        {item.text && (
+                          <p className="text-gray-600 dark:text-gray-400 leading-6 text-sm mb-0">
+                            <FormattedText text={item.text} />
+                          </p>
+                        )}
+                        {item.steps && (
+                          <ol className="space-y-2 mt-3 ml-4 list-decimal">
+                            {item.steps.map((step, stepIndex) => (
+                              <li
+                                key={stepIndex}
+                                className="text-gray-600 dark:text-gray-400 leading-6 text-sm"
+                              >
+                                <FormattedText text={step} />
+                              </li>
+                            ))}
+                          </ol>
+                        )}
+                        {item.items && (
+                          <ul className="space-y-2 mt-3 ml-4">
+                            {item.items.map((listItem, listIndex) => (
+                              <li
+                                key={listIndex}
+                                className="text-gray-600 dark:text-gray-400 leading-6 text-sm"
+                                style={{ listStyleType: 'disc' }}
+                              >
+                                <FormattedText text={listItem} />
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
                     ))}
             </div>
           </section>

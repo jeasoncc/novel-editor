@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { usePathname } from "next/navigation";
 import { Search, FileText, ArrowRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { docNavItems, type NavItem } from "./doc-nav-data";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface SearchResult {
   item: NavItem;
@@ -14,6 +16,7 @@ interface SearchResult {
 }
 
 export function DocSearch() {
+  const pathname = usePathname();
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
 
@@ -76,6 +79,9 @@ export function DocSearch() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
+
+  // 在 /docs 路径上不显示（必须在所有 hooks 之后）
+  if (pathname === "/docs") return null;
 
   return (
     <div className="relative">
