@@ -1,0 +1,196 @@
+name: Build MSIX for Microsoft Store
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g., 0.1.6)'
+        required: true
+        default: '0.1.6'
+  push:
+    tags:
+      - 'msix-v*.*.*'
+
+jobs:
+  build-msix:
+    name: Build MSIX Package
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+      
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+      
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: 'apps/desktop/src-tauri -> target'
+      
+      - name: Install dependencies
+        run: bun install
+      
+      - name: Build frontend
+        working-directory: apps/desktop
+        run: bun run build
+      
+      - name: Build Tauri app
+        working-directory: apps/desktop
+        run: bun run tauri build
+      
+      - name: Get version
+        id: version
+        shell: pwsh
+        run: |
+          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+            $VERSION = "${{ github.event.inputs.version }}"
+          } else {
+            $VERSION = "${{ github.ref_name }}".Replace("msix-v", "")
+          }
+          echo "version=$VERSION" >> $env:GITHUB_OUTPUT
+          echo "Version: $VERSION"
+      
+      - name: Create MSIX package structure
+        shell: pwsh
+        run: |
+          $VERSION = "${{ steps.version.outputs.version }}"
+          
+          # Create directories
+          New-Item -ItemType Directory -Force -Path msix-package/Assets
+          
+          # Copy executable
+          Copy-Item apps/desktop/src-tauri/target/release/novel-editor.exe msix-package/
+          
+          # Copy icons
+          Copy-Item apps/desktop/src-tauri/icons/* msix-package/Assets/ -Recurse -Force
+          
+          # Create AppxManifest.xml
+          $manifest = @"
+          <?xml version="1.0" encoding="utf-8"?>
+          <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+                   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+                   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities">
+            
+            <Identity Name="NovelEditor"
+                      Publisher="CN=Lotus"
+                      Version="$VERSION.0" />
+            
+            <Properties>
+              <DisplayName>小说编辑器</DisplayName>
+              <PublisherDisplayName>Lotus</PublisherDisplayName>
+              <Logo>Assets\StoreLogo.png</Logo>
+              <Description>专为小说创作者设计的现代化写作工具</Description>
+            </Properties>
+            
+            <Dependencies>
+              <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.22621.0" />
+            </Dependencies>
+            
+            <Resources>
+              <Resource Language="zh-CN"/>
+              <Resource Language="en-US"/>
+            </Resources>
+            
+            <Applications>
+              <Application Id="NovelEditor" 
+                           Executable="novel-editor.exe" 
+                           EntryPoint="Windows.FullTrustApplication">
+                <uap:VisualElements DisplayName="小说编辑器"
+                                    Description="专为小说创作者设计的现代化写作工具"
+                                    BackgroundColor="transparent"
+                                    Square150x150Logo="Assets\Square150x150Logo.png"
+                                    Square44x44Logo="Assets\Square44x44Logo.png">
+                  <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" 
+                                   Square310x310Logo="Assets\LargeTile.png" 
+                                   Square71x71Logo="Assets\SmallTile.png">
+                  </uap:DefaultTile>
+                  <uap:SplashScreen Image="Assets\SplashScreen.png" />
+                </uap:VisualElements>
+              </Application>
+            </Applications>
+            
+            <Capabilities>
+              <rescap:Capability Name="runFullTrust" />
+            </Capabilities>
+            
+          </Package>
+          "@
+          
+          $manifest | Out-File -FilePath msix-package/AppxManifest.xml -Encoding UTF8
+      
+      - name: Create MSIX package
+        shell: pwsh
+        run: |
+          $VERSION = "${{ steps.version.outputs.version }}"
+          
+          # Find MakeAppx.exe
+          $MakeAppx = Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\bin" -Recurse -Filter "MakeAppx.exe" | 
+                      Where-Object { $_.FullName -match "x64" } | 
+                      Select-Object -First 1 -ExpandProperty FullName
+          
+          if (-not $MakeAppx) {
+            Write-Error "MakeAppx.exe not found"
+            exit 1
+          }
+          
+          Write-Host "Using MakeAppx: $MakeAppx"
+          
+          # Create MSIX
+          & $MakeAppx pack /d msix-package /p "NovelEditor_$VERSION.msix" /o
+          
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "MSIX packaging failed"
+            exit 1
+          }
+          
+          Write-Host "MSIX package created successfully"
+      
+      - name: Upload MSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: msix-package
+          path: NovelEditor_*.msix
+      
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/msix-v')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: NovelEditor_*.msix
+          draft: true
+          generate_release_notes: true
+          body: |
+            ## 📦 Microsoft Store Package
+            
+            This is an MSIX package for Microsoft Store submission.
+            
+            ### Installation
+            
+            **For Microsoft Store:**
+            1. Download the `.msix` file
+            2. Upload to [Partner Center](https://partner.microsoft.com/dashboard)
+            3. Submit for review
+            
+            **For local testing:**
+            1. Download the `.msix` file
+            2. Right-click and select "Install"
+            3. Or use PowerShell: `Add-AppxPackage -Path "NovelEditor_${{ steps.version.outputs.version }}.msix"`
+            
+            ### Notes
+            
+            - This package is **unsigned** for local testing
+            - Microsoft Store will **automatically sign** it during the submission process
+            - No code signing certificate is required
+            
+            ### Version
+            
+            Version: ${{ steps.version.outputs.version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

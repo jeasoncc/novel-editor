@@ -1,0 +1,122 @@
+name: Build Signed EXE (Optional)
+
+# 这个 workflow 用于构建带数字签名的 EXE
+# 需要购买代码签名证书（$300-500/年）
+# 对于 Microsoft Store 不是必需的
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number'
+        required: true
+        default: '0.1.6'
+
+jobs:
+  build-signed:
+    name: Build and Sign EXE
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+      
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+      
+      - name: Install dependencies
+        run: bun install
+      
+      - name: Build frontend
+        working-directory: apps/desktop
+        run: bun run build
+      
+      - name: Build Tauri app
+        working-directory: apps/desktop
+        run: bun run tauri build
+      
+      # 如果你有代码签名证书，取消注释以下步骤
+      # - name: Import code signing certificate
+      #   shell: pwsh
+      #   run: |
+      #     # 从 GitHub Secrets 导入证书
+      #     $pfxBytes = [System.Convert]::FromBase64String("${{ secrets.CODE_SIGNING_CERT }}")
+      #     $pfxPath = "cert.pfx"
+      #     [System.IO.File]::WriteAllBytes($pfxPath, $pfxBytes)
+      #     
+      #     # 导入到证书存储
+      #     Import-PfxCertificate -FilePath $pfxPath -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String "${{ secrets.CERT_PASSWORD }}" -AsPlainText -Force)
+      
+      # - name: Sign executable
+      #   shell: pwsh
+      #   run: |
+      #     # 找到 signtool.exe
+      #     $SignTool = Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\bin" -Recurse -Filter "signtool.exe" | 
+      #                 Where-Object { $_.FullName -match "x64" } | 
+      #                 Select-Object -First 1 -ExpandProperty FullName
+      #     
+      #     # 签名 EXE
+      #     & $SignTool sign `
+      #       /f cert.pfx `
+      #       /p "${{ secrets.CERT_PASSWORD }}" `
+      #       /tr http://timestamp.digicert.com `
+      #       /td sha256 `
+      #       /fd sha256 `
+      #       apps/desktop/src-tauri/target/release/novel-editor.exe
+      #     
+      #     # 签名安装程序
+      #     Get-ChildItem -Path apps/desktop/src-tauri/target/release/bundle -Recurse -Include "*.exe","*.msi" | ForEach-Object {
+      #       & $SignTool sign `
+      #         /f cert.pfx `
+      #         /p "${{ secrets.CERT_PASSWORD }}" `
+      #         /tr http://timestamp.digicert.com `
+      #         /td sha256 `
+      #         /fd sha256 `
+      #         $_.FullName
+      #     }
+      
+      # - name: Verify signature
+      #   shell: pwsh
+      #   run: |
+      #     $SignTool = Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\bin" -Recurse -Filter "signtool.exe" | 
+      #                 Where-Object { $_.FullName -match "x64" } | 
+      #                 Select-Object -First 1 -ExpandProperty FullName
+      #     
+      #     & $SignTool verify /pa apps/desktop/src-tauri/target/release/novel-editor.exe
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: signed-installers
+          path: |
+            apps/desktop/src-tauri/target/release/bundle/nsis/*.exe
+            apps/desktop/src-tauri/target/release/bundle/msi/*.msi
+
+# 配置说明：
+# 
+# 1. 购买代码签名证书
+#    - DigiCert: https://www.digicert.com/code-signing/
+#    - Sectigo: https://sectigo.com/ssl-certificates-tls/code-signing
+#    - GlobalSign: https://www.globalsign.com/en/code-signing-certificate
+# 
+# 2. 将证书转换为 Base64
+#    PowerShell:
+#    $bytes = [System.IO.File]::ReadAllBytes("cert.pfx")
+#    $base64 = [System.Convert]::ToBase64String($bytes)
+#    $base64 | Out-File cert-base64.txt
+# 
+# 3. 添加 GitHub Secrets
+#    - CODE_SIGNING_CERT: 证书的 Base64 编码
+#    - CERT_PASSWORD: 证书密码
+# 
+# 4. 取消注释上面的签名步骤
+# 
+# 注意：对于 Microsoft Store，不需要购买证书！
+# Store 会自动签名你的应用。
