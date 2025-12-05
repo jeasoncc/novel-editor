@@ -77,3 +77,4 @@ echo "  - ICO 文件已生成（如果 ImageMagick 可用）"
 echo "  - ICNS 文件需要在 macOS 上使用 iconutil 生成"
 echo "  - 或者可以使用在线工具: https://convertio.co/png-ico/ 或 https://convertio.co/png-icns/"
 
+
