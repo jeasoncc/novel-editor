@@ -14,7 +14,7 @@ jobs:
       contents: read
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0  # 获取完整历史
       
@@ -80,7 +80,7 @@ jobs:
           cat backup-info.txt
       
       - name: Upload backup artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: repository-backup-${{ github.run_number }}
           path: |
