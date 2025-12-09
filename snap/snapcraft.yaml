@@ -72,11 +72,11 @@ parts:
       
       echo "=== Installing root dependencies ==="
       cd $CRAFT_PART_SRC
-      bun install --frozen-lockfile
+      bun install
       
       echo "=== Building desktop frontend ==="
       cd apps/desktop
-      bun install --frozen-lockfile
+      bun install
       bun run build
       
       # 验证构建输出
