@@ -1,0 +1,258 @@
+name: Build MSIX Package
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to build (e.g., 0.1.11)'
+        required: false
+  push:
+    tags:
+      - "desktop-v*.*.*"
+
+jobs:
+  build-msix:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      # 安装 Bun
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      # 安装 Rust
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: 'apps/desktop/src-tauri -> target'
+
+      # 安装依赖
+      - name: Install dependencies
+        run: |
+          bun install
+          cd apps/desktop
+          bun install
+
+      # 构建 Tauri 应用
+      - name: Build Tauri app
+        working-directory: apps/desktop
+        run: |
+          bun run build
+          bun run tauri build
+
+      # 安装 MSIX Hero (CLI 工具)
+      - name: Install MSIX Hero CLI
+        shell: pwsh
+        run: |
+          # 下载 MSIX Hero CLI
+          $url = "https://github.com/marcinotorowski/MSIX-Hero/releases/latest/download/msixhero-cli.zip"
+          Invoke-WebRequest -Uri $url -OutFile "msixhero-cli.zip" -ErrorAction SilentlyContinue
+          
+          if (Test-Path "msixhero-cli.zip") {
+            Expand-Archive -Path "msixhero-cli.zip" -DestinationPath "msixhero-cli"
+            Write-Output "MSIX Hero CLI 安装成功"
+          } else {
+            Write-Warning "MSIX Hero CLI 下载失败，将使用备用方案"
+          }
+
+      # 方案 A: 使用 MSIX Hero 转换 MSI 到 MSIX
+      - name: Convert MSI to MSIX (MSIX Hero)
+        shell: pwsh
+        continue-on-error: true
+        id: msixhero
+        run: |
+          $msiPath = Get-ChildItem -Path "apps/desktop/src-tauri/target/release/bundle/msi" -Filter "*.msi" | Select-Object -First 1
+          
+          if ($msiPath -and (Test-Path "msixhero-cli/msixherocli.exe")) {
+            $version = (Get-Content "apps/desktop/src-tauri/tauri.conf.json" | ConvertFrom-Json).version
+            $outputFile = "novel-editor_$version.msix"
+            
+            & "msixhero-cli/msixherocli.exe" pack `
+              --input $msiPath.FullName `
+              --output $outputFile `
+              --publisher "CN=Lotus" `
+              --displayName "Novel Editor" `
+              --description "一个现代化的小说编辑器"
+            
+            if ($LASTEXITCODE -eq 0) {
+              Write-Output "MSIX 转换成功"
+              echo "success=true" >> $env:GITHUB_OUTPUT
+            }
+          }
+
+      # 方案 B: 使用 Windows SDK 的 MakeAppx
+      - name: Convert MSI to MSIX (MakeAppx)
+        if: steps.msixhero.outputs.success != 'true'
+        shell: pwsh
+        run: |
+          Write-Output "使用 MakeAppx 方案..."
+          
+          # 获取版本号
+          $version = (Get-Content "apps/desktop/src-tauri/tauri.conf.json" | ConvertFrom-Json).version
+          $versionParts = $version -split '\.'
+          $msixVersion = "$($versionParts[0]).$($versionParts[1]).$($versionParts[2]).0"
+          
+          # 创建工作目录
+          New-Item -ItemType Directory -Force -Path "msix-package"
+          
+          # 从 MSI 提取文件
+          $msiPath = Get-ChildItem -Path "apps/desktop/src-tauri/target/release/bundle/msi" -Filter "*.msi" | Select-Object -First 1
+          
+          if ($msiPath) {
+            Write-Output "找到 MSI: $($msiPath.FullName)"
+            
+            # 使用 msiexec 提取（需要临时安装）
+            $extractPath = Join-Path $PWD "msix-package"
+            Start-Process msiexec.exe -ArgumentList "/a `"$($msiPath.FullName)`" /qn TARGETDIR=`"$extractPath`"" -Wait -NoNewWindow
+            
+            # 如果提取失败，直接复制 EXE
+            if (-not (Test-Path "$extractPath/novel-editor.exe")) {
+              Write-Output "MSI 提取失败，使用备用方案..."
+              $exePath = "apps/desktop/src-tauri/target/release/novel-editor.exe"
+              if (Test-Path $exePath) {
+                Copy-Item $exePath "$extractPath/novel-editor.exe"
+              }
+            }
+          }
+          
+          # 创建 Assets 目录和图标
+          New-Item -ItemType Directory -Force -Path "msix-package/Assets"
+          
+          # 复制图标（如果存在）
+          $iconPath = "apps/desktop/src-tauri/icons/icon.png"
+          if (Test-Path $iconPath) {
+            Copy-Item $iconPath "msix-package/Assets/Square150x150Logo.png"
+            Copy-Item $iconPath "msix-package/Assets/Square44x44Logo.png"
+            Copy-Item $iconPath "msix-package/Assets/StoreLogo.png"
+          } else {
+            # 创建简单的占位符图标
+            Write-Warning "未找到图标文件"
+          }
+          
+          # 创建 AppxManifest.xml
+          $manifest = @"
+          <?xml version="1.0" encoding="utf-8"?>
+          <Package
+            xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+            xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+            xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities">
+            
+            <Identity
+              Name="NovelEditor"
+              Publisher="CN=Lotus"
+              Version="$msixVersion" />
+            
+            <Properties>
+              <DisplayName>Novel Editor</DisplayName>
+              <PublisherDisplayName>Lotus</PublisherDisplayName>
+              <Logo>Assets\StoreLogo.png</Logo>
+              <Description>一个现代化的小说编辑器</Description>
+            </Properties>
+            
+            <Dependencies>
+              <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.22621.0" />
+            </Dependencies>
+            
+            <Resources>
+              <Resource Language="zh-CN" />
+            </Resources>
+            
+            <Applications>
+              <Application Id="NovelEditor" Executable="novel-editor.exe" EntryPoint="Windows.FullTrustApplication">
+                <uap:VisualElements
+                  DisplayName="Novel Editor"
+                  Description="一个现代化的小说编辑器"
+                  BackgroundColor="transparent"
+                  Square150x150Logo="Assets\Square150x150Logo.png"
+                  Square44x44Logo="Assets\Square44x44Logo.png">
+                </uap:VisualElements>
+              </Application>
+            </Applications>
+            
+            <Capabilities>
+              <rescap:Capability Name="runFullTrust" />
+            </Capabilities>
+          </Package>
+          "@
+          
+          Set-Content -Path "msix-package/AppxManifest.xml" -Value $manifest -Encoding UTF8
+          
+          # 查找 MakeAppx.exe
+          $makeAppxPaths = @(
+            "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64\makeappx.exe",
+            "C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64\makeappx.exe"
+          )
+          
+          $makeAppx = $null
+          foreach ($path in $makeAppxPaths) {
+            if (Test-Path $path) {
+              $makeAppx = $path
+              break
+            }
+          }
+          
+          if (-not $makeAppx) {
+            $makeAppx = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin" -Recurse -Filter "makeappx.exe" -ErrorAction SilentlyContinue | 
+                        Where-Object { $_.FullName -like "*\x64\*" } | 
+                        Select-Object -First 1 -ExpandProperty FullName
+          }
+          
+          if ($makeAppx) {
+            Write-Output "使用 MakeAppx: $makeAppx"
+            
+            $outputFile = "novel-editor_$version.msix"
+            & $makeAppx pack /d "msix-package" /p $outputFile /l
+            
+            if ($LASTEXITCODE -eq 0) {
+              Write-Output "MSIX 打包成功: $outputFile"
+              
+              # 创建自签名证书并签名
+              $cert = New-SelfSignedCertificate -Type Custom -Subject "CN=Lotus" `
+                -KeyUsage DigitalSignature -FriendlyName "Novel Editor" `
+                -CertStoreLocation "Cert:\CurrentUser\My" `
+                -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
+              
+              $password = ConvertTo-SecureString -String "temp123" -Force -AsPlainText
+              Export-PfxCertificate -Cert $cert -FilePath "temp-cert.pfx" -Password $password
+              
+              # 查找 SignTool
+              $signTool = $makeAppx -replace "makeappx\.exe", "signtool.exe"
+              
+              if (Test-Path $signTool) {
+                & $signTool sign /fd SHA256 /a /f "temp-cert.pfx" /p "temp123" $outputFile
+                Write-Output "MSIX 已签名（测试证书）"
+              }
+            } else {
+              Write-Error "MSIX 打包失败"
+              exit 1
+            }
+          } else {
+            Write-Error "找不到 MakeAppx.exe"
+            exit 1
+          }
+
+      # 上传 MSIX 产物
+      - name: Upload MSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: msix-package
+          path: "*.msix"
+          if-no-files-found: error
+
+      # 发布到 GitHub Release
+      - name: Upload to Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "*.msix"
+          draft: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

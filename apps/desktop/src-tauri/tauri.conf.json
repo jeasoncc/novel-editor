@@ -35,7 +35,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": ["msi", "nsis"],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -50,6 +50,9 @@
       "nsis": {
         "languages": ["SimpChinese"]
       }
-    }
+    },
+    "publisher": "Lotus",
+    "shortDescription": "一个现代化的小说编辑器",
+    "longDescription": "Novel Editor 是一个功能强大的小说编辑器，提供丰富的编辑功能和直观的用户界面。"
   }
 }
