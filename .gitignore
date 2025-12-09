@@ -61,3 +61,6 @@ bun.lockb
 
 # Build info
 *.tsbuildinfo
+
+# Winget 发布临时目录
+winget-pkgs/

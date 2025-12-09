@@ -263,3 +263,70 @@ echo './scripts/bump-version.sh' > .husky/pre-commit
 - [Git Hooks 官方文档](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks)
 - [Husky 文档](https://typicode.github.io/husky/)
 - 版本号递增脚本：`scripts/bump-version.sh`
+
+
+## 问题排查
+
+### Hook 没有执行
+
+1. 检查文件权限：
+   ```bash
+   ls -la .git/hooks/pre-commit
+   ```
+   
+2. 如果没有执行权限，添加：
+   ```bash
+   chmod +x .git/hooks/pre-commit
+   ```
+
+### 版本号没有更新
+
+**常见原因：**
+
+1. **只修改了版本文件本身**
+   - Hook 会检测到只有版本文件变更，自动跳过递增
+   - 这是为了避免无限循环
+   - 修复日期：2024-12-09
+
+2. **设置了跳过环境变量**
+   ```bash
+   echo $SKIP_VERSION_BUMP
+   ```
+
+3. **脚本不存在或无权限**
+   ```bash
+   ls -la scripts/bump-version.sh
+   chmod +x scripts/bump-version.sh
+   ```
+
+**解决方案：**
+
+如果版本号确实没有递增，检查最近的提交：
+```bash
+# 查看最近的版本变化
+git log --oneline -5
+git show HEAD:package.json | grep version
+```
+
+如果发现问题，可以手动运行脚本测试：
+```bash
+./scripts/bump-version.sh
+```
+
+### 测试 Hook 是否正常工作
+
+```bash
+# 1. 创建测试文件
+echo "test" > test.txt
+git add test.txt
+
+# 2. 提交（应该看到版本号递增）
+git commit -m "test: version bump"
+
+# 3. 检查版本号
+grep version package.json
+
+# 4. 撤销测试提交
+git reset --hard HEAD~1
+rm test.txt
+```

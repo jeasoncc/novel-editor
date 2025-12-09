@@ -7,8 +7,9 @@
 3. ✅ 推送代码到 GitHub
 4. ✅ 创建了 desktop-v0.1.11 tag
 5. ✅ 触发了 GitHub Actions 构建
-6. ✅ 创建了 MSIX 自动化打包 workflow
+6. ✅ 创建了 MSIX 自动化打包 workflow（cargo-packager 方案）
 7. ✅ 完成了 MSIX 自动化文档
+8. ✅ 修复了版本号自动递增问题
 
 ## 🔄 正在进行
 
