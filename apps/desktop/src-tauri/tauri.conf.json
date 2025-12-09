@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "novel-editor",
-  "version": "0.1.18",
+  "version": "0.1.19",
   "identifier": "com.lotus.novel-editor",
   "build": {
     "beforeDevCommand": "bun run dev",
@@ -35,7 +35,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["msi", "nsis"],
+    "targets": "all",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -51,7 +51,22 @@
         "languages": ["SimpChinese"]
       }
     },
-    "publisher": "Lotus",
+    "linux": {
+      "deb": {
+        "depends": []
+      },
+      "appimage": {
+        "bundleMediaFramework": true
+      }
+    },
+    "macOS": {
+      "minimumSystemVersion": "10.13"
+    },
+    "publisher": "Jeason",
+    "copyright": "Copyright © 2025 Jeason",
+    "category": "Productivity",
+    "homepage": "https://github.com/jeasoncc/novel-editor",
+    "licenseFile": "../../LICENSE",
     "shortDescription": "一个现代化的小说编辑器",
     "longDescription": "Novel Editor 是一个功能强大的小说编辑器，提供丰富的编辑功能和直观的用户界面。"
   }
