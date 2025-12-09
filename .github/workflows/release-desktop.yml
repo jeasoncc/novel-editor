@@ -103,20 +103,52 @@ jobs:
           Write-Output "Frontend build successful"
           Get-ChildItem dist/
 
-      # 构建 & 发布 Tauri App
+      # 构建 Tauri App（不上传到 release）
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           projectPath: apps/desktop
-          tagName: desktop-v__VERSION__
-          releaseName: 'Novel Editor Desktop v__VERSION__'
-          releaseBody: 'See the assets to download this version and install.'
-          releaseDraft: true
-          prerelease: false
           args: ${{ matrix.args }}
 
-      # 上传构建产物 (Linux)
+      # 上传到 GitHub Release (Linux)
+      - name: Upload to Release (Linux)
+        if: success() && runner.os == 'Linux' && startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          files: |
+            apps/desktop/src-tauri/target/release/bundle/deb/*.deb
+            apps/desktop/src-tauri/target/release/bundle/appimage/*.AppImage
+            apps/desktop/src-tauri/target/release/bundle/rpm/*.rpm
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # 上传到 GitHub Release (macOS)
+      - name: Upload to Release (macOS)
+        if: success() && runner.os == 'macOS' && startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          files: |
+            apps/desktop/src-tauri/target/*/release/bundle/dmg/*.dmg
+            apps/desktop/src-tauri/target/*/release/bundle/macos/*.app.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # 上传到 GitHub Release (Windows)
+      - name: Upload to Release (Windows)
+        if: success() && runner.os == 'Windows' && startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          files: |
+            apps/desktop/src-tauri/target/release/bundle/msi/*.msi
+            apps/desktop/src-tauri/target/release/bundle/nsis/*.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # 上传构建产物到 Artifacts (Linux)
       - name: Upload build artifacts (Linux)
         if: success() && runner.os == 'Linux'
         uses: actions/upload-artifact@v4
