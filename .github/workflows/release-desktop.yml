@@ -375,7 +375,7 @@ jobs:
           # 获取 Publisher（用于创建证书）
           $publisher = $env:MSIX_PUBLISHER
           if ([string]::IsNullOrEmpty($publisher)) {
-            $publisher = "CN=Lotus"
+            $publisher = "CN=Jeason"
             Write-Warning "⚠ 使用默认 Publisher: $publisher"
           }
           

@@ -92,7 +92,7 @@ parts:
       bun run tauri build --bundles deb
       
       echo "=== Extracting deb package ==="
-      DEB_FILE=$(find target/release/bundle/deb -name "*.deb" | head -n 1)
+      DEB_FILE=$(find src-tauri/target/release/bundle/deb -name "*.deb" | head -n 1)
       if [ -z "$DEB_FILE" ]; then
         echo "ERROR: No deb file found"
         exit 1
