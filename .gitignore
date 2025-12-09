@@ -64,3 +64,23 @@ bun.lockb
 
 # Winget 发布临时目录
 winget-pkgs/
+
+# 安装包文件（应该通过 GitHub Releases 分发，不要提交到仓库）
+*.msix
+*.msi
+*.exe
+*.appimage
+*.AppImage
+*.deb
+*.rpm
+*.dmg
+*.pkg
+*.snap
+
+# MSIX 打包临时目录
+msix-package/
+
+# 证书文件
+*.pfx
+*.cer
+*.p12
