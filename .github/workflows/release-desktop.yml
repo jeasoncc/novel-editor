@@ -21,20 +21,14 @@ jobs:
         include:
           - platform: 'macos-latest'
             args: '--target aarch64-apple-darwin'
-            target: 'aarch64-apple-darwin'
-            os_name: 'macos'
           - platform: 'macos-latest'
             args: '--target x86_64-apple-darwin'
-            target: 'x86_64-apple-darwin'
-            os_name: 'macos'
           - platform: 'ubuntu-22.04'
             args: ''
-            target: ''
-            os_name: 'linux'
+          - platform: 'ubuntu-22.04-arm'
+            args: ''
           - platform: 'windows-latest'
             args: ''
-            target: ''
-            os_name: 'windows'
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -42,7 +36,7 @@ jobs:
 
       # Ubuntu 系统依赖
       - name: Install dependencies (Ubuntu only)
-        if: matrix.os_name == 'linux'
+        if: matrix.platform == 'ubuntu-22.04' || matrix.platform == 'ubuntu-22.04-arm'
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -122,28 +116,26 @@ jobs:
           prerelease: false
           args: ${{ matrix.args }}
 
-      # 上传构建产物 (Linux) - 注意：当前 tauri.conf.json 未配置 Linux bundles
+      # 上传构建产物 (Linux)
       - name: Upload build artifacts (Linux)
-        if: success() && matrix.os_name == 'linux'
+        if: success() && runner.os == 'Linux'
         uses: actions/upload-artifact@v4
-        continue-on-error: true
         with:
-          name: tauri-bundles-linux
+          name: tauri-bundles-${{ matrix.platform }}
           path: |
             apps/desktop/src-tauri/target/release/bundle/deb/*.deb
             apps/desktop/src-tauri/target/release/bundle/appimage/*.AppImage
             apps/desktop/src-tauri/target/release/bundle/rpm/*.rpm
       
-      # 上传构建产物 (macOS) - 注意：当前 tauri.conf.json 未配置 macOS bundles
+      # 上传构建产物 (macOS)
       - name: Upload build artifacts (macOS)
-        if: success() && matrix.os_name == 'macos'
+        if: success() && runner.os == 'macOS'
         uses: actions/upload-artifact@v4
-        continue-on-error: true
         with:
-          name: tauri-bundles-macos-${{ matrix.target }}
+          name: tauri-bundles-${{ matrix.platform }}-${{ matrix.args }}
           path: |
             apps/desktop/src-tauri/target/*/release/bundle/dmg/*.dmg
-            apps/desktop/src-tauri/target/*/release/bundle/macos/*.app.tar.gz
+            apps/desktop/src-tauri/target/*/release/bundle/macos/*.app
       
       # 上传构建产物 (Windows)
       - name: Upload build artifacts (Windows)
