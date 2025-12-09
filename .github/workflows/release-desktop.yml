@@ -372,14 +372,15 @@ jobs:
             exit 1
           }
           
-          # 获取 Publisher（用于创建证书）
+          # 获取 Publisher（用于创建证书）- 必须与 AppxManifest.xml 中的 Publisher 完全一致
           $publisher = $env:MSIX_PUBLISHER
           if ([string]::IsNullOrEmpty($publisher)) {
-            $publisher = "CN=Jeason"
+            # 使用 Microsoft Store Partner Center 分配的 Publisher ID
+            $publisher = "CN=056C6E40-362E-4DC2-A03D-B19B795AA254"
             Write-Warning "⚠ 使用默认 Publisher: $publisher"
           }
           
-          # 创建自签名证书
+          # 创建自签名证书（Subject 必须与 AppxManifest.xml 中的 Publisher 完全匹配）
           Write-Output "创建自签名证书..."
           Write-Output "  Subject: $publisher"
           $cert = New-SelfSignedCertificate -Type Custom -Subject $publisher `
