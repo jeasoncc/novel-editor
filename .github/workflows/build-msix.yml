@@ -24,10 +24,6 @@ jobs:
         with:
           workspaces: 'apps/desktop/src-tauri -> target'
 
-      # 安装 msixbundle-rs
-      - name: Install msixbundle
-        run: cargo install msixbundle
-
       # 安装 Bun
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
@@ -46,11 +42,11 @@ jobs:
         working-directory: apps/desktop
         run: bun run tauri build
 
-      # 使用 msixbundle 创建 MSIX
-      - name: Create MSIX with msixbundle
+      # 创建 MSIX 包
+      - name: Create MSIX package
         shell: pwsh
         run: |
-          Write-Output "使用 msixbundle 创建 MSIX 包..."
+          Write-Output "创建 MSIX 包..."
           
           # 读取版本号
           $config = Get-Content 'apps/desktop/src-tauri/tauri.conf.json' | ConvertFrom-Json
@@ -65,27 +61,84 @@ jobs:
           
           Write-Output "✓ 找到可执行文件: $exePath"
           
-          # 使用 msixbundle 创建 MSIX
-          $outputMsix = "novel-editor_${version}_x64.msix"
+          # 创建 MSIX 目录结构
+          $msixDir = "msix-package"
+          New-Item -ItemType Directory -Force -Path $msixDir | Out-Null
+          New-Item -ItemType Directory -Force -Path "$msixDir/Assets" | Out-Null
           
-          msixbundle `
-            --exe $exePath `
-            --output $outputMsix `
-            --name "NovelEditor" `
-            --display-name "Novel Editor" `
-            --publisher "CN=Lotus" `
-            --publisher-display-name "Lotus" `
-            --version "$version.0" `
-            --description "一个现代化的小说编辑器" `
-            --icon "apps/desktop/src-tauri/icons/icon.ico" `
-            --logo "apps/desktop/src-tauri/icons/Square150x150Logo.png"
+          # 复制可执行文件
+          Copy-Item $exePath "$msixDir/novel-editor.exe"
+          Write-Output "✓ 复制可执行文件"
           
-          if ($LASTEXITCODE -ne 0) {
-            Write-Error "MSIX 创建失败"
+          # 复制图标
+          Copy-Item "apps/desktop/src-tauri/icons/Square44x44Logo.png" "$msixDir/Assets/"
+          Copy-Item "apps/desktop/src-tauri/icons/Square150x150Logo.png" "$msixDir/Assets/"
+          Copy-Item "apps/desktop/src-tauri/icons/StoreLogo.png" "$msixDir/Assets/"
+          Write-Output "✓ 复制图标文件"
+          
+          # 创建 AppxManifest.xml
+          $manifest = @"
+          <?xml version="1.0" encoding="utf-8"?>
+          <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+                   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+                   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities">
+            <Identity Name="Lotus.NovelEditor"
+                      Publisher="CN=Lotus"
+                      Version="$version.0" />
+            <Properties>
+              <DisplayName>Novel Editor</DisplayName>
+              <PublisherDisplayName>Lotus</PublisherDisplayName>
+              <Logo>Assets\StoreLogo.png</Logo>
+            </Properties>
+            <Dependencies>
+              <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.22621.0" />
+            </Dependencies>
+            <Resources>
+              <Resource Language="zh-CN" />
+            </Resources>
+            <Applications>
+              <Application Id="NovelEditor" Executable="novel-editor.exe" EntryPoint="Windows.FullTrustApplication">
+                <uap:VisualElements DisplayName="Novel Editor"
+                                    Description="一个现代化的小说编辑器"
+                                    BackgroundColor="transparent"
+                                    Square150x150Logo="Assets\Square150x150Logo.png"
+                                    Square44x44Logo="Assets\Square44x44Logo.png">
+                </uap:VisualElements>
+              </Application>
+            </Applications>
+            <Capabilities>
+              <rescap:Capability Name="runFullTrust" />
+            </Capabilities>
+          </Package>
+          "@
+          
+          Set-Content -Path "$msixDir/AppxManifest.xml" -Value $manifest -Encoding UTF8
+          Write-Output "✓ 创建 AppxManifest.xml"
+          
+          # 查找 MakeAppx
+          Write-Output "查找 MakeAppx 工具..."
+          $makeAppx = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin" -Recurse -Filter "makeappx.exe" -ErrorAction SilentlyContinue | 
+                      Where-Object { $_.FullName -like "*\x64\*" } | 
+                      Select-Object -First 1 -ExpandProperty FullName
+          
+          if (-not $makeAppx) {
+            Write-Error "未找到 MakeAppx 工具"
             exit 1
           }
           
-          Write-Output "✓ MSIX 创建成功: $outputMsix"
+          Write-Output "✓ 找到 MakeAppx: $makeAppx"
+          
+          # 打包 MSIX
+          $outputMsix = "novel-editor_${version}_x64.msix"
+          Write-Output "打包 MSIX: $outputMsix"
+          & $makeAppx pack /d $msixDir /p $outputMsix /o
+          
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "MSIX 打包失败"
+            exit 1
+          }
+          
+          Write-Output "✓ MSIX 打包成功"
           
           # 显示文件信息
           if (Test-Path $outputMsix) {
