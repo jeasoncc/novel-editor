@@ -1,27 +1,106 @@
-# Novel Editor Monorepo
+# Novel Editor
 
-> 专业的长篇小说写作工具 - 桌面应用 + 官网
+> 现代化、强大的小说写作应用，为严肃作家打造
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Bun](https://img.shields.io/badge/Bun-1.2+-black?logo=bun)](https://bun.sh)
-[![Turborepo](https://img.shields.io/badge/Turborepo-2.0+-blue?logo=turborepo)](https://turbo.build)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.8+-blue?logo=typescript)](https://www.typescriptlang.org/)
+[![GitHub Release](https://img.shields.io/github/v/release/jeasoncc/novel-editor)](https://github.com/jeasoncc/novel-editor/releases)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-blue)](https://github.com/jeasoncc/novel-editor/releases)
 
-Novel Editor 是一个现代化的长篇小说创作工具集，采用 Monorepo 架构，包含跨平台桌面应用和官网。
+Novel Editor 是专为小说家和长篇小说作者设计的专业写作工具。采用现代技术构建，提供无干扰的写作环境和强大的组织功能。
 
 > 🇺🇸 [English Documentation](./README.md) | 中文
 
 ---
-![](https://s3.bmp.ovh/imgs/2025/11/30/17e3f22342be954f.png)
 
-![](https://s3.bmp.ovh/imgs/2025/11/30/20c87f8ef08b246d.png)
+![Novel Editor 截图](https://s3.bmp.ovh/imgs/2025/11/30/17e3f22342be954f.png)
 
-## 🎯 项目概述
+![Novel Editor 功能](https://s3.bmp.ovh/imgs/2025/11/30/20c87f8ef08b246d.png)
 
-这是一个基于 **Turborepo** 的 Monorepo 项目，使用 **Bun** 作为包管理器和运行时，包含两个主要应用：
+## 📥 安装
 
-- **Desktop App** (`apps/desktop`) - 基于 Tauri + React 的跨平台桌面应用
-- **Website** (`apps/web`) - 基于 Next.js 15 的官方网站
+选择你的平台，几秒钟内安装 Novel Editor：
+
+### Windows
+
+#### Microsoft Store（推荐）
+即将上架 Microsoft Store，支持自动更新。
+
+#### Winget（Windows 包管理器）
+```bash
+winget install Jeason.NovelEditor
+```
+
+#### 直接下载
+从 [GitHub Releases](https://github.com/jeasoncc/novel-editor/releases) 下载安装程序：
+- `novel-editor_x.x.x_x64-setup.exe` - NSIS 安装程序（推荐）
+- `novel-editor_x.x.x_x64_zh-CN.msi` - MSI 安装程序
+- `novel-editor_x.x.x_x64.msix` - MSIX 包
+
+### macOS
+
+#### Homebrew（即将推出）
+```bash
+brew install --cask novel-editor
+```
+
+#### 直接下载
+从 [GitHub Releases](https://github.com/jeasoncc/novel-editor/releases) 下载：
+- `novel-editor_x.x.x_aarch64.dmg` - Apple Silicon (M1/M2/M3)
+- `novel-editor_x.x.x_x64.dmg` - Intel Mac
+
+### Linux
+
+#### Arch Linux (AUR)
+```bash
+yay -S novel-editor-bin
+# 或
+paru -S novel-editor-bin
+```
+
+#### Snap Store（即将推出）
+```bash
+sudo snap install novel-editor
+```
+
+#### Debian/Ubuntu (DEB)
+从 [GitHub Releases](https://github.com/jeasoncc/novel-editor/releases) 下载：
+```bash
+# x64
+sudo dpkg -i novel-editor_x.x.x_amd64.deb
+
+# ARM64
+sudo dpkg -i novel-editor_x.x.x_arm64.deb
+```
+
+#### Fedora/RHEL (RPM)
+```bash
+# x64
+sudo rpm -i novel-editor-x.x.x-1.x86_64.rpm
+
+# ARM64
+sudo rpm -i novel-editor-x.x.x-1.aarch64.rpm
+```
+
+#### AppImage（通用）
+下载并运行：
+```bash
+# x64
+chmod +x novel-editor_x.x.x_amd64.AppImage
+./novel-editor_x.x.x_amd64.AppImage
+
+# ARM64
+chmod +x novel-editor_x.x.x_aarch64.AppImage
+./novel-editor_x.x.x_aarch64.AppImage
+```
+
+## 🎯 什么是 Novel Editor？
+
+Novel Editor 是一个 **Monorepo** 项目，包含：
+
+- **桌面应用** - 跨平台桌面应用（Tauri + React）
+- **官方网站** - 官网和文档（Next.js 15）
+- **API 服务器** - 后端服务（Fastify + PostgreSQL）
+- **管理面板** - 内容管理系统
 
 ## ✨ 核心特性
 
