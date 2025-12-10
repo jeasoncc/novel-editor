@@ -1,0 +1,7 @@
+services:
+  snapcraft:
+    build: .
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./output:/output

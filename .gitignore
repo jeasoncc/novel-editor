@@ -84,3 +84,8 @@ msix-package/
 *.pfx
 *.cer
 *.p12
+
+# Snapcraft 凭证文件（敏感信息，不要提交）
+scripts/snapcraft-login/output/
+**/snapcraft-credentials.txt
+**/snapcraft-credentials.*
