@@ -1,90 +1,108 @@
-# Novel Editor - AUR 包
+# Novel Editor - Professional Writing Tool
 
-这是 Novel Editor 的 Arch User Repository (AUR) 包。
+A comprehensive novel writing application designed for serious authors and creative writers.
 
-## 安装
+## Features
 
-### 使用 AUR Helper
+### 📝 Advanced Text Editor
+- **Rich-text editing** with Lexical editor framework
+- **Markdown shortcuts** for rapid formatting
+- **Table support** for complex document structures
+- **Real-time auto-save** prevents data loss
+- **Multi-format export** including DOCX
 
-如果你使用 `yay` 或 `paru`：
+### 🎯 Project Management
+- **Three-tier structure**: Project → Chapter → Scene
+- **Drag-and-drop reordering** for easy organization
+- **Visual outline view** with quick navigation
+- **Global search** across all projects and content
 
+### 👥 Character Development
+- **Character profiles** with detailed information
+- **Alias management** for complex character relationships
+- **Experience tracking** and backstory development
+- **Character relationship mapping**
+
+### 🌍 World-building Tools
+- **Location management** for story settings
+- **Faction and organization** tracking
+- **Item and concept** organization
+- **Integrated drawing tools** (Excalidraw canvas)
+- **Mermaid diagrams** for plot visualization
+
+### 📊 Writing Analytics
+- **Real-time word counting** and progress tracking
+- **Reading time estimation** based on content length
+- **Chapter distribution** visualization
+- **Writing statistics** and progress reports
+
+### 🎨 Customizable Interface
+- **Multiple themes** (VSCode-like experience)
+- **Icon customization** with various icon sets
+- **Dark/light mode** support
+- **Responsive design** for all screen sizes
+
+### 🔒 Privacy-First
+- **Local storage only** - no cloud dependency
+- **Offline-first** architecture
+- **No data collection** or tracking
+- **Complete privacy** - your stories stay on your device
+
+## Installation
+
+### From AUR
 ```bash
 yay -S novel-editor
-# 或
+# or
 paru -S novel-editor
 ```
 
-### 手动安装
-
+### Manual Installation
 ```bash
-# 克隆 AUR 仓库
 git clone https://aur.archlinux.org/novel-editor.git
 cd novel-editor
-
-# 构建并安装
 makepkg -si
 ```
 
-## 依赖
+## System Requirements
 
-### 运行时依赖
-- `webkit2gtk` - WebKit 渲染引擎
-- `gtk3` - GTK3 图形库
-- `libappindicator-gtk3` - 系统托盘支持
+- **OS**: Arch Linux (x86_64)
+- **Dependencies**: webkit2gtk, gtk3, libappindicator-gtk3
+- **RAM**: 4GB recommended
+- **Storage**: 500MB free space
 
-### 构建依赖
-- `rust` - Rust 编译器
-- `cargo` - Rust 包管理器
-- `bun` - JavaScript 运行时和包管理器
-- `nodejs` - Node.js 运行时
-- `patchelf` - ELF 二进制修补工具
+## Usage
 
-### 可选依赖
-- `libfuse2` - 用于 AppImage 支持
-
-## 安装 Bun
-
-Bun 不在官方仓库中，需要手动安装：
-
+Launch from application menu or run:
 ```bash
-# 使用官方安装脚本
-curl -fsSL https://bun.sh/install | bash
-
-# 或从 AUR 安装
-yay -S bun-bin
+novel-editor
 ```
 
-## 构建说明
+## Target Audience
 
-1. 包会从 GitHub 下载源代码
-2. 使用 Bun 安装依赖
-3. 构建前端资源
-4. 使用 Tauri 构建桌面应用
-5. 安装到系统
+Perfect for:
+- **Novelists** writing fiction or non-fiction
+- **Screenwriters** developing scripts and stories  
+- **Game developers** creating narrative content
+- **Students** working on creative writing projects
+- **Authors** managing multi-book series
 
-## 文件位置
+## Why Choose Novel Editor?
 
-- 二进制文件: `/usr/bin/novel-editor`
-- 桌面文件: `/usr/share/applications/novel-editor.desktop`
-- 图标: `/usr/share/icons/hicolor/*/apps/novel-editor.png`
-- 许可证: `/usr/share/licenses/novel-editor/LICENSE`
-- 文档: `/usr/share/doc/novel-editor/README.md`
+Unlike generic text editors or cloud-based solutions, Novel Editor is specifically designed for creative writers who need:
 
-## 卸载
+- **Structured organization** for complex narratives
+- **Character and world management** tools
+- **Complete privacy** and offline functionality
+- **Professional writing features** without subscription fees
+- **Cross-platform compatibility** with modern interface
 
-```bash
-sudo pacman -R novel-editor
-```
+## Support
 
-## 问题反馈
+- **Homepage**: https://github.com/jeasoncc/novel-editor
+- **Issues**: https://github.com/jeasoncc/novel-editor/issues
+- **Documentation**: Available in the application
 
-如果遇到问题，请在 GitHub 上提交 Issue：
-https://github.com/jeasoncc/novel-editor/issues
+## License
 
-## 维护者
-
-- Jeason <xiaomiquan@aliyun.com>
-
-## 许可证
-
-MIT License
+MIT License - Free and open source software.

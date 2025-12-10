@@ -1,16 +1,61 @@
 name: novel-editor-app
 base: core22
-version: '0.1.8'
-summary: 一个现代化的小说编辑器
+version: '0.1.33'
+summary: Professional novel writing tool with advanced project management
 description: |
-  Novel Editor 是一个功能强大的小说编辑器，提供丰富的编辑功能和直观的用户界面。
+  Novel Editor is a comprehensive writing application designed specifically for 
+  novelists and creative writers. Built with modern web technologies and powered 
+  by the Lexical rich-text editor, it provides everything you need to craft 
+  compelling stories from initial concept to final manuscript.
+
+  🚀 KEY FEATURES:
   
-  主要特性：
-  - 富文本编辑
-  - 章节管理
-  - 角色管理
-  - 大纲视图
-  - 导出为多种格式
+  📝 Advanced Text Editor
+  • Rich-text editing with Markdown shortcuts
+  • Table support for complex formatting
+  • Real-time auto-save to prevent data loss
+  • Multiple export formats including DOCX
+  
+  🎯 Structured Project Management  
+  • Three-tier hierarchy: Project → Chapter → Scene
+  • Drag-and-drop reordering for easy organization
+  • Visual outline view with quick navigation
+  • Cross-project global search functionality
+  
+  👥 Character Development
+  • Comprehensive character profile system
+  • Alias management for complex characters
+  • Detailed backstory and experience tracking
+  • Character relationship mapping
+  
+  🌍 World-building Tools
+  • Location, faction, and item organization
+  • Concept management for complex universes
+  • Integrated drawing canvas (Excalidraw)
+  • Mermaid diagram support for plotting
+  
+  📊 Writing Analytics
+  • Real-time word count tracking
+  • Reading time estimation
+  • Chapter distribution visualization
+  • Progress tracking and statistics
+  
+  🎨 Customizable Interface
+  • Multiple editor themes (VSCode-like experience)
+  • Icon theme customization
+  • Responsive design for all screen sizes
+  • Dark/light mode support
+  
+  🔒 Privacy-First Design
+  • Complete local data storage (Dexie/IndexedDB)
+  • No cloud dependency or data collection
+  • Offline-first architecture
+  • Your stories stay on your device
+  
+  Perfect for novelists, screenwriters, game developers, and anyone crafting 
+  complex narratives. Whether you're writing your first short story or managing 
+  a multi-book series, Novel Editor provides the tools to bring your creative 
+  vision to life.
 
 grade: stable
 confinement: strict

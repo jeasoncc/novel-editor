@@ -73,6 +73,25 @@ update_cargo_version() {
     echo -e "${GREEN}✓${NC} 更新 $file -> $new_version"
 }
 
+# 函数：更新 snapcraft.yaml 中的版本号
+update_snap_version() {
+    local file=$1
+    local new_version=$2
+    
+    if [ ! -f "$file" ]; then
+        echo -e "${YELLOW}警告: 文件不存在，跳过: $file${NC}"
+        return 1
+    fi
+    
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        sed -i '' "s/^version: .*/version: '$new_version'/" "$file"
+    else
+        sed -i "s/^version: .*/version: '$new_version'/" "$file"
+    fi
+    
+    echo -e "${GREEN}✓${NC} 更新 $file -> $new_version"
+}
+
 # 主函数
 main() {
     if [ -z "$1" ]; then
@@ -119,6 +138,9 @@ main() {
     
     # 7. AUR PKGBUILD-binary
     update_pkgbuild_version "$PROJECT_ROOT/aur/PKGBUILD-binary" "$NEW_VERSION"
+    
+    # 8. Snap snapcraft.yaml
+    update_snap_version "$PROJECT_ROOT/snap/snapcraft.yaml" "$NEW_VERSION"
     
     echo ""
     echo -e "${GREEN}✅ 所有文件版本号已设置为: $NEW_VERSION${NC}"

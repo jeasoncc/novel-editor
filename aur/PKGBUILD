@@ -1,9 +1,9 @@
 # Maintainer: Jeason <xiaomiquan@aliyun.com>
 
 pkgname=novel-editor
-pkgver=0.1.33
+pkgver=0.1.34
 pkgrel=1
-pkgdesc="一款专为小说创作者设计的现代化写作工具"
+pkgdesc="Professional novel writing application with advanced project management and world-building tools"
 arch=('x86_64')
 url="https://github.com/jeasoncc/novel-editor"
 license=('MIT')
@@ -35,13 +35,17 @@ prepare() {
 }
 
 build() {
-  cd "$srcdir/$pkgname-$pkgver/apps/desktop"
+  cd "$srcdir/$pkgname-$pkgver"
+  
+  # 安装 desktop 依赖
+  cd apps/desktop
+  bun install
   
   # 构建前端
   bun run build
   
-  # 构建 Tauri 应用
-  bun run tauri build -- --bundles deb
+  # 构建 Tauri 应用 (只构建二进制，不打包)
+  bun run tauri build --bundles none
 }
 
 package() {
