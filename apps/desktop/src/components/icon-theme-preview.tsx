@@ -3,9 +3,9 @@
  * 展示当前图标主题的所有图标效果
  */
 
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCurrentIconTheme } from "@/lib/icon-themes";
-import { useEffect, useState } from "react";
 
 export function IconThemePreview() {
 	const [iconTheme, setIconTheme] = useState(getCurrentIconTheme());
@@ -50,9 +50,7 @@ export function IconThemePreview() {
 					</div>
 					<div className="flex-1">
 						<div className="text-sm font-medium">项目</div>
-						<div className="text-xs text-muted-foreground">
-							关闭 / 打开状态
-						</div>
+						<div className="text-xs text-muted-foreground">关闭 / 打开状态</div>
 					</div>
 				</div>
 
@@ -64,9 +62,7 @@ export function IconThemePreview() {
 					</div>
 					<div className="flex-1">
 						<div className="text-sm font-medium">章节</div>
-						<div className="text-xs text-muted-foreground">
-							关闭 / 打开状态
-						</div>
+						<div className="text-xs text-muted-foreground">关闭 / 打开状态</div>
 					</div>
 				</div>
 
@@ -75,9 +71,7 @@ export function IconThemePreview() {
 					<SceneIcon className="size-5 text-muted-foreground" />
 					<div className="flex-1">
 						<div className="text-sm font-medium">场景</div>
-						<div className="text-xs text-muted-foreground">
-							单个场景文件
-						</div>
+						<div className="text-xs text-muted-foreground">单个场景文件</div>
 					</div>
 				</div>
 
@@ -86,9 +80,7 @@ export function IconThemePreview() {
 					<CharacterIcon className="size-5 text-muted-foreground" />
 					<div className="flex-1">
 						<div className="text-sm font-medium">角色</div>
-						<div className="text-xs text-muted-foreground">
-							角色信息文件
-						</div>
+						<div className="text-xs text-muted-foreground">角色信息文件</div>
 					</div>
 				</div>
 
@@ -97,9 +89,7 @@ export function IconThemePreview() {
 					<WorldIcon className="size-5 text-muted-foreground" />
 					<div className="flex-1">
 						<div className="text-sm font-medium">世界观</div>
-						<div className="text-xs text-muted-foreground">
-							世界观设定文件
-						</div>
+						<div className="text-xs text-muted-foreground">世界观设定文件</div>
 					</div>
 				</div>
 
@@ -111,9 +101,7 @@ export function IconThemePreview() {
 					</div>
 					<div className="flex-1">
 						<div className="text-sm font-medium">文件夹</div>
-						<div className="text-xs text-muted-foreground">
-							关闭 / 打开状态
-						</div>
+						<div className="text-xs text-muted-foreground">关闭 / 打开状态</div>
 					</div>
 				</div>
 
@@ -122,9 +110,7 @@ export function IconThemePreview() {
 					<FileIcon className="size-5 text-muted-foreground" />
 					<div className="flex-1">
 						<div className="text-sm font-medium">文件</div>
-						<div className="text-xs text-muted-foreground">
-							通用文件
-						</div>
+						<div className="text-xs text-muted-foreground">通用文件</div>
 					</div>
 				</div>
 			</CardContent>

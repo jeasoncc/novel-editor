@@ -3,10 +3,21 @@
  * 更美观、更专业的界面设计
  */
 
-import { useState, useEffect } from "react";
+import {
+	Code2,
+	Columns,
+	Eye,
+	FileCode,
+	Info,
+	RotateCcw,
+	Save,
+	Sparkles,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
 	Select,
 	SelectContent,
@@ -15,23 +26,12 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { type DiagramPreset, getPresetsByType } from "@/lib/diagram-presets";
+import { isKrokiEnabled } from "@/lib/diagram-settings";
+import { cn } from "@/lib/utils";
 import { MermaidViewer } from "./mermaid-viewer";
 import { PlantUMLViewer } from "./plantuml-viewer";
-import { isKrokiEnabled } from "@/lib/diagram-settings";
-import { getPresetsByType, type DiagramPreset } from "@/lib/diagram-presets";
-import { 
-	Code2, 
-	Eye, 
-	Save, 
-	RotateCcw, 
-	Columns, 
-	FileCode,
-	Sparkles,
-	Info
-} from "lucide-react";
-import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 
 interface DiagramEditorProps {
 	initialCode?: string;
@@ -46,7 +46,9 @@ export function DiagramEditorImproved({
 	initialType = "mermaid",
 	onSave,
 }: DiagramEditorProps) {
-	const [diagramType, setDiagramType] = useState<"mermaid" | "plantuml">(initialType);
+	const [diagramType, setDiagramType] = useState<"mermaid" | "plantuml">(
+		initialType,
+	);
 	const [code, setCode] = useState(initialCode);
 	const [viewMode, setViewMode] = useState<ViewMode>("split");
 	const krokiEnabled = isKrokiEnabled();
@@ -97,26 +99,26 @@ Bob -> Alice: Hi
 		toast.success("已重置");
 	};
 
-	const lineCount = code.split('\n').length;
+	const lineCount = code.split("\n").length;
 	const charCount = code.length;
 
 	// 键盘快捷键
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
 			// Ctrl/Cmd + S 保存
-			if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+			if ((e.ctrlKey || e.metaKey) && e.key === "s") {
 				e.preventDefault();
 				handleSave();
 			}
 			// Ctrl/Cmd + R 重置
-			if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+			if ((e.ctrlKey || e.metaKey) && e.key === "r") {
 				e.preventDefault();
 				handleReset();
 			}
 		};
 
-		window.addEventListener('keydown', handleKeyDown);
-		return () => window.removeEventListener('keydown', handleKeyDown);
+		window.addEventListener("keydown", handleKeyDown);
+		return () => window.removeEventListener("keydown", handleKeyDown);
 	}, [code, diagramType]);
 
 	return (
@@ -231,10 +233,10 @@ Bob -> Alice: Hi
 			<div className="flex-1 flex overflow-hidden">
 				{/* 代码编辑器 */}
 				{(viewMode === "code" || viewMode === "split") && (
-					<div 
+					<div
 						className={cn(
 							"flex flex-col border-r bg-muted/10",
-							viewMode === "split" ? "w-1/2" : "w-full"
+							viewMode === "split" ? "w-1/2" : "w-full",
 						)}
 					>
 						{/* 编辑器头部 */}
@@ -272,10 +274,10 @@ Bob -> Alice: Hi
 
 				{/* 预览区域 */}
 				{(viewMode === "preview" || viewMode === "split") && (
-					<div 
+					<div
 						className={cn(
 							"flex flex-col bg-background",
-							viewMode === "split" ? "w-1/2" : "w-full"
+							viewMode === "split" ? "w-1/2" : "w-full",
 						)}
 					>
 						{/* 预览头部 */}
@@ -320,7 +322,11 @@ Bob -> Alice: Hi
 					</div>
 					<div className="flex items-center gap-2">
 						<a
-							href={diagramType === "mermaid" ? "https://mermaid.js.org/" : "https://plantuml.com/"}
+							href={
+								diagramType === "mermaid"
+									? "https://mermaid.js.org/"
+									: "https://plantuml.com/"
+							}
 							target="_blank"
 							rel="noopener noreferrer"
 							className="hover:text-foreground transition-colors"

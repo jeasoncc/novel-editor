@@ -3,9 +3,18 @@
  * 与应用整体风格一致，不使用弹窗
  */
 
-import { useState, useEffect } from "react";
+import {
+	ChevronDown,
+	Code2,
+	Columns,
+	Eye,
+	Maximize2,
+	Save,
+	X,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import {
 	Select,
 	SelectContent,
@@ -14,21 +23,12 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import { getPresetsByType } from "@/lib/diagram-presets";
+import { isKrokiEnabled } from "@/lib/diagram-settings";
+import { cn } from "@/lib/utils";
 import { MermaidViewer } from "./mermaid-viewer";
 import { PlantUMLViewer } from "./plantuml-viewer";
-import { isKrokiEnabled } from "@/lib/diagram-settings";
-import { getPresetsByType } from "@/lib/diagram-presets";
-import { 
-	Code2, 
-	Eye, 
-	Save, 
-	X,
-	Columns,
-	Maximize2,
-	ChevronDown
-} from "lucide-react";
-import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 
 interface DiagramEditorInlineProps {
 	initialCode?: string;
@@ -43,9 +43,13 @@ export function DiagramEditorInline({
 	onSave,
 	onClose,
 }: DiagramEditorInlineProps) {
-	const [diagramType, setDiagramType] = useState<"mermaid" | "plantuml">(initialType);
+	const [diagramType, setDiagramType] = useState<"mermaid" | "plantuml">(
+		initialType,
+	);
 	const [code, setCode] = useState(initialCode);
-	const [viewMode, setViewMode] = useState<"split" | "code" | "preview">("split");
+	const [viewMode, setViewMode] = useState<"split" | "code" | "preview">(
+		"split",
+	);
 	const krokiEnabled = isKrokiEnabled();
 
 	const presets = getPresetsByType(diagramType);
@@ -91,20 +95,20 @@ Bob -> Alice: Hi
 	// 键盘快捷键
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
-			if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+			if ((e.ctrlKey || e.metaKey) && e.key === "s") {
 				e.preventDefault();
 				handleSave();
 			}
-			if (e.key === 'Escape' && onClose) {
+			if (e.key === "Escape" && onClose) {
 				onClose();
 			}
 		};
 
-		window.addEventListener('keydown', handleKeyDown);
-		return () => window.removeEventListener('keydown', handleKeyDown);
+		window.addEventListener("keydown", handleKeyDown);
+		return () => window.removeEventListener("keydown", handleKeyDown);
 	}, [code, diagramType]);
 
-	const lineCount = code.split('\n').length;
+	const lineCount = code.split("\n").length;
 
 	return (
 		<div className="flex flex-col h-full border rounded-lg overflow-hidden bg-card shadow-sm">
@@ -115,9 +119,9 @@ Bob -> Alice: Hi
 						<Code2 className="h-4 w-4 text-primary" />
 						<span className="text-sm font-semibold">图表编辑器</span>
 					</div>
-					
+
 					<Separator orientation="vertical" className="h-4" />
-					
+
 					{/* 类型选择 */}
 					<div className="flex items-center gap-1 bg-background rounded-md p-0.5">
 						<Button
@@ -125,7 +129,7 @@ Bob -> Alice: Hi
 							size="sm"
 							className={cn(
 								"h-7 px-3 text-xs transition-all",
-								diagramType === "mermaid" && "shadow-sm"
+								diagramType === "mermaid" && "shadow-sm",
 							)}
 							onClick={() => handleTypeChange("mermaid")}
 						>
@@ -136,7 +140,7 @@ Bob -> Alice: Hi
 							size="sm"
 							className={cn(
 								"h-7 px-3 text-xs transition-all",
-								diagramType === "plantuml" && "shadow-sm"
+								diagramType === "plantuml" && "shadow-sm",
 							)}
 							onClick={() => handleTypeChange("plantuml")}
 							disabled={!krokiEnabled}
@@ -144,9 +148,9 @@ Bob -> Alice: Hi
 							PlantUML
 						</Button>
 					</div>
-					
+
 					<Separator orientation="vertical" className="h-4" />
-					
+
 					{/* 模板选择 */}
 					<Select onValueChange={handlePresetSelect}>
 						<SelectTrigger className="w-[160px] h-7 text-xs">
@@ -155,7 +159,11 @@ Bob -> Alice: Hi
 						</SelectTrigger>
 						<SelectContent>
 							{presets.map((preset) => (
-								<SelectItem key={preset.id} value={preset.id} className="text-xs">
+								<SelectItem
+									key={preset.id}
+									value={preset.id}
+									className="text-xs"
+								>
 									<div className="flex flex-col gap-0.5">
 										<span className="font-medium">{preset.name}</span>
 										<span className="text-[10px] text-muted-foreground">
@@ -176,7 +184,7 @@ Bob -> Alice: Hi
 							size="sm"
 							className={cn(
 								"h-7 px-2.5 transition-all",
-								viewMode === "code" && "shadow-sm"
+								viewMode === "code" && "shadow-sm",
 							)}
 							onClick={() => setViewMode("code")}
 							title="代码模式"
@@ -188,7 +196,7 @@ Bob -> Alice: Hi
 							size="sm"
 							className={cn(
 								"h-7 px-2.5 transition-all",
-								viewMode === "split" && "shadow-sm"
+								viewMode === "split" && "shadow-sm",
 							)}
 							onClick={() => setViewMode("split")}
 							title="分屏模式"
@@ -200,7 +208,7 @@ Bob -> Alice: Hi
 							size="sm"
 							className={cn(
 								"h-7 px-2.5 transition-all",
-								viewMode === "preview" && "shadow-sm"
+								viewMode === "preview" && "shadow-sm",
 							)}
 							onClick={() => setViewMode("preview")}
 							title="预览模式"
@@ -211,11 +219,7 @@ Bob -> Alice: Hi
 
 					<Separator orientation="vertical" className="h-4" />
 
-					<Button 
-						size="sm" 
-						onClick={handleSave} 
-						className="h-7 shadow-sm"
-					>
+					<Button size="sm" onClick={handleSave} className="h-7 shadow-sm">
 						<Save className="h-3.5 w-3.5 mr-1.5" />
 						保存
 					</Button>
@@ -238,10 +242,10 @@ Bob -> Alice: Hi
 			<div className="flex-1 flex overflow-hidden">
 				{/* 代码编辑器 */}
 				{(viewMode === "code" || viewMode === "split") && (
-					<div 
+					<div
 						className={cn(
 							"flex flex-col transition-all duration-200",
-							viewMode === "split" ? "w-1/2 border-r" : "w-full"
+							viewMode === "split" ? "w-1/2 border-r" : "w-full",
 						)}
 					>
 						<div className="flex-1 p-4 relative">
@@ -282,15 +286,17 @@ Bob -> Alice: Hi
 
 				{/* 预览区域 */}
 				{(viewMode === "preview" || viewMode === "split") && (
-					<div 
+					<div
 						className={cn(
 							"flex flex-col transition-all duration-200",
-							viewMode === "split" ? "w-1/2" : "w-full"
+							viewMode === "split" ? "w-1/2" : "w-full",
 						)}
 					>
 						<div className="flex items-center gap-2 px-4 py-2 border-b bg-muted/20">
 							<Eye className="h-3.5 w-3.5 text-muted-foreground" />
-							<span className="text-xs font-medium text-muted-foreground">实时预览</span>
+							<span className="text-xs font-medium text-muted-foreground">
+								实时预览
+							</span>
 							{code.trim() && (
 								<span className="ml-auto text-[10px] text-muted-foreground flex items-center gap-1">
 									<span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />

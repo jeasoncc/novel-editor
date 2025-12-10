@@ -3,9 +3,19 @@
  * 参考 VS Code 和现代编辑器的设计理念
  */
 
-import { useState, useEffect } from "react";
+import {
+	Code2,
+	Eye,
+	FileCode2,
+	LayoutPanelLeft,
+	Maximize2,
+	Save,
+	Sparkles,
+	X,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import {
 	Select,
 	SelectContent,
@@ -13,22 +23,12 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { getPresetsByType } from "@/lib/diagram-presets";
+import { isKrokiEnabled } from "@/lib/diagram-settings";
+import { cn } from "@/lib/utils";
 import { MermaidViewer } from "./mermaid-viewer";
 import { PlantUMLViewer } from "./plantuml-viewer";
-import { isKrokiEnabled } from "@/lib/diagram-settings";
-import { getPresetsByType } from "@/lib/diagram-presets";
-import { 
-	Code2, 
-	Eye, 
-	Save, 
-	X,
-	Sparkles,
-	FileCode2,
-	LayoutPanelLeft,
-	Maximize2
-} from "lucide-react";
-import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 
 interface DiagramEditorProps {
 	initialCode?: string;
@@ -43,9 +43,13 @@ export function DiagramEditorModern({
 	onSave,
 	onClose,
 }: DiagramEditorProps) {
-	const [diagramType, setDiagramType] = useState<"mermaid" | "plantuml">(initialType);
+	const [diagramType, setDiagramType] = useState<"mermaid" | "plantuml">(
+		initialType,
+	);
 	const [code, setCode] = useState(initialCode);
-	const [viewMode, setViewMode] = useState<"split" | "code" | "preview">("split");
+	const [viewMode, setViewMode] = useState<"split" | "code" | "preview">(
+		"split",
+	);
 	const krokiEnabled = isKrokiEnabled();
 
 	const presets = getPresetsByType(diagramType);
@@ -91,20 +95,20 @@ Bob -> Alice: Hi
 	// 键盘快捷键
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
-			if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+			if ((e.ctrlKey || e.metaKey) && e.key === "s") {
 				e.preventDefault();
 				handleSave();
 			}
-			if (e.key === 'Escape' && onClose) {
+			if (e.key === "Escape" && onClose) {
 				onClose();
 			}
 		};
 
-		window.addEventListener('keydown', handleKeyDown);
-		return () => window.removeEventListener('keydown', handleKeyDown);
+		window.addEventListener("keydown", handleKeyDown);
+		return () => window.removeEventListener("keydown", handleKeyDown);
 	}, [code, diagramType]);
 
-	const lineCount = code.split('\n').length;
+	const lineCount = code.split("\n").length;
 
 	return (
 		<div className="flex flex-col h-full bg-[#1e1e1e] text-[#d4d4d4]">
@@ -123,7 +127,7 @@ Bob -> Alice: Hi
 								"px-3 py-1 text-xs rounded transition-colors",
 								diagramType === "mermaid"
 									? "bg-[#3794ff] text-white"
-									: "text-[#cccccc] hover:bg-[#2a2d2e]"
+									: "text-[#cccccc] hover:bg-[#2a2d2e]",
 							)}
 						>
 							<Sparkles className="h-3 w-3 inline mr-1" />
@@ -137,7 +141,7 @@ Bob -> Alice: Hi
 								diagramType === "plantuml"
 									? "bg-[#3794ff] text-white"
 									: "text-[#cccccc] hover:bg-[#2a2d2e]",
-								!krokiEnabled && "opacity-50 cursor-not-allowed"
+								!krokiEnabled && "opacity-50 cursor-not-allowed",
 							)}
 						>
 							<FileCode2 className="h-3 w-3 inline mr-1" />
@@ -153,8 +157,8 @@ Bob -> Alice: Hi
 						</SelectTrigger>
 						<SelectContent className="bg-[#252526] border-[#3c3c3c]">
 							{presets.map((preset) => (
-								<SelectItem 
-									key={preset.id} 
+								<SelectItem
+									key={preset.id}
 									value={preset.id}
 									className="text-[#cccccc] focus:bg-[#2a2d2e] focus:text-white"
 								>
@@ -173,7 +177,7 @@ Bob -> Alice: Hi
 								"p-1.5 rounded transition-colors",
 								viewMode === "code"
 									? "bg-[#37373d] text-white"
-									: "text-[#cccccc] hover:bg-[#2a2d2e]"
+									: "text-[#cccccc] hover:bg-[#2a2d2e]",
 							)}
 							title="代码"
 						>
@@ -185,7 +189,7 @@ Bob -> Alice: Hi
 								"p-1.5 rounded transition-colors",
 								viewMode === "split"
 									? "bg-[#37373d] text-white"
-									: "text-[#cccccc] hover:bg-[#2a2d2e]"
+									: "text-[#cccccc] hover:bg-[#2a2d2e]",
 							)}
 							title="分屏"
 						>
@@ -197,7 +201,7 @@ Bob -> Alice: Hi
 								"p-1.5 rounded transition-colors",
 								viewMode === "preview"
 									? "bg-[#37373d] text-white"
-									: "text-[#cccccc] hover:bg-[#2a2d2e]"
+									: "text-[#cccccc] hover:bg-[#2a2d2e]",
 							)}
 							title="预览"
 						>
@@ -231,17 +235,21 @@ Bob -> Alice: Hi
 			<div className="flex-1 flex overflow-hidden">
 				{/* 代码编辑器 */}
 				{(viewMode === "code" || viewMode === "split") && (
-					<div 
+					<div
 						className={cn(
 							"flex flex-col bg-[#1e1e1e]",
-							viewMode === "split" ? "w-1/2 border-r border-[#2d2d30]" : "w-full"
+							viewMode === "split"
+								? "w-1/2 border-r border-[#2d2d30]"
+								: "w-full",
 						)}
 					>
 						{/* 编辑器标签栏 */}
 						<div className="flex items-center h-9 px-3 bg-[#252526] border-b border-[#2d2d30]">
 							<div className="flex items-center gap-2 px-3 py-1 bg-[#1e1e1e] rounded-t text-xs">
 								<Code2 className="h-3 w-3 text-[#3794ff]" />
-								<span>diagram.{diagramType === "mermaid" ? "mmd" : "puml"}</span>
+								<span>
+									diagram.{diagramType === "mermaid" ? "mmd" : "puml"}
+								</span>
 							</div>
 						</div>
 
@@ -268,7 +276,7 @@ Bob -> Alice: Hi
 								}
 								spellCheck={false}
 								style={{
-									caretColor: '#aeafad',
+									caretColor: "#aeafad",
 								}}
 							/>
 						</div>
@@ -276,7 +284,9 @@ Bob -> Alice: Hi
 						{/* 底部状态栏 */}
 						<div className="flex items-center justify-between h-6 px-3 bg-[#007acc] text-white text-xs">
 							<div className="flex items-center gap-3">
-								<span>{diagramType === "mermaid" ? "Mermaid" : "PlantUML"}</span>
+								<span>
+									{diagramType === "mermaid" ? "Mermaid" : "PlantUML"}
+								</span>
 								<span>UTF-8</span>
 							</div>
 							<div className="flex items-center gap-3">
@@ -289,10 +299,10 @@ Bob -> Alice: Hi
 
 				{/* 预览区域 */}
 				{(viewMode === "preview" || viewMode === "split") && (
-					<div 
+					<div
 						className={cn(
 							"flex flex-col bg-white dark:bg-[#1e1e1e]",
-							viewMode === "split" ? "w-1/2" : "w-full"
+							viewMode === "split" ? "w-1/2" : "w-full",
 						)}
 					>
 						{/* 预览标签栏 */}

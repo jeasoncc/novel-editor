@@ -29,7 +29,8 @@ export function DevtoolsWrapper() {
 			.then(([devtools, routerDevtools, formDevtools]) => {
 				setDevtoolsModules({
 					TanStackDevtools: devtools.TanStackDevtools,
-					TanStackRouterDevtoolsPanel: routerDevtools.TanStackRouterDevtoolsPanel,
+					TanStackRouterDevtoolsPanel:
+						routerDevtools.TanStackRouterDevtoolsPanel,
 					FormDevtoolsPlugin: formDevtools.FormDevtoolsPlugin,
 				});
 			})
@@ -44,7 +45,8 @@ export function DevtoolsWrapper() {
 		return null;
 	}
 
-	const { TanStackDevtools, TanStackRouterDevtoolsPanel, FormDevtoolsPlugin } = devtoolsModules;
+	const { TanStackDevtools, TanStackRouterDevtoolsPanel, FormDevtoolsPlugin } =
+		devtoolsModules;
 
 	return (
 		<TanStackDevtools

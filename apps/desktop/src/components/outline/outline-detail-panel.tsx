@@ -2,26 +2,26 @@
  * 大纲详情编辑面板
  */
 
-import { X, Save, Calendar, FileText } from "lucide-react";
-import { useState, useEffect, useMemo } from "react";
-import { toast } from "sonner";
 import type { SerializedEditorState } from "lexical";
+import { Calendar, FileText, Save, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { MinimalEditor } from "@/components/blocks/rich-editor/minimal-editor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Progress } from "@/components/ui/progress";
-import { MinimalEditor } from "@/components/blocks/rich-editor/minimal-editor";
+import { Textarea } from "@/components/ui/textarea";
 import type { ChapterInterface, SceneInterface } from "@/db/schema";
 import type { OutlineMetadata, OutlineStatus } from "@/db/schema-outline";
-import { StatusSelect } from "./status-select";
-import { TagInput } from "./tag-input";
-import { PlotPointEditor } from "./plot-point-editor";
-import { CharacterSelector } from "./character-selector";
 import { updateChapter } from "@/services/chapters";
 import { updateScene } from "@/services/scenes";
+import { CharacterSelector } from "./character-selector";
+import { PlotPointEditor } from "./plot-point-editor";
+import { StatusSelect } from "./status-select";
+import { TagInput } from "./tag-input";
 
 interface OutlineDetailPanelProps {
 	node: (ChapterInterface | SceneInterface) & { type: "chapter" | "scene" };
@@ -35,9 +35,7 @@ export function OutlineDetailPanel({
 	onUpdate,
 }: OutlineDetailPanelProps) {
 	const [title, setTitle] = useState(node.title);
-	const [metadata, setMetadata] = useState<OutlineMetadata>(
-		node.outline || {}
-	);
+	const [metadata, setMetadata] = useState<OutlineMetadata>(node.outline || {});
 	const [hasChanges, setHasChanges] = useState(false);
 
 	// 解析摘要
@@ -90,7 +88,7 @@ export function OutlineDetailPanel({
 		if (metadata.targetWordCount && metadata.wordCount) {
 			return Math.min(
 				100,
-				Math.round((metadata.wordCount / metadata.targetWordCount) * 100)
+				Math.round((metadata.wordCount / metadata.targetWordCount) * 100),
 			);
 		}
 		return metadata.progress || 0;
@@ -140,9 +138,7 @@ export function OutlineDetailPanel({
 							<Label>状态</Label>
 							<StatusSelect
 								value={metadata.status || "draft"}
-								onChange={(status: OutlineStatus) =>
-									updateMetadata({ status })
-								}
+								onChange={(status: OutlineStatus) => updateMetadata({ status })}
 								className="w-full"
 							/>
 						</div>

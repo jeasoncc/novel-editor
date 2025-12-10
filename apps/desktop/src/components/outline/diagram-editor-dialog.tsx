@@ -2,10 +2,7 @@
  * 图表编辑器对话框
  */
 
-import {
-	Dialog,
-	DialogContent,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { DiagramEditorModern } from "./diagram-editor-modern";
 
 interface DiagramEditorDialogProps {

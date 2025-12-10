@@ -1,14 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Plus, Trash2, User, X } from "lucide-react";
-import { useMemo, useState, useEffect } from "react";
-import { toast } from "sonner";
 import type { SerializedEditorState } from "lexical";
+import { Plus, Trash2, User, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { MinimalEditor } from "@/components/blocks/rich-editor/minimal-editor";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useConfirm } from "@/components/ui/confirm";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MinimalEditor } from "@/components/blocks/rich-editor/minimal-editor";
+import { cn } from "@/lib/utils";
 import { useAllProjects } from "@/services/projects";
 import {
 	createRole,
@@ -17,7 +18,6 @@ import {
 	useRolesByProject,
 } from "@/services/roles";
 import { type SelectionState, useSelectionStore } from "@/stores/selection";
-import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/characters")({
 	component: CharactersPage,
@@ -157,7 +157,11 @@ function CharactersPage() {
 						onChange={(e) => setNewName(e.target.value)}
 						onKeyDown={(e) => e.key === "Enter" && handleCreate()}
 					/>
-					<Button size="icon" className="h-8 w-8 shrink-0" onClick={() => handleCreate()}>
+					<Button
+						size="icon"
+						className="h-8 w-8 shrink-0"
+						onClick={() => handleCreate()}
+					>
 						<Plus className="size-4" />
 					</Button>
 				</div>
@@ -176,7 +180,7 @@ function CharactersPage() {
 									className={cn(
 										"w-full text-left px-3 py-2 rounded-md text-sm transition-colors",
 										"hover:bg-accent",
-										selectedRoleId === role.id && "bg-accent font-medium"
+										selectedRoleId === role.id && "bg-accent font-medium",
 									)}
 								>
 									<div className="flex items-center gap-2">
@@ -197,7 +201,9 @@ function CharactersPage() {
 							onChange={(e) => setSelectedProjectId(e.target.value || null)}
 						>
 							{projects.map((p) => (
-								<option key={p.id} value={p.id}>{p.title}</option>
+								<option key={p.id} value={p.id}>
+									{p.title}
+								</option>
 							))}
 						</select>
 					</div>
@@ -210,7 +216,9 @@ function CharactersPage() {
 					<>
 						{/* 顶部信息栏 */}
 						<div className="border-b px-4 py-3 flex items-center gap-3">
-							<h2 className="text-lg font-semibold flex-1">{selectedRole.name}</h2>
+							<h2 className="text-lg font-semibold flex-1">
+								{selectedRole.name}
+							</h2>
 							<Button
 								size="sm"
 								variant="ghost"

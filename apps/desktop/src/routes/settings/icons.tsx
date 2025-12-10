@@ -1,15 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Check, Sparkles } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import {
-	iconThemes,
-	getCurrentIconTheme,
-	applyIconTheme,
-	type IconTheme,
-} from "@/lib/icon-themes";
 import { useTheme } from "@/hooks/use-theme";
+import {
+	applyIconTheme,
+	getCurrentIconTheme,
+	type IconTheme,
+	iconThemes,
+} from "@/lib/icon-themes";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/settings/icons")({
@@ -17,10 +17,12 @@ export const Route = createFileRoute("/settings/icons")({
 });
 
 function IconSettings() {
-	const [activeIconTheme, setActiveIconTheme] = useState(() =>
-		getCurrentIconTheme().key,
+	const [activeIconTheme, setActiveIconTheme] = useState(
+		() => getCurrentIconTheme().key,
 	);
-	const [currentIconTheme, setCurrentIconTheme] = useState(getCurrentIconTheme());
+	const [currentIconTheme, setCurrentIconTheme] = useState(
+		getCurrentIconTheme(),
+	);
 	const { currentTheme } = useTheme();
 
 	// 应用图标主题
@@ -148,7 +150,7 @@ function IconSettings() {
 										>
 											项目结构
 										</div>
-										
+
 										{/* 项目 */}
 										<FileItem
 											icon={currentIconTheme.icons.project.default}
@@ -156,7 +158,7 @@ function IconSettings() {
 											isOpen={true}
 											level={0}
 										/>
-										
+
 										{/* 章节 */}
 										<FileItem
 											icon={currentIconTheme.icons.chapter.default}
@@ -164,7 +166,7 @@ function IconSettings() {
 											isOpen={true}
 											level={1}
 										/>
-										
+
 										{/* 场景 */}
 										<FileItem
 											icon={currentIconTheme.icons.scene.default}
@@ -177,14 +179,14 @@ function IconSettings() {
 											level={2}
 											isActive={true}
 										/>
-										
+
 										{/* 章节 */}
 										<FileItem
 											icon={currentIconTheme.icons.chapter.default}
 											label="第二章"
 											level={1}
 										/>
-										
+
 										{/* 文件夹 */}
 										<FileItem
 											icon={currentIconTheme.icons.folder.default}
@@ -192,14 +194,14 @@ function IconSettings() {
 											isOpen={true}
 											level={1}
 										/>
-										
+
 										{/* 角色 */}
 										<FileItem
 											icon={currentIconTheme.icons.character.default}
 											label="主角.md"
 											level={2}
 										/>
-										
+
 										{/* 世界观 */}
 										<FileItem
 											icon={currentIconTheme.icons.world.default}
@@ -220,7 +222,7 @@ function IconSettings() {
 											<Sparkles className="size-4" />
 											活动栏图标预览
 										</h2>
-										
+
 										<div className="grid grid-cols-3 gap-3">
 											<ActivityBarIconItem
 												icon={currentIconTheme.icons.activityBar.library}
@@ -307,9 +309,7 @@ function IconThemeCard({ theme, isActive, onSelect }: IconThemeCardProps) {
 				<div className="text-sm font-medium text-card-foreground">
 					{theme.name}
 				</div>
-				<div className="text-xs text-muted-foreground">
-					{theme.description}
-				</div>
+				<div className="text-xs text-muted-foreground">{theme.description}</div>
 			</div>
 
 			{/* 选中标记 */}
@@ -337,14 +337,18 @@ function FileItem({
 	isActive?: boolean;
 }) {
 	const { currentTheme } = useTheme();
-	
+
 	return (
 		<div
 			className="flex items-center gap-2 px-2 py-1.5 rounded text-xs transition-colors"
 			style={{
 				paddingLeft: `${level * 12 + 8}px`,
-				background: isActive ? currentTheme?.colors.sidebarAccent : "transparent",
-				color: isActive ? currentTheme?.colors.primary : currentTheme?.colors.sidebarForeground,
+				background: isActive
+					? currentTheme?.colors.sidebarAccent
+					: "transparent",
+				color: isActive
+					? currentTheme?.colors.primary
+					: currentTheme?.colors.sidebarForeground,
 			}}
 		>
 			<Icon className="size-4 shrink-0" />
@@ -362,15 +366,17 @@ function ActivityBarIcon({
 	isActive?: boolean;
 }) {
 	const { currentTheme } = useTheme();
-	
+
 	return (
 		<div
 			className={cn(
 				"relative flex size-10 items-center justify-center rounded-lg transition-all",
-				isActive ? "bg-sidebar-accent" : "hover:bg-sidebar-accent/50"
+				isActive ? "bg-sidebar-accent" : "hover:bg-sidebar-accent/50",
 			)}
 			style={{
-				color: isActive ? currentTheme?.colors.primary : currentTheme?.colors.sidebarForeground,
+				color: isActive
+					? currentTheme?.colors.primary
+					: currentTheme?.colors.sidebarForeground,
 			}}
 		>
 			{isActive && (
@@ -393,7 +399,7 @@ function ActivityBarIconItem({
 	label: string;
 }) {
 	const { currentTheme } = useTheme();
-	
+
 	return (
 		<div
 			className="flex flex-col items-center gap-2 p-3 rounded-lg border transition-colors hover:bg-muted/50"
@@ -414,5 +420,3 @@ function ActivityBarIconItem({
 		</div>
 	);
 }
-
-

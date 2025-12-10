@@ -1,13 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { CheckCircle2, ExternalLink, Loader2, XCircle } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useDiagramSettings } from "@/lib/diagram-settings";
-import { toast } from "sonner";
-import { CheckCircle2, XCircle, Loader2, ExternalLink } from "lucide-react";
 
 export const Route = createFileRoute("/settings/diagrams")({
 	component: DiagramSettings,
@@ -81,9 +87,7 @@ function DiagramSettings() {
 			<Card>
 				<CardHeader>
 					<CardTitle>Mermaid 图表</CardTitle>
-					<CardDescription>
-						纯前端渲染，无需配置，默认启用
-					</CardDescription>
+					<CardDescription>纯前端渲染，无需配置，默认启用</CardDescription>
 				</CardHeader>
 				<CardContent>
 					<div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -145,7 +149,7 @@ function DiagramSettings() {
 								)}
 							</Button>
 						</div>
-						
+
 						{/* 测试结果 */}
 						{testResult !== null && (
 							<div className="flex items-center gap-2 text-sm">
@@ -170,10 +174,7 @@ function DiagramSettings() {
 
 					{/* 保存按钮 */}
 					<div className="flex gap-2">
-						<Button
-							onClick={handleSave}
-							disabled={testUrl === krokiServerUrl}
-						>
+						<Button onClick={handleSave} disabled={testUrl === krokiServerUrl}>
 							保存设置
 						</Button>
 						<Button
@@ -189,7 +190,8 @@ function DiagramSettings() {
 					<div className="border-t pt-4 space-y-2">
 						<h4 className="text-sm font-medium">关于 Kroki</h4>
 						<p className="text-sm text-muted-foreground">
-							Kroki 是一个开源的图表渲染服务，支持 PlantUML、Mermaid 等多种图表格式。
+							Kroki 是一个开源的图表渲染服务，支持 PlantUML、Mermaid
+							等多种图表格式。
 						</p>
 						<div className="flex gap-4 text-sm">
 							<a

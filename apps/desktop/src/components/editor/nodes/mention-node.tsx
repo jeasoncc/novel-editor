@@ -82,7 +82,8 @@ export class MentionNode extends TextNode {
 	createDOM(config: EditorConfig): HTMLElement {
 		const dom = super.createDOM(config);
 		// 添加样式类，使提及的角色更醒目
-		dom.className = "mention inline-flex items-center px-1.5 py-0.5 rounded-md bg-primary/10 text-primary font-medium hover:bg-primary/20 transition-colors cursor-pointer";
+		dom.className =
+			"mention inline-flex items-center px-1.5 py-0.5 rounded-md bg-primary/10 text-primary font-medium hover:bg-primary/20 transition-colors cursor-pointer";
 		dom.setAttribute("data-role-id", this.__roleId);
 		dom.setAttribute("data-mention-name", this.__mention);
 		return dom;

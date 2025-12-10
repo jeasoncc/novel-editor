@@ -2,10 +2,9 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { useLiveQuery } from "dexie-react-hooks";
 import { Trash2 } from "lucide-react";
 import type * as React from "react";
-import { useCallback, useRef, useState, useEffect } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { useSidebar, SidebarTrigger } from "@/components/ui/sidebar";
-import { openCreateBookDialog } from "@/components/blocks/createBookDialog";
+
 import { ExportDialog } from "@/components/blocks/export-dialog";
 import { useConfirm } from "@/components/ui/confirm";
 import {
@@ -20,17 +19,17 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { db } from "@/db/curd";
+import { getActivityBarIcon, getCurrentIconTheme } from "@/lib/icon-themes";
 import { cn } from "@/lib/utils";
 import {
-	createBook,
+	exportAllAsZip,
 	importFromJson,
 	readFileAsText,
-	exportAllAsZip,
 	triggerBlobDownload,
 } from "@/services/projects";
 import { useSelectionStore } from "@/stores/selection";
 import { type BottomDrawerView, useUIStore } from "@/stores/ui";
-import { getActivityBarIcon, getCurrentIconTheme } from "@/lib/icon-themes";
+import { useUnifiedSidebarStore } from "@/stores/unified-sidebar";
 
 export function ActivityBar(): React.ReactElement {
 	const location = useLocation();
@@ -39,7 +38,12 @@ export function ActivityBar(): React.ReactElement {
 	const fileInputRef = useRef<HTMLInputElement | null>(null);
 	const confirm = useConfirm();
 	const [exportDialogOpen, setExportDialogOpen] = useState(false);
-	const { open: sidebarOpen } = useSidebar();
+	const {
+		activePanel,
+		isOpen: unifiedSidebarOpen,
+		setActivePanel,
+		toggleSidebar,
+	} = useUnifiedSidebarStore();
 
 	// 底部抽屉状态
 	const { bottomDrawerOpen, bottomDrawerView, toggleBottomDrawer } =
@@ -66,23 +70,9 @@ export function ActivityBar(): React.ReactElement {
 	const CanvasIcon = iconTheme.icons.activityBar.canvas;
 	const StatisticsIcon = iconTheme.icons.activityBar.statistics;
 	const SettingsIcon = iconTheme.icons.activityBar.settings;
-	const CreateIcon = iconTheme.icons.activityBar.create;
 	const ImportIcon = iconTheme.icons.activityBar.import;
 	const ExportIcon = iconTheme.icons.activityBar.export;
 	const MoreIcon = iconTheme.icons.activityBar.more;
-
-	const handleQuickCreate = useCallback(async () => {
-		const data = await openCreateBookDialog();
-		if (!data) return;
-		try {
-			await createBook({
-				title: data.title,
-				author: data.author,
-				description: data.description ?? "",
-			});
-			toast.success(`已创建书籍：${data.title}`);
-		} catch (e) {}
-	}, []);
 
 	const handleImportClick = useCallback(() => {
 		fileInputRef.current?.click();
@@ -147,40 +137,31 @@ export function ActivityBar(): React.ReactElement {
 	return (
 		<aside className="activity-bar flex h-screen w-12 shrink-0 flex-col items-center bg-sidebar py-3">
 			<TooltipProvider>
-				{/* 侧边栏切换按钮 */}
-				<div className="mb-2">
-					<Tooltip>
-						<TooltipTrigger asChild>
-							<SidebarTrigger className="size-10" />
-						</TooltipTrigger>
-						<TooltipContent side="right">
-							{sidebarOpen ? "隐藏书库" : "显示书库"} (Ctrl+B)
-						</TooltipContent>
-					</Tooltip>
-				</div>
-
-				<div className="mb-3 h-px w-6 bg-border/20" />
-
 				{/* 主导航 */}
 				<nav className="flex flex-col items-center gap-1">
-					<NavItem
-						to="/"
+					<ActionButton
 						icon={<LibraryIcon className="size-5" />}
-						label="书库"
-						active={
-							isActive("/") &&
-							!isActive("/outline") &&
-							!isActive("/characters") &&
-							!isActive("/world") &&
-							!isActive("/statistics") &&
-							!isActive("/settings") &&
-							!isActive("/search")
-						}
+						label="书库 (Ctrl+B)"
+						active={activePanel === "books" && unifiedSidebarOpen}
+						onClick={() => {
+							if (activePanel === "books" && unifiedSidebarOpen) {
+								toggleSidebar();
+							} else {
+								setActivePanel("books");
+							}
+						}}
 					/>
 					<ActionButton
 						icon={<SearchIcon className="size-5" />}
 						label="搜索 (Ctrl+Shift+F)"
-						onClick={() => window.dispatchEvent(new Event("toggle-search-sidebar"))}
+						active={activePanel === "search" && unifiedSidebarOpen}
+						onClick={() => {
+							if (activePanel === "search" && unifiedSidebarOpen) {
+								toggleSidebar();
+							} else {
+								setActivePanel("search");
+							}
+						}}
 					/>
 					<NavItem
 						to="/outline"
@@ -212,23 +193,6 @@ export function ActivityBar(): React.ReactElement {
 
 				{/* 操作按钮 */}
 				<div className="flex flex-col items-center gap-1">
-					<ActionButton
-						icon={<CreateIcon className="size-5" />}
-						label="新建书籍"
-						onClick={handleQuickCreate}
-					/>
-					<ActionButton
-						icon={<ImportIcon className="size-5" />}
-						label="导入"
-						onClick={handleImportClick}
-					/>
-
-					<ActionButton
-						icon={<ExportIcon className="size-5" />}
-						label="导出"
-						onClick={() => setExportDialogOpen(true)}
-					/>
-
 					<NavItem
 						to="/statistics"
 						icon={<StatisticsIcon className="size-5" />}
@@ -273,10 +237,7 @@ export function ActivityBar(): React.ReactElement {
 						<Tooltip>
 							<TooltipTrigger asChild>
 								<PopoverTrigger asChild>
-									<button
-										className="flex size-10 items-center justify-center rounded-lg text-muted-foreground transition-all hover:bg-sidebar-accent hover:text-foreground"
-										disabled={projects.length === 0}
-									>
+									<button className="flex size-10 items-center justify-center rounded-lg text-muted-foreground transition-all hover:bg-sidebar-accent hover:text-foreground">
 										<MoreIcon className="size-5" />
 									</button>
 								</PopoverTrigger>
@@ -284,12 +245,28 @@ export function ActivityBar(): React.ReactElement {
 							<TooltipContent side="right">更多</TooltipContent>
 						</Tooltip>
 						<PopoverContent side="right" align="end" className="w-48 p-1">
-							<button
-								onClick={handleDeleteAllBooks}
-								className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-destructive hover:bg-destructive/10"
-							>
-								<Trash2 className="size-4" /> 删除所有书籍
-							</button>
+							<div className="grid gap-1">
+								<button
+									onClick={handleImportClick}
+									className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
+								>
+									<ImportIcon className="size-4" /> 导入
+								</button>
+								<button
+									onClick={() => setExportDialogOpen(true)}
+									className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
+								>
+									<ExportIcon className="size-4" /> 导出
+								</button>
+								<div className="h-px bg-border my-1" />
+								<button
+									onClick={handleDeleteAllBooks}
+									className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-destructive hover:bg-destructive/10"
+									disabled={projects.length === 0}
+								>
+									<Trash2 className="size-4" /> 删除所有书籍
+								</button>
+							</div>
 						</PopoverContent>
 					</Popover>
 
@@ -363,17 +340,24 @@ function ActionButton({
 	icon,
 	label,
 	onClick,
+	active = false,
 }: {
 	icon: React.ReactNode;
 	label: string;
 	onClick: () => void;
+	active?: boolean;
 }) {
 	return (
 		<Tooltip>
 			<TooltipTrigger asChild>
 				<button
 					onClick={onClick}
-					className="flex size-10 items-center justify-center rounded-lg text-muted-foreground transition-all hover:bg-sidebar-accent hover:text-foreground"
+					className={cn(
+						"flex size-10 items-center justify-center rounded-lg transition-all",
+						active
+							? "bg-sidebar-accent text-primary"
+							: "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground",
+					)}
 				>
 					{icon}
 				</button>

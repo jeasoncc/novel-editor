@@ -5,11 +5,11 @@
 import {
 	BookOpen,
 	File,
+	FileArchive,
 	FileCode,
 	FileJson,
 	FileText,
 	FileType,
-	FileArchive,
 	Loader2,
 } from "lucide-react";
 import { useState } from "react";
@@ -33,10 +33,10 @@ import {
 } from "@/services/export";
 import {
 	exportAll,
-	exportAsMarkdown,
 	exportAllAsZip,
-	triggerDownload,
+	exportAsMarkdown,
 	triggerBlobDownload,
+	triggerDownload,
 } from "@/services/projects";
 
 interface ExportDialogProps {
@@ -150,12 +150,14 @@ export function ExportDialog({
 						<Label className="text-sm font-medium">导出格式</Label>
 						{format === "json" && (
 							<p className="text-xs text-muted-foreground bg-muted/50 p-2 rounded">
-								💡 JSON 备份包含所有书籍、章节、场景、角色和世界观数据，可用于完整恢复。
+								💡 JSON
+								备份包含所有书籍、章节、场景、角色和世界观数据，可用于完整恢复。
 							</p>
 						)}
 						{format === "zip" && (
 							<p className="text-xs text-muted-foreground bg-muted/50 p-2 rounded">
-								📦 ZIP 压缩包将数据按项目、章节组织成文件夹结构，每个场景导出为独立的文本文件，便于查看和管理。
+								📦 ZIP
+								压缩包将数据按项目、章节组织成文件夹结构，每个场景导出为独立的文本文件，便于查看和管理。
 							</p>
 						)}
 						<RadioGroup

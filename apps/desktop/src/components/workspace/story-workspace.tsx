@@ -19,13 +19,13 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { AutoSaveIndicator } from "@/components/blocks/auto-save-indicator";
 import { CanvasEditor } from "@/components/blocks/canvas-editor";
 import { openCreateBookDialog } from "@/components/blocks/createBookDialog";
 import { FocusMode } from "@/components/blocks/focus-mode";
 import { KeyboardShortcutsHelp } from "@/components/blocks/keyboard-shortcuts-help";
 import { MinimalEditor } from "@/components/blocks/rich-editor/minimal-editor";
 import { NovelEditor } from "@/components/blocks/rich-editor/novel-editor";
+import { SaveStatusIndicator } from "@/components/blocks/save-status-indicator";
 import { ThemeSelector } from "@/components/blocks/theme-selector";
 import { WordCountBadge } from "@/components/blocks/word-count-badge";
 import { WritingStatsPanel } from "@/components/blocks/writing-stats-panel";
@@ -58,6 +58,7 @@ import type {
 	ProjectInterface,
 	SceneInterface,
 } from "@/db/schema";
+import { useManualSave } from "@/hooks/use-manual-save";
 import { useSettings } from "@/hooks/use-settings";
 import {
 	createBook,
@@ -67,6 +68,7 @@ import {
 	triggerDownload,
 } from "@/services/projects";
 import { useOutlineStore } from "@/stores/outline";
+import { useSaveStore } from "@/stores/save";
 import { type SelectionState, useSelectionStore } from "@/stores/selection";
 import { useUIStore } from "@/stores/ui";
 import { useWritingStore } from "@/stores/writing";
@@ -143,6 +145,21 @@ export function StoryWorkspace({
 	// UI 状态
 	const rightSidebarOpen = useUIStore((s) => s.rightSidebarOpen);
 	const toggleRightSidebar = useUIStore((s) => s.toggleRightSidebar);
+
+	// 保存状态管理
+	const { markAsUnsaved, markAsSaved, markAsSaving } = useSaveStore();
+
+	// 手动保存功能
+	const { performManualSave } = useManualSave({
+		sceneId: selectedSceneId,
+		currentContent: editorInitialState || null,
+		onSaveSuccess: () => {
+			// 手动保存成功后的回调
+		},
+		onSaveError: (error) => {
+			console.error("Manual save failed:", error);
+		},
+	});
 
 	// bottom dock actions
 	const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -362,7 +379,7 @@ export function StoryWorkspace({
 			if (!autoSave) return;
 
 			setIsSaving(true);
-			setSaveStatus("saving");
+			markAsSaving();
 
 			// 清除之前的超时
 			if (saveTimeoutRef.current) {
@@ -379,9 +396,11 @@ export function StoryWorkspace({
 			try {
 				await db.updateScene(sceneId, {
 					content: JSON.stringify(serialized),
+					lastEdit: new Date().toISOString(),
 				});
 				clearTimeout(saveTimeoutRef.current);
 				setSaveStatus("saved");
+				markAsSaved();
 
 				// 2秒后隐藏"已保存"状态
 				setTimeout(() => {
@@ -398,7 +417,7 @@ export function StoryWorkspace({
 				setIsSaving(false);
 			}
 		},
-		[autoSave],
+		[autoSave, markAsSaving, markAsSaved],
 	);
 
 	// 当设置变化时，重新创建 debounce 函数
@@ -455,10 +474,13 @@ export function StoryWorkspace({
 			const text = extractTextFromSerialized(serialized);
 			setSceneWordCount(countWords(text));
 
-			// 使用 ref 中的 debounce 函数
+			// 标记为有未保存的更改
+			markAsUnsaved();
+
+			// 使用 ref 中的 debounce 函数进行自动保存
 			debouncedSaveRef.current(activeScene.id, serialized);
 		},
-		[activeScene],
+		[activeScene, markAsUnsaved],
 	);
 
 	const projectStats = useMemo(() => {
@@ -907,8 +929,8 @@ export function StoryWorkspace({
 								</div>
 							)}
 
-							{/* 自动保存指示器 */}
-							<AutoSaveIndicator status={saveStatus} />
+							{/* 保存状态指示器 */}
+							<SaveStatusIndicator />
 
 							{/* 侧边栏切换 */}
 							<Tooltip>

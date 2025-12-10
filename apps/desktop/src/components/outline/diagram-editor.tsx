@@ -3,11 +3,11 @@
  * 支持编辑 Mermaid 和 PlantUML 代码并实时预览
  */
 
-import { useState, useEffect } from "react";
+import { Code, Eye, FileText, RotateCcw, Save } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
 	Select,
 	SelectContent,
@@ -15,12 +15,12 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { type DiagramPreset, getPresetsByType } from "@/lib/diagram-presets";
+import { isKrokiEnabled } from "@/lib/diagram-settings";
 import { MermaidViewer } from "./mermaid-viewer";
 import { PlantUMLViewer } from "./plantuml-viewer";
-import { isKrokiEnabled } from "@/lib/diagram-settings";
-import { getPresetsByType, type DiagramPreset } from "@/lib/diagram-presets";
-import { Code, Eye, Save, RotateCcw, FileText } from "lucide-react";
-import { toast } from "sonner";
 
 interface DiagramEditorProps {
 	initialCode?: string;
@@ -33,9 +33,13 @@ export function DiagramEditor({
 	initialType = "mermaid",
 	onSave,
 }: DiagramEditorProps) {
-	const [diagramType, setDiagramType] = useState<"mermaid" | "plantuml">(initialType);
+	const [diagramType, setDiagramType] = useState<"mermaid" | "plantuml">(
+		initialType,
+	);
 	const [code, setCode] = useState(initialCode);
-	const [viewMode, setViewMode] = useState<"split" | "code" | "preview">("split");
+	const [viewMode, setViewMode] = useState<"split" | "code" | "preview">(
+		"split",
+	);
 	const krokiEnabled = isKrokiEnabled();
 
 	// 获取预设模板
@@ -94,7 +98,10 @@ Bob -> Alice: Hi
 					{/* 图表类型选择 */}
 					<div className="flex items-center gap-2">
 						<Label>类型</Label>
-						<Tabs value={diagramType} onValueChange={(v) => handleTypeChange(v as any)}>
+						<Tabs
+							value={diagramType}
+							onValueChange={(v) => handleTypeChange(v as any)}
+						>
 							<TabsList>
 								<TabsTrigger value="mermaid">Mermaid</TabsTrigger>
 								<TabsTrigger value="plantuml" disabled={!krokiEnabled}>
@@ -156,7 +163,9 @@ Bob -> Alice: Hi
 			<div className="flex-1 flex overflow-hidden">
 				{/* 代码编辑器 */}
 				{(viewMode === "code" || viewMode === "split") && (
-					<div className={`${viewMode === "split" ? "w-1/2" : "w-full"} border-r`}>
+					<div
+						className={`${viewMode === "split" ? "w-1/2" : "w-full"} border-r`}
+					>
 						<Textarea
 							value={code}
 							onChange={(e) => setCode(e.target.value)}
@@ -172,7 +181,9 @@ Bob -> Alice: Hi
 
 				{/* 预览区域 */}
 				{(viewMode === "preview" || viewMode === "split") && (
-					<div className={`${viewMode === "split" ? "w-1/2" : "w-full"} overflow-auto`}>
+					<div
+						className={`${viewMode === "split" ? "w-1/2" : "w-full"} overflow-auto`}
+					>
 						{diagramType === "mermaid" ? (
 							<div className="p-4">
 								<MermaidViewer code={code} title="预览" />

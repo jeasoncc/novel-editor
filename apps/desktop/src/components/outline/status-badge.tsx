@@ -3,8 +3,8 @@
  */
 
 import { Badge } from "@/components/ui/badge";
-import { STATUS_CONFIG } from "@/lib/outline-status";
 import type { OutlineStatus } from "@/db/schema-outline";
+import { STATUS_CONFIG } from "@/lib/outline-status";
 import { cn } from "@/lib/utils";
 
 interface StatusBadgeProps {

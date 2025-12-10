@@ -168,10 +168,13 @@ function OutlineContent() {
 					chapterId,
 					title: `场景 ${nextOrder}`,
 					order: nextOrder,
+					content: "",
 				});
 				toast.success("场景已创建");
-			} catch {
-				toast.error("创建场景失败");
+			} catch (error) {
+				const errorMessage =
+					error instanceof Error ? error.message : "创建场景失败";
+				toast.error(errorMessage);
 			}
 		},
 		[currentProject, projectScenes],
@@ -196,8 +199,10 @@ function OutlineContent() {
 					order: nextOrder,
 				});
 				toast.success("绘图场景已创建");
-			} catch {
-				toast.error("创建绘图场景失败");
+			} catch (error) {
+				const errorMessage =
+					error instanceof Error ? error.message : "创建绘图场景失败";
+				toast.error(errorMessage);
 			}
 		},
 		[currentProject, projectScenes],

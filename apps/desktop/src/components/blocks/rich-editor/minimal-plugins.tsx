@@ -21,8 +21,8 @@ import { ContentEditable } from "@/components/editor/editor-ui/content-editable"
 import { ComponentPickerMenuPlugin } from "@/components/editor/plugins/component-picker-menu-plugin";
 import { ExcalidrawPlugin } from "@/components/editor/plugins/excalidraw-plugin";
 import { FloatingTextFormatToolbarPlugin } from "@/components/editor/plugins/floating-text-format-plugin";
-import MentionsPlugin from "@/components/editor/plugins/mentions-plugin";
 import MentionTooltipPlugin from "@/components/editor/plugins/mention-tooltip-plugin";
+import MentionsPlugin from "@/components/editor/plugins/mentions-plugin";
 import { DividerPickerPlugin } from "@/components/editor/plugins/picker/divider-picker-plugin";
 import { ExcalidrawPickerPlugin } from "@/components/editor/plugins/picker/excalidraw-picker-plugin";
 import { HeadingPickerPlugin } from "@/components/editor/plugins/picker/heading-picker-plugin";

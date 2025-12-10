@@ -13,11 +13,11 @@ export interface PlotPoint {
 }
 
 // ---------- 状态类型 ----------
-export type OutlineStatus = 
-	| "draft" 
-	| "in-progress" 
-	| "completed" 
-	| "needs-revision" 
+export type OutlineStatus =
+	| "draft"
+	| "in-progress"
+	| "completed"
+	| "needs-revision"
 	| "on-hold";
 
 // ---------- 大纲节点元数据 ----------
@@ -51,7 +51,7 @@ export interface OutlineMetadata {
 
 	// 标签系统
 	tags?: string[]; // 自定义标签（如"高潮"、"转折点"、"伏笔"）
-	
+
 	// 元数据
 	createdAt?: string;
 	updatedAt?: string;

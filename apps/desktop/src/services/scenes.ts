@@ -46,7 +46,7 @@ export async function createCanvasScene(params: {
 	title: string;
 	order: number;
 }) {
-	// 生成文件路径
+	// Generate file path for canvas scene
 	const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
 	const filePath = `canvas/${params.projectId}/${timestamp}.excalidraw`;
 

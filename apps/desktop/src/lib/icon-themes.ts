@@ -4,48 +4,48 @@
  */
 
 import {
+	BarChart3,
 	Book,
-	BookOpen,
 	BookMarked,
+	BookOpen,
+	BookOpenText,
 	BookText,
-	FileText,
+	Cog,
+	Compass,
+	Download,
+	Feather,
 	File,
+	FileDown,
+	FileEdit,
 	Files,
+	FileText,
+	FileUp,
 	Folder,
 	FolderOpen,
 	FolderTree,
+	Globe,
+	Grid3x3,
 	Layers,
 	Library,
-	Notebook,
-	ScrollText,
-	Users,
-	User,
-	Globe,
-	Map,
-	Sparkles,
-	Feather,
-	PenTool,
-	FileEdit,
-	BookOpenText,
-	Search,
 	ListTree,
-	Pencil,
-	TrendingUp,
-	Settings,
-	Plus,
-	Upload,
-	Download,
-	MoreHorizontal,
-	Compass,
-	Palette,
-	Grid3x3,
-	BarChart3,
-	Cog,
-	PlusCircle,
-	FileUp,
-	FileDown,
-	Menu,
 	type LucideIcon,
+	Map,
+	Menu,
+	MoreHorizontal,
+	Notebook,
+	Palette,
+	Pencil,
+	PenTool,
+	Plus,
+	PlusCircle,
+	ScrollText,
+	Search,
+	Settings,
+	Sparkles,
+	TrendingUp,
+	Upload,
+	User,
+	Users,
 } from "lucide-react";
 
 export interface IconTheme {
@@ -396,7 +396,14 @@ export function getCurrentIconTheme(): IconTheme {
 
 // 根据类型和状态获取图标
 export function getIconForType(
-	type: "project" | "chapter" | "scene" | "character" | "world" | "folder" | "file",
+	type:
+		| "project"
+		| "chapter"
+		| "scene"
+		| "character"
+		| "world"
+		| "folder"
+		| "file",
 	state: "default" | "open" = "default",
 ): LucideIcon {
 	const theme = getCurrentIconTheme();

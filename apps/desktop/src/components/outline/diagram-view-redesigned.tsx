@@ -3,20 +3,33 @@
  * 使用侧边栏分类导航
  */
 
-import { useState, useMemo } from "react";
+import {
+	BarChart3,
+	Clock,
+	Edit,
+	GitBranch,
+	Plus,
+	Trash2,
+	TrendingUp,
+	Users,
+} from "lucide-react";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import type { ChapterInterface, SceneInterface, RoleInterface } from "@/db/schema";
-import { MermaidViewer } from "./mermaid-viewer";
-import { PlantUMLViewer } from "./plantuml-viewer";
-import { DiagramEditorInline } from "./diagram-editor-inline";
+import type {
+	ChapterInterface,
+	RoleInterface,
+	SceneInterface,
+} from "@/db/schema";
 import { isKrokiEnabled } from "@/lib/diagram-settings";
 import * as MermaidGen from "@/lib/mermaid-generator";
 import * as PlantUMLGen from "@/lib/plantuml-generator";
-import { Plus, BarChart3, GitBranch, Clock, TrendingUp, Users, Edit, Trash2 } from "lucide-react";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { DiagramEditorInline } from "./diagram-editor-inline";
+import { MermaidViewer } from "./mermaid-viewer";
+import { PlantUMLViewer } from "./plantuml-viewer";
 
 interface DiagramViewProps {
 	chapters: ChapterInterface[];
@@ -44,44 +57,95 @@ export function DiagramViewRedesigned({
 	scenes,
 	characters = [],
 }: DiagramViewProps) {
-	const [selectedDiagram, setSelectedDiagram] = useState<string>("mermaid-structure");
+	const [selectedDiagram, setSelectedDiagram] =
+		useState<string>("mermaid-structure");
 	const [editorMode, setEditorMode] = useState<"view" | "edit">("view");
 	const [customDiagrams, setCustomDiagrams] = useState<CustomDiagram[]>([]);
-	const [editingDiagram, setEditingDiagram] = useState<CustomDiagram | null>(null);
+	const [editingDiagram, setEditingDiagram] = useState<CustomDiagram | null>(
+		null,
+	);
 	const krokiEnabled = isKrokiEnabled();
 
 	// 生成 Mermaid 图表代码
 	const mermaidStructureCode = useMemo(
 		() => MermaidGen.generateChapterStructure(chapters, scenes),
-		[chapters, scenes]
+		[chapters, scenes],
 	);
-	const mermaidFlowCode = useMemo(() => MermaidGen.generateChapterFlow(chapters), [chapters]);
-	const mermaidThreeActCode = useMemo(() => MermaidGen.generateThreeActStructure(chapters), [chapters]);
-	const mermaidTimelineCode = useMemo(() => MermaidGen.generateTimeline(chapters), [chapters]);
-	const mermaidGanttCode = useMemo(() => MermaidGen.generateGanttChart(chapters), [chapters]);
-	const mermaidCharacterCode = useMemo(() => MermaidGen.generateCharacterRelations(characters), [characters]);
+	const mermaidFlowCode = useMemo(
+		() => MermaidGen.generateChapterFlow(chapters),
+		[chapters],
+	);
+	const mermaidThreeActCode = useMemo(
+		() => MermaidGen.generateThreeActStructure(chapters),
+		[chapters],
+	);
+	const mermaidTimelineCode = useMemo(
+		() => MermaidGen.generateTimeline(chapters),
+		[chapters],
+	);
+	const mermaidGanttCode = useMemo(
+		() => MermaidGen.generateGanttChart(chapters),
+		[chapters],
+	);
+	const mermaidCharacterCode = useMemo(
+		() => MermaidGen.generateCharacterRelations(characters),
+		[characters],
+	);
 
 	// 生成 PlantUML 图表代码
 	const plantumlStructureCode = useMemo(
-		() => krokiEnabled ? PlantUMLGen.generateChapterStructure(chapters, scenes) : "",
-		[chapters, scenes, krokiEnabled]
+		() =>
+			krokiEnabled
+				? PlantUMLGen.generateChapterStructure(chapters, scenes)
+				: "",
+		[chapters, scenes, krokiEnabled],
 	);
 	const plantumlFlowCode = useMemo(
-		() => krokiEnabled ? PlantUMLGen.generateChapterFlow(chapters) : "",
-		[chapters, krokiEnabled]
+		() => (krokiEnabled ? PlantUMLGen.generateChapterFlow(chapters) : ""),
+		[chapters, krokiEnabled],
 	);
 	const plantumlThreeActCode = useMemo(
-		() => krokiEnabled ? PlantUMLGen.generateThreeActStructure(chapters) : "",
-		[chapters, krokiEnabled]
+		() => (krokiEnabled ? PlantUMLGen.generateThreeActStructure(chapters) : ""),
+		[chapters, krokiEnabled],
 	);
 
 	// 预设图表列表
 	const presetDiagrams: DiagramItem[] = [
-		{ id: "mermaid-structure", name: "章节结构", icon: BarChart3, type: "preset", category: "mermaid" },
-		{ id: "mermaid-flow", name: "章节流程", icon: GitBranch, type: "preset", category: "mermaid" },
-		{ id: "mermaid-three-act", name: "三幕结构", icon: BarChart3, type: "preset", category: "mermaid" },
-		{ id: "mermaid-timeline", name: "故事时间线", icon: Clock, type: "preset", category: "mermaid" },
-		{ id: "mermaid-gantt", name: "创作进度", icon: TrendingUp, type: "preset", category: "mermaid" },
+		{
+			id: "mermaid-structure",
+			name: "章节结构",
+			icon: BarChart3,
+			type: "preset",
+			category: "mermaid",
+		},
+		{
+			id: "mermaid-flow",
+			name: "章节流程",
+			icon: GitBranch,
+			type: "preset",
+			category: "mermaid",
+		},
+		{
+			id: "mermaid-three-act",
+			name: "三幕结构",
+			icon: BarChart3,
+			type: "preset",
+			category: "mermaid",
+		},
+		{
+			id: "mermaid-timeline",
+			name: "故事时间线",
+			icon: Clock,
+			type: "preset",
+			category: "mermaid",
+		},
+		{
+			id: "mermaid-gantt",
+			name: "创作进度",
+			icon: TrendingUp,
+			type: "preset",
+			category: "mermaid",
+		},
 	];
 
 	if (characters.length > 0) {
@@ -96,17 +160,40 @@ export function DiagramViewRedesigned({
 
 	if (krokiEnabled) {
 		presetDiagrams.push(
-			{ id: "plantuml-structure", name: "PlantUML 结构", icon: BarChart3, type: "preset", category: "plantuml" },
-			{ id: "plantuml-flow", name: "PlantUML 流程", icon: GitBranch, type: "preset", category: "plantuml" },
-			{ id: "plantuml-three-act", name: "PlantUML 三幕", icon: BarChart3, type: "preset", category: "plantuml" }
+			{
+				id: "plantuml-structure",
+				name: "PlantUML 结构",
+				icon: BarChart3,
+				type: "preset",
+				category: "plantuml",
+			},
+			{
+				id: "plantuml-flow",
+				name: "PlantUML 流程",
+				icon: GitBranch,
+				type: "preset",
+				category: "plantuml",
+			},
+			{
+				id: "plantuml-three-act",
+				name: "PlantUML 三幕",
+				icon: BarChart3,
+				type: "preset",
+				category: "plantuml",
+			},
 		);
 	}
 
 	// 处理保存
-	const handleSaveCustomDiagram = (code: string, type: "mermaid" | "plantuml") => {
+	const handleSaveCustomDiagram = (
+		code: string,
+		type: "mermaid" | "plantuml",
+	) => {
 		if (editingDiagram) {
-			setCustomDiagrams(prev =>
-				prev.map(d => d.id === editingDiagram.id ? { ...d, code, type } : d)
+			setCustomDiagrams((prev) =>
+				prev.map((d) =>
+					d.id === editingDiagram.id ? { ...d, code, type } : d,
+				),
 			);
 			toast.success("图表已更新");
 		} else {
@@ -116,7 +203,7 @@ export function DiagramViewRedesigned({
 				code,
 				type,
 			};
-			setCustomDiagrams(prev => [...prev, newDiagram]);
+			setCustomDiagrams((prev) => [...prev, newDiagram]);
 			setSelectedDiagram(newDiagram.id);
 			toast.success("图表已创建");
 		}
@@ -137,7 +224,7 @@ export function DiagramViewRedesigned({
 
 	// 删除自定义图表
 	const handleDeleteCustomDiagram = (id: string) => {
-		setCustomDiagrams(prev => prev.filter(d => d.id !== id));
+		setCustomDiagrams((prev) => prev.filter((d) => d.id !== id));
 		if (selectedDiagram === id) {
 			setSelectedDiagram("mermaid-structure");
 		}
@@ -146,12 +233,16 @@ export function DiagramViewRedesigned({
 
 	// 渲染当前选中的图表
 	const renderDiagram = () => {
-		const customDiagram = customDiagrams.find(d => d.id === selectedDiagram);
+		const customDiagram = customDiagrams.find((d) => d.id === selectedDiagram);
 		if (customDiagram) {
 			return customDiagram.type === "mermaid" ? (
 				<MermaidViewer code={customDiagram.code} title={customDiagram.name} />
 			) : (
-				<PlantUMLViewer code={customDiagram.code} title={customDiagram.name} className="h-full" />
+				<PlantUMLViewer
+					code={customDiagram.code}
+					title={customDiagram.name}
+					className="h-full"
+				/>
 			);
 		}
 
@@ -169,11 +260,29 @@ export function DiagramViewRedesigned({
 			case "mermaid-characters":
 				return <MermaidViewer code={mermaidCharacterCode} title="角色关系图" />;
 			case "plantuml-structure":
-				return <PlantUMLViewer code={plantumlStructureCode} title="章节结构图 (PlantUML)" className="h-full" />;
+				return (
+					<PlantUMLViewer
+						code={plantumlStructureCode}
+						title="章节结构图 (PlantUML)"
+						className="h-full"
+					/>
+				);
 			case "plantuml-flow":
-				return <PlantUMLViewer code={plantumlFlowCode} title="章节流程图 (PlantUML)" className="h-full" />;
+				return (
+					<PlantUMLViewer
+						code={plantumlFlowCode}
+						title="章节流程图 (PlantUML)"
+						className="h-full"
+					/>
+				);
 			case "plantuml-three-act":
-				return <PlantUMLViewer code={plantumlThreeActCode} title="三幕结构图 (PlantUML)" className="h-full" />;
+				return (
+					<PlantUMLViewer
+						code={plantumlThreeActCode}
+						title="三幕结构图 (PlantUML)"
+						className="h-full"
+					/>
+				);
 			default:
 				return null;
 		}
@@ -216,11 +325,13 @@ export function DiagramViewRedesigned({
 												"w-full flex items-center gap-2 px-2 py-1.5 text-sm rounded-md transition-colors",
 												selectedDiagram === diagram.id
 													? "bg-accent text-accent-foreground"
-													: "hover:bg-muted"
+													: "hover:bg-muted",
 											)}
 										>
 											<Icon className="h-4 w-4" />
-											<span className="flex-1 text-left truncate">{diagram.name}</span>
+											<span className="flex-1 text-left truncate">
+												{diagram.name}
+											</span>
 										</button>
 									);
 								})}
@@ -250,7 +361,7 @@ export function DiagramViewRedesigned({
 											"group flex items-center gap-2 px-2 py-1.5 text-sm rounded-md transition-colors",
 											selectedDiagram === diagram.id
 												? "bg-accent text-accent-foreground"
-												: "hover:bg-muted"
+												: "hover:bg-muted",
 										)}
 									>
 										<button

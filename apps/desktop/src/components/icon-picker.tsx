@@ -2,8 +2,8 @@
  * 图标选择器组件
  */
 
-import { useState } from "react";
 import { Search, X } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -15,16 +15,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
 import {
-	type IconOption,
-	type IconCategory,
-	icons,
-	iconCategories,
 	getAllCategories,
 	getIconsByCategory,
+	type IconCategory,
+	type IconOption,
+	iconCategories,
+	icons,
 	searchIcons,
 } from "@/lib/icons";
+import { cn } from "@/lib/utils";
 
 interface IconPickerProps {
 	open: boolean;
@@ -114,7 +114,11 @@ export function IconPicker({
 					>
 						<TabsList className="grid w-full grid-cols-7">
 							{getAllCategories().map((category) => (
-								<TabsTrigger key={category} value={category} className="text-xs">
+								<TabsTrigger
+									key={category}
+									value={category}
+									className="text-xs"
+								>
 									{iconCategories[category].name}
 								</TabsTrigger>
 							))}

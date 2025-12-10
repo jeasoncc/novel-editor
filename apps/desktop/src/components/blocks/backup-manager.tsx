@@ -14,7 +14,7 @@ import {
 	Trash2,
 	Upload,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,6 +35,7 @@ import {
 	getDatabaseStats,
 	restoreBackup,
 } from "@/services/backup";
+import { clearAllData, getStorageStats } from "@/services/clear-data";
 import "dayjs/locale/zh-cn";
 import { useConfirm } from "@/components/ui/confirm";
 
@@ -42,13 +43,42 @@ dayjs.extend(relativeTime);
 dayjs.locale("zh-cn");
 
 export function BackupManager() {
-	const [stats, setStats] = useState<any>(null);
+	const [stats, setStats] = useState<{
+		projectCount: number;
+		chapterCount: number;
+		sceneCount: number;
+		totalWords: number;
+	} | null>(null);
 	const [loading, setLoading] = useState(false);
 	const [autoBackupEnabled, setAutoBackupEnabled] = useState(false);
 	const [localBackups, setLocalBackups] = useState<
 		Array<{ timestamp: string; data: BackupData }>
 	>([]);
+	const [storageStats, setStorageStats] = useState<{
+		indexedDB: { size: number; tables: Record<string, number> };
+		localStorage: { size: number; keys: number };
+		sessionStorage: { size: number; keys: number };
+		cookies: { count: number };
+	} | null>(null);
 	const confirm = useConfirm();
+
+	const loadStats = useCallback(async () => {
+		try {
+			const data = await getDatabaseStats();
+			setStats(data);
+
+			// 同时加载存储统计
+			const storage = await getStorageStats();
+			setStorageStats(storage);
+		} catch (error) {
+			console.error("加载统计失败:", error);
+		}
+	}, []);
+
+	const loadLocalBackups = useCallback(() => {
+		const backups = autoBackupManager.getLocalBackups();
+		setLocalBackups(backups);
+	}, []);
 
 	// 加载统计信息
 	useEffect(() => {
@@ -61,22 +91,7 @@ export function BackupManager() {
 		if (enabled) {
 			autoBackupManager.start();
 		}
-		// biome-ignore lint/correctness/useExhaustiveDependencies: 仅在组件挂载时执行一次
-	}, []);
-
-	const loadStats = async () => {
-		try {
-			const data = await getDatabaseStats();
-			setStats(data);
-		} catch (error) {
-			console.error("加载统计失败:", error);
-		}
-	};
-
-	const loadLocalBackups = () => {
-		const backups = autoBackupManager.getLocalBackups();
-		setLocalBackups(backups);
-	};
+	}, [loadStats, loadLocalBackups]);
 
 	// 导出备份（JSON）
 	const handleExportJson = async () => {
@@ -180,6 +195,40 @@ export function BackupManager() {
 		}
 	};
 
+	// 清空所有数据
+	const handleClearAllData = async () => {
+		const confirmed = await confirm({
+			title: "清空所有数据",
+			description:
+				"此操作将永久删除所有数据，包括：\n• 所有项目、章节、场景数据 (IndexedDB)\n• 应用设置和偏好 (localStorage)\n• 会话数据 (sessionStorage)\n• 浏览器 cookies\n• 应用缓存\n\n此操作不可撤销！建议先导出备份。",
+			confirmText: "确认清空",
+			cancelText: "取消",
+		});
+
+		if (!confirmed) return;
+
+		setLoading(true);
+		try {
+			await clearAllData();
+			toast.success("所有数据已清空");
+
+			// 刷新统计
+			await loadStats();
+
+			// 延迟刷新页面，让用户看到成功消息
+			setTimeout(() => {
+				window.location.reload();
+			}, 1500);
+		} catch (error) {
+			const errorMessage =
+				error instanceof Error ? error.message : "清空数据失败";
+			toast.error(errorMessage);
+			console.error("清空数据失败:", error);
+		} finally {
+			setLoading(false);
+		}
+	};
+
 	return (
 		<div className="space-y-6">
 			{/* 数据统计 */}
@@ -193,25 +242,78 @@ export function BackupManager() {
 				</CardHeader>
 				<CardContent>
 					{stats ? (
-						<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-							<div className="space-y-1">
-								<p className="text-sm text-muted-foreground">项目</p>
-								<p className="text-2xl font-bold">{stats.projectCount}</p>
+						<div className="space-y-6">
+							{/* 数据库统计 */}
+							<div>
+								<h4 className="text-sm font-medium mb-3">数据库内容</h4>
+								<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+									<div className="space-y-1">
+										<p className="text-sm text-muted-foreground">项目</p>
+										<p className="text-2xl font-bold">{stats.projectCount}</p>
+									</div>
+									<div className="space-y-1">
+										<p className="text-sm text-muted-foreground">章节</p>
+										<p className="text-2xl font-bold">{stats.chapterCount}</p>
+									</div>
+									<div className="space-y-1">
+										<p className="text-sm text-muted-foreground">场景</p>
+										<p className="text-2xl font-bold">{stats.sceneCount}</p>
+									</div>
+									<div className="space-y-1">
+										<p className="text-sm text-muted-foreground">总字数</p>
+										<p className="text-2xl font-bold">
+											{stats.totalWords.toLocaleString()}
+										</p>
+									</div>
+								</div>
 							</div>
-							<div className="space-y-1">
-								<p className="text-sm text-muted-foreground">章节</p>
-								<p className="text-2xl font-bold">{stats.chapterCount}</p>
-							</div>
-							<div className="space-y-1">
-								<p className="text-sm text-muted-foreground">场景</p>
-								<p className="text-2xl font-bold">{stats.sceneCount}</p>
-							</div>
-							<div className="space-y-1">
-								<p className="text-sm text-muted-foreground">总字数</p>
-								<p className="text-2xl font-bold">
-									{stats.totalWords.toLocaleString()}
-								</p>
-							</div>
+
+							{/* 存储统计 */}
+							{storageStats && (
+								<>
+									<Separator />
+									<div>
+										<h4 className="text-sm font-medium mb-3">存储使用情况</h4>
+										<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+											<div className="space-y-1">
+												<p className="text-sm text-muted-foreground">
+													IndexedDB
+												</p>
+												<p className="text-lg font-semibold">
+													{(
+														Object.values(
+															storageStats.indexedDB.tables,
+														) as number[]
+													).reduce((a, b) => a + b, 0)}{" "}
+													条记录
+												</p>
+											</div>
+											<div className="space-y-1">
+												<p className="text-sm text-muted-foreground">
+													localStorage
+												</p>
+												<p className="text-lg font-semibold">
+													{storageStats.localStorage.keys} 个键
+												</p>
+											</div>
+											<div className="space-y-1">
+												<p className="text-sm text-muted-foreground">
+													sessionStorage
+												</p>
+												<p className="text-lg font-semibold">
+													{storageStats.sessionStorage.keys} 个键
+												</p>
+											</div>
+											<div className="space-y-1">
+												<p className="text-sm text-muted-foreground">Cookies</p>
+												<p className="text-lg font-semibold">
+													{storageStats.cookies.count} 个
+												</p>
+											</div>
+										</div>
+									</div>
+								</>
+							)}
 						</div>
 					) : (
 						<div className="flex items-center justify-center py-8">
@@ -331,27 +433,98 @@ export function BackupManager() {
 					</CardTitle>
 					<CardDescription>这些操作不可撤销，请谨慎使用</CardDescription>
 				</CardHeader>
-				<CardContent>
-					<Button
-						variant="destructive"
-						onClick={async () => {
-							const confirmed = await confirm({
-								title: "清空所有数据",
-								description:
-									"此操作将永久删除所有项目、章节、场景等数据，且无法恢复！",
-								confirmText: "确认清空",
-								cancelText: "取消",
-							});
-							if (confirmed) {
-								// 实现清空逻辑
-								toast.error("功能暂未实现");
-							}
-						}}
-						disabled={loading}
-					>
-						<Trash2 className="size-4 mr-2" />
-						清空所有数据
-					</Button>
+				<CardContent className="space-y-4">
+					<div className="flex flex-wrap gap-3">
+						<Button
+							variant="destructive"
+							onClick={handleClearAllData}
+							disabled={loading}
+						>
+							{loading ? (
+								<Loader2 className="size-4 mr-2 animate-spin" />
+							) : (
+								<Trash2 className="size-4 mr-2" />
+							)}
+							清空所有数据
+						</Button>
+
+						<Button
+							variant="outline"
+							onClick={async () => {
+								const confirmed = await confirm({
+									title: "仅清空数据库",
+									description:
+										"此操作将清空所有项目、章节、场景等数据，但保留应用设置。",
+									confirmText: "确认清空",
+									cancelText: "取消",
+								});
+								if (!confirmed) return;
+
+								setLoading(true);
+								try {
+									await clearAllData({
+										clearIndexedDB: true,
+										clearLocalStorage: false,
+										clearSessionStorage: false,
+										clearCookies: false,
+									});
+									toast.success("数据库已清空");
+									await loadStats();
+								} catch (error) {
+									toast.error("清空失败");
+									console.error(error);
+								} finally {
+									setLoading(false);
+								}
+							}}
+							disabled={loading}
+						>
+							<Database className="size-4 mr-2" />
+							仅清空数据库
+						</Button>
+
+						<Button
+							variant="outline"
+							onClick={async () => {
+								const confirmed = await confirm({
+									title: "仅清空设置",
+									description: "此操作将清空应用设置和偏好，但保留项目数据。",
+									confirmText: "确认清空",
+									cancelText: "取消",
+								});
+								if (!confirmed) return;
+
+								setLoading(true);
+								try {
+									await clearAllData({
+										clearIndexedDB: false,
+										clearLocalStorage: true,
+										clearSessionStorage: true,
+										clearCookies: true,
+									});
+									toast.success("设置已清空");
+									await loadStats();
+								} catch (error) {
+									toast.error("清空失败");
+									console.error(error);
+								} finally {
+									setLoading(false);
+								}
+							}}
+							disabled={loading}
+						>
+							<Database className="size-4 mr-2" />
+							仅清空设置
+						</Button>
+					</div>
+
+					<p className="text-xs text-muted-foreground">
+						<strong>清空所有数据</strong>：删除所有内容和设置
+						<br />
+						<strong>仅清空数据库</strong>：删除项目数据，保留应用设置
+						<br />
+						<strong>仅清空设置</strong>：删除应用设置，保留项目数据
+					</p>
 				</CardContent>
 			</Card>
 		</div>

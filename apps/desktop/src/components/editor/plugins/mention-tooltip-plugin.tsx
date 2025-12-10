@@ -4,16 +4,17 @@
 
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { $getNodeByKey, type NodeKey } from "lexical";
-import React, { useEffect, useState } from "react";
+import { Calendar, Info, Tag, User } from "lucide-react";
+import type React from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { User, Tag, Calendar, Info } from "lucide-react";
 
 import { $isMentionNode } from "@/components/editor/nodes/mention-node";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { db } from "@/db/curd";
 import type { RoleInterface } from "@/db/schema";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 
 interface TooltipPosition {
 	x: number;
@@ -30,7 +31,7 @@ export default function MentionTooltipPlugin(): React.ReactElement | null {
 	useEffect(() => {
 		const handleMouseOver = async (event: MouseEvent) => {
 			const target = event.target as HTMLElement;
-			
+
 			// 检查是否是 mention 元素
 			if (
 				target.classList.contains("mention") ||

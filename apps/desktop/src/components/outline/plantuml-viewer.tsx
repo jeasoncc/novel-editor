@@ -2,10 +2,10 @@
  * PlantUML 图表查看器组件（使用 Kroki）
  */
 
-import { useState, useEffect } from "react";
-import { Download, Copy, RefreshCw, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Copy, Download, Loader2, RefreshCw } from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { useDiagramSettings } from "@/lib/diagram-settings";
 import { cn } from "@/lib/utils";
 
@@ -15,7 +15,11 @@ interface PlantUMLViewerProps {
 	className?: string;
 }
 
-export function PlantUMLViewer({ code, title, className }: PlantUMLViewerProps) {
+export function PlantUMLViewer({
+	code,
+	title,
+	className,
+}: PlantUMLViewerProps) {
 	const [svgContent, setSvgContent] = useState<string>("");
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string>("");
@@ -97,7 +101,9 @@ export function PlantUMLViewer({ code, title, className }: PlantUMLViewerProps) 
 		<div className={cn("flex flex-col", className)}>
 			{/* 工具栏 */}
 			<div className="flex items-center justify-between px-4 py-2.5 border-b border-border/50 bg-muted/20">
-				{title && <span className="text-sm font-semibold text-foreground">{title}</span>}
+				{title && (
+					<span className="text-sm font-semibold text-foreground">{title}</span>
+				)}
 				<div className="flex items-center gap-1">
 					<Button
 						size="icon"

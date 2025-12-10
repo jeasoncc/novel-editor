@@ -1,6 +1,14 @@
 // 增强的大纲视图主组件
 
-import { FolderPlus, LayoutGrid, LayoutList, Search, PanelRightClose, PanelRight, BarChart } from "lucide-react";
+import {
+	BarChart,
+	FolderPlus,
+	LayoutGrid,
+	LayoutList,
+	PanelRight,
+	PanelRightClose,
+	Search,
+} from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -26,16 +34,12 @@ import {
 	deleteChapter,
 	reorderChapters,
 } from "@/services/chapters";
-import {
-	createScene,
-	deleteScene,
-	reorderScenes,
-} from "@/services/scenes";
-import { OutlineCardsView } from "./outline-cards-view";
-import { OutlineTreeView } from "./outline-tree-view";
-import { OutlineDetailPanel } from "./outline-detail-panel";
-import { DiagramViewRedesigned } from "./diagram-view-redesigned";
 import { useRolesByProject } from "@/services/roles";
+import { createScene, deleteScene, reorderScenes } from "@/services/scenes";
+import { DiagramViewRedesigned } from "./diagram-view-redesigned";
+import { OutlineCardsView } from "./outline-cards-view";
+import { OutlineDetailPanel } from "./outline-detail-panel";
+import { OutlineTreeView } from "./outline-tree-view";
 
 interface OutlineViewProps {
 	projects: ProjectInterface[];
@@ -55,8 +59,9 @@ export function OutlineViewEnhanced({
 	onNavigateToScene,
 }: OutlineViewProps) {
 	const confirm = useConfirm();
-	const [viewMode, setViewMode] =
-		useState<"tree" | "cards" | "diagram">("tree");
+	const [viewMode, setViewMode] = useState<"tree" | "cards" | "diagram">(
+		"tree",
+	);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [selectedNode, setSelectedNode] = useState<
 		| (ChapterInterface & { type: "chapter" })
@@ -136,10 +141,13 @@ export function OutlineViewEnhanced({
 					chapterId,
 					title: `场景 ${nextOrder}`,
 					order: nextOrder,
+					content: "",
 				});
 				toast.success("场景已创建");
-			} catch {
-				toast.error("创建场景失败");
+			} catch (error) {
+				const errorMessage =
+					error instanceof Error ? error.message : "创建场景失败";
+				toast.error(errorMessage);
 			}
 		},
 		[currentProject, projectScenes],

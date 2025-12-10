@@ -67,17 +67,18 @@ export async function exportAll(): Promise<string> {
 export async function exportAllAsZip(): Promise<Blob> {
 	const JSZip = (await import("jszip")).default;
 	const zip = new JSZip();
-	
+
 	// 获取所有数据
-	const [projects, chapters, scenes, roles, attachments, worldEntries] = await Promise.all([
-		db.getAllProjects(),
-		db.getAllChapters(),
-		db.getAllScenes(),
-		db.roles.toArray().catch(() => [] as RoleInterface[]),
-		db.attachments.toArray().catch(() => [] as AttachmentInterface[]),
-		db.worldEntries?.toArray().catch(() => []) || Promise.resolve([]),
-	]);
-	
+	const [projects, chapters, scenes, roles, attachments, worldEntries] =
+		await Promise.all([
+			db.getAllProjects(),
+			db.getAllChapters(),
+			db.getAllScenes(),
+			db.roles.toArray().catch(() => [] as RoleInterface[]),
+			db.attachments.toArray().catch(() => [] as AttachmentInterface[]),
+			db.worldEntries?.toArray().catch(() => []) || Promise.resolve([]),
+		]);
+
 	// 创建主数据文件
 	const bundle: ExportBundle = {
 		projects,
@@ -86,62 +87,75 @@ export async function exportAllAsZip(): Promise<Blob> {
 		roles,
 		attachments,
 	} as unknown as ExportBundle;
-	
+
 	zip.file("data.json", JSON.stringify(bundle, null, 2));
-	
+
 	// 为每个项目创建单独的文件夹
 	for (const project of projects) {
 		const projectFolder = zip.folder(sanitizeFileName(project.title));
 		if (!projectFolder) continue;
-		
+
 		// 项目信息
 		projectFolder.file("project.json", JSON.stringify(project, null, 2));
-		
+
 		// 获取该项目的章节
-		const projectChapters = chapters.filter(c => c.project === project.id);
-		
+		const projectChapters = chapters.filter((c) => c.project === project.id);
+
 		// 为每个章节创建文件夹
 		for (const chapter of projectChapters) {
-			const chapterFolder = projectFolder.folder(sanitizeFileName(chapter.title));
+			const chapterFolder = projectFolder.folder(
+				sanitizeFileName(chapter.title),
+			);
 			if (!chapterFolder) continue;
-			
+
 			// 章节信息
 			chapterFolder.file("chapter.json", JSON.stringify(chapter, null, 2));
-			
+
 			// 获取该章节的场景
-			const chapterScenes = scenes.filter(s => s.chapter === chapter.id);
-			
+			const chapterScenes = scenes.filter((s) => s.chapter === chapter.id);
+
 			// 为每个场景创建文本文件
 			for (const scene of chapterScenes) {
 				const sceneText = extractTextFromSerialized(scene.content);
 				chapterFolder.file(`${sanitizeFileName(scene.title)}.txt`, sceneText);
-				chapterFolder.file(`${sanitizeFileName(scene.title)}.json`, JSON.stringify(scene, null, 2));
+				chapterFolder.file(
+					`${sanitizeFileName(scene.title)}.json`,
+					JSON.stringify(scene, null, 2),
+				);
 			}
 		}
-		
+
 		// 导出角色信息
-		const projectRoles = roles.filter(r => r.project === project.id);
+		const projectRoles = roles.filter((r) => r.project === project.id);
 		if (projectRoles.length > 0) {
 			const rolesFolder = projectFolder.folder("角色");
 			if (rolesFolder) {
 				for (const role of projectRoles) {
-					rolesFolder.file(`${sanitizeFileName(role.name)}.json`, JSON.stringify(role, null, 2));
+					rolesFolder.file(
+						`${sanitizeFileName(role.name)}.json`,
+						JSON.stringify(role, null, 2),
+					);
 				}
 			}
 		}
-		
+
 		// 导出世界观信息
-		const projectWorld = worldEntries.filter((w: any) => w.project === project.id);
+		const projectWorld = worldEntries.filter(
+			(w: any) => w.project === project.id,
+		);
 		if (projectWorld.length > 0) {
 			const worldFolder = projectFolder.folder("世界观");
 			if (worldFolder) {
 				for (const entry of projectWorld) {
-					worldFolder.file(`${sanitizeFileName(entry.name)}.json`, JSON.stringify(entry, null, 2));
+					worldFolder.file(
+						`${sanitizeFileName(entry.name)}.json`,
+						JSON.stringify(entry, null, 2),
+					);
 				}
 			}
 		}
 	}
-	
+
 	// 生成 ZIP 文件
 	return await zip.generateAsync({ type: "blob" });
 }

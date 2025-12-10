@@ -2,13 +2,7 @@
  * 大纲状态配置
  */
 
-import { 
-	FileText, 
-	Edit, 
-	CheckCircle, 
-	AlertCircle, 
-	Pause 
-} from "lucide-react";
+import { AlertCircle, CheckCircle, Edit, FileText, Pause } from "lucide-react";
 import type { OutlineStatus } from "@/db/schema-outline";
 
 export const STATUS_CONFIG = {
@@ -48,5 +42,5 @@ export const STATUS_OPTIONS = Object.entries(STATUS_CONFIG).map(
 	([value, config]) => ({
 		value: value as OutlineStatus,
 		...config,
-	})
+	}),
 );

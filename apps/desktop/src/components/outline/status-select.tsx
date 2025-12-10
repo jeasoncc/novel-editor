@@ -9,8 +9,8 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { STATUS_OPTIONS } from "@/lib/outline-status";
 import type { OutlineStatus } from "@/db/schema-outline";
+import { STATUS_OPTIONS } from "@/lib/outline-status";
 
 interface StatusSelectProps {
 	value: OutlineStatus;
@@ -18,7 +18,11 @@ interface StatusSelectProps {
 	className?: string;
 }
 
-export function StatusSelect({ value, onChange, className }: StatusSelectProps) {
+export function StatusSelect({
+	value,
+	onChange,
+	className,
+}: StatusSelectProps) {
 	const current = STATUS_OPTIONS.find((o) => o.value === value);
 
 	return (

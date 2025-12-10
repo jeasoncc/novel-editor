@@ -3,18 +3,25 @@
  * 展示如何在实际组件中使用图标主题系统
  */
 
-import { getIconForType, getCurrentIconTheme } from "@/lib/icon-themes";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChevronDown, ChevronRight } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { useState, useEffect } from "react";
-import { ChevronRight, ChevronDown } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getCurrentIconTheme, getIconForType } from "@/lib/icon-themes";
 import { cn } from "@/lib/utils";
 
 // 示例数据结构
 interface FileItem {
 	id: string;
 	name: string;
-	type: "project" | "chapter" | "scene" | "character" | "world" | "folder" | "file";
+	type:
+		| "project"
+		| "chapter"
+		| "scene"
+		| "character"
+		| "world"
+		| "folder"
+		| "file";
 	isOpen?: boolean;
 	children?: FileItem[];
 }
@@ -42,9 +49,7 @@ const exampleData: FileItem[] = [
 				name: "第二章",
 				type: "chapter",
 				isOpen: false,
-				children: [
-					{ id: "6", name: "冲突", type: "scene" },
-				],
+				children: [{ id: "6", name: "冲突", type: "scene" }],
 			},
 			{
 				id: "7",
@@ -185,9 +190,7 @@ function IconGrid() {
 							<div className="flex flex-col items-center gap-3">
 								<div className="flex gap-3">
 									<DefaultIcon className="size-8 text-muted-foreground" />
-									{OpenIcon && (
-										<OpenIcon className="size-8 text-primary" />
-									)}
+									{OpenIcon && <OpenIcon className="size-8 text-primary" />}
 								</div>
 								<div className="text-center">
 									<div className="text-sm font-medium">{label}</div>

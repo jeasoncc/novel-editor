@@ -2,17 +2,17 @@
  * 角色选择器组件
  */
 
-import { X, Plus, User } from "lucide-react";
-import { useState, useMemo } from "react";
+import { Plus, User, X } from "lucide-react";
+import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Input } from "@/components/ui/input";
 import { useRolesByProject } from "@/services/roles";
 
 interface CharacterSelectorProps {
@@ -32,21 +32,19 @@ export function CharacterSelector({
 
 	const selectedRoles = useMemo(
 		() => roles.filter((r) => selectedCharacters.includes(r.id)),
-		[roles, selectedCharacters]
+		[roles, selectedCharacters],
 	);
 
 	const availableRoles = useMemo(() => {
-		const filtered = roles.filter(
-			(r) => !selectedCharacters.includes(r.id)
-		);
-		
+		const filtered = roles.filter((r) => !selectedCharacters.includes(r.id));
+
 		if (!search) return filtered;
-		
+
 		const query = search.toLowerCase();
 		return filtered.filter(
 			(r) =>
 				r.name.toLowerCase().includes(query) ||
-				r.alias?.some((a) => a.toLowerCase().includes(query))
+				r.alias?.some((a) => a.toLowerCase().includes(query)),
 		);
 	}, [roles, selectedCharacters, search]);
 

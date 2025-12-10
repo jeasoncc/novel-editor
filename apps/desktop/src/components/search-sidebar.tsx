@@ -4,29 +4,29 @@
 
 import { useNavigate } from "@tanstack/react-router";
 import {
+	ChevronDown,
+	ChevronRight,
 	FileText,
+	Filter,
 	Globe,
 	Loader2,
 	Search,
 	User,
 	X,
-	ChevronRight,
-	ChevronDown,
-	Filter,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import {
 	Collapsible,
 	CollapsibleContent,
 	CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import {
 	type SearchResult,
@@ -140,9 +140,7 @@ export function SearchSidebar() {
 	// 切换类型过滤
 	const toggleType = (type: SearchResultType) => {
 		setSelectedTypes((prev) =>
-			prev.includes(type)
-				? prev.filter((t) => t !== type)
-				: [...prev, type],
+			prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type],
 		);
 	};
 

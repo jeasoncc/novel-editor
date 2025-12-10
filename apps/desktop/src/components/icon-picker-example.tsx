@@ -4,11 +4,17 @@
  */
 
 import { useState } from "react";
+import { IconDisplay, IconSelectButton } from "@/components/icon-picker";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { IconSelectButton, IconDisplay } from "@/components/icon-picker";
 import type { IconOption } from "@/lib/icons";
 
 /**
@@ -120,7 +126,9 @@ export function IconShowcaseExample() {
 							className="flex flex-col items-center gap-2 p-4 rounded-lg border"
 						>
 							<IconDisplay iconKey={item.key} size="lg" />
-							<span className="text-sm text-muted-foreground">{item.label}</span>
+							<span className="text-sm text-muted-foreground">
+								{item.label}
+							</span>
 						</div>
 					))}
 				</div>

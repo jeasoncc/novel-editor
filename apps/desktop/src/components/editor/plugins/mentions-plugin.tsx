@@ -9,14 +9,15 @@ import {
 	MenuOption,
 } from "@lexical/react/LexicalTypeaheadMenuPlugin";
 import { $getSelection, $isRangeSelection, type TextNode } from "lexical";
-import React, { useCallback, useMemo, useState } from "react";
+import { Hash, User } from "lucide-react";
+import type React from "react";
+import { useCallback, useMemo, useState } from "react";
 import * as ReactDOM from "react-dom";
-import { User, Hash } from "lucide-react";
 
 import { $createMentionNode } from "@/components/editor/nodes/mention-node";
-import { useSelectionStore } from "@/stores/selection";
-import { useRolesByProject } from "@/services/roles";
 import type { RoleInterface } from "@/db/schema";
+import { useRolesByProject } from "@/services/roles";
+import { useSelectionStore } from "@/stores/selection";
 
 // 简单的 @ 匹配 - 支持中英文
 const AtSignMentionsRegex = /@([\u4e00-\u9fa5a-zA-Z0-9_]*)$/;
@@ -50,7 +51,7 @@ function MentionsTypeaheadMenuItem({
 	option: MentionTypeaheadOption;
 }) {
 	const { role } = option;
-	
+
 	return (
 		<li
 			key={option.key}
@@ -75,7 +76,9 @@ function MentionsTypeaheadMenuItem({
 				{role.alias && role.alias.length > 0 && (
 					<div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
 						<Hash className="size-3" />
-						<span className="truncate">{role.alias.slice(0, 2).join(", ")}</span>
+						<span className="truncate">
+							{role.alias.slice(0, 2).join(", ")}
+						</span>
 					</div>
 				)}
 			</div>
@@ -96,7 +99,7 @@ export type MenuTextMatch = {
 
 function checkForAtSignMentions(text: string): MenuTextMatch | null {
 	const match = AtSignMentionsRegex.exec(text);
-	
+
 	if (match !== null) {
 		return {
 			leadOffset: match.index,
@@ -104,7 +107,7 @@ function checkForAtSignMentions(text: string): MenuTextMatch | null {
 			replaceableString: match[0],
 		};
 	}
-	
+
 	return null;
 }
 
@@ -131,31 +134,32 @@ export default function MentionsPlugin(): React.ReactElement | null {
 		}
 
 		const query = (queryString || "").toLowerCase().trim();
-		
+
 		// 如果没有查询，显示所有角色
 		if (!query) {
 			return roles
 				.map((role) => new MentionTypeaheadOption(role.name, role.id, role))
 				.slice(0, SUGGESTION_LIST_LENGTH_LIMIT);
 		}
-		
+
 		// 过滤匹配的角色
 		const filtered = roles.filter((role) => {
 			// 1. 匹配角色名称
 			if (role.name.toLowerCase().includes(query)) return true;
-			
+
 			// 2. 匹配别名
 			if (role.alias?.some((a) => a.toLowerCase().includes(query))) return true;
-			
+
 			// 3. 匹配身份标签
-			if (role.identity?.some((i) => i.toLowerCase().includes(query))) return true;
-			
+			if (role.identity?.some((i) => i.toLowerCase().includes(query)))
+				return true;
+
 			// 4. 可以添加拼音匹配（需要拼音库）
 			// if (getPinyinInitials(role.name).includes(query)) return true;
-			
+
 			return false;
 		});
-		
+
 		return filtered
 			.map((role) => new MentionTypeaheadOption(role.name, role.id, role))
 			.slice(0, SUGGESTION_LIST_LENGTH_LIMIT);
@@ -202,7 +206,7 @@ export default function MentionsPlugin(): React.ReactElement | null {
 				if (!anchorElementRef.current || options.length === 0) {
 					return null;
 				}
-				
+
 				return ReactDOM.createPortal(
 					<div className="z-[9999] bg-popover border border-border rounded-lg shadow-xl p-1.5 min-w-[240px] max-w-[320px] max-h-[280px] overflow-auto animate-in fade-in-0 zoom-in-95 duration-200">
 						<div className="px-2 py-1.5 text-xs text-muted-foreground border-b mb-1">

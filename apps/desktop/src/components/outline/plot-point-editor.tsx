@@ -2,7 +2,7 @@
  * 剧情点编辑器组件
  */
 
-import { Plus, Trash2, GripVertical } from "lucide-react";
+import { GripVertical, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,9 +43,7 @@ export function PlotPointEditor({ points, onChange }: PlotPointEditorProps) {
 	};
 
 	const handleUpdate = (id: string, updates: Partial<PlotPoint>) => {
-		onChange(
-			points.map((p) => (p.id === id ? { ...p, ...updates } : p))
-		);
+		onChange(points.map((p) => (p.id === id ? { ...p, ...updates } : p)));
 	};
 
 	const handleDelete = (id: string) => {
@@ -56,14 +54,14 @@ export function PlotPointEditor({ points, onChange }: PlotPointEditorProps) {
 		<div className="space-y-2">
 			{points.map((point, index) => {
 				const typeConfig = PLOT_POINT_TYPES.find((t) => t.value === point.type);
-				
+
 				return (
 					<div
 						key={point.id}
 						className="flex items-center gap-2 p-2 rounded-md border bg-card"
 					>
 						<GripVertical className="size-4 text-muted-foreground cursor-grab" />
-						
+
 						<Select
 							value={point.type}
 							onValueChange={(value) =>

@@ -2,7 +2,7 @@
  * 标签输入组件
  */
 
-import { X, Plus } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,10 +14,10 @@ interface TagInputProps {
 	placeholder?: string;
 }
 
-export function TagInput({ 
-	tags, 
-	onChange, 
-	placeholder = "添加标签..." 
+export function TagInput({
+	tags,
+	onChange,
+	placeholder = "添加标签...",
 }: TagInputProps) {
 	const [input, setInput] = useState("");
 	const [isAdding, setIsAdding] = useState(false);
@@ -48,7 +48,7 @@ export function TagInput({
 					<X className="size-3" />
 				</Badge>
 			))}
-			
+
 			{isAdding ? (
 				<div className="flex items-center gap-1">
 					<Input

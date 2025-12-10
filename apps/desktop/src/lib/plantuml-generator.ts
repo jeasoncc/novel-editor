@@ -4,15 +4,18 @@
  */
 
 import pako from "pako";
-import type { ChapterInterface, SceneInterface } from "@/db/schema";
-import type { RoleInterface } from "@/db/schema";
+import type {
+	ChapterInterface,
+	RoleInterface,
+	SceneInterface,
+} from "@/db/schema";
 
 /**
  * 生成章节结构图
  */
 export function generateChapterStructure(
 	chapters: ChapterInterface[],
-	scenes: SceneInterface[]
+	scenes: SceneInterface[],
 ): string {
 	let uml = "@startuml\n";
 	uml += "!theme plain\n";
@@ -27,12 +30,12 @@ export function generateChapterStructure(
 		const chapterScenes = scenes.filter((s) => s.chapter === chapter.id);
 		const sceneCount = chapterScenes.length;
 		const status = chapter.outline?.status || "draft";
-		
+
 		// 根据状态选择颜色
 		const color = getStatusColor(status);
-		
+
 		uml += `package "${chapter.title}" ${color} {\n`;
-		
+
 		if (sceneCount > 0) {
 			chapterScenes
 				.sort((a, b) => a.order - b.order)
@@ -42,7 +45,7 @@ export function generateChapterStructure(
 		} else {
 			uml += `  [暂无场景]\n`;
 		}
-		
+
 		uml += "}\n\n";
 
 		// 添加章节之间的连接
@@ -82,7 +85,7 @@ export function generateChapterFlow(chapters: ChapterInterface[]): string {
  * 生成角色关系图
  */
 export function generateCharacterRelations(
-	characters: RoleInterface[]
+	characters: RoleInterface[],
 ): string {
 	let uml = "@startuml\n";
 	uml += "!theme plain\n";
@@ -143,7 +146,7 @@ export function generatePlotFlow(chapter: ChapterInterface): string {
 	uml += "start\n";
 
 	const plotPoints = chapter.outline?.plotPoints || [];
-	
+
 	if (plotPoints.length === 0) {
 		uml += ":暂无剧情点;\n";
 	} else {
@@ -164,7 +167,7 @@ export function generatePlotFlow(chapter: ChapterInterface): string {
  * 生成三幕结构图
  */
 export function generateThreeActStructure(
-	chapters: ChapterInterface[]
+	chapters: ChapterInterface[],
 ): string {
 	let uml = "@startuml\n";
 	uml += "!theme plain\n";
@@ -220,7 +223,7 @@ export function generateGanttChart(chapters: ChapterInterface[]): string {
 	sortedChapters.forEach((chapter) => {
 		const status = chapter.outline?.status || "draft";
 		const progress = chapter.outline?.progress || 0;
-		
+
 		let color = "";
 		if (status === "completed") {
 			color = " colored in Green";
@@ -291,7 +294,7 @@ function sanitizeId(id: string): string {
 /**
  * PlantUML 专用的 Base64 编码表
  */
-const PLANTUML_ENCODE_TABLE = 
+const PLANTUML_ENCODE_TABLE =
 	"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_";
 
 /**
@@ -319,10 +322,10 @@ export function encodePlantUML(plantumlCode: string): string {
 		// 1. 将字符串转换为 UTF-8 字节数组
 		const encoder = new TextEncoder();
 		const utf8Bytes = encoder.encode(plantumlCode);
-		
+
 		// 2. 使用 DEFLATE 压缩
 		const compressed = pako.deflateRaw(utf8Bytes, { level: 9 });
-		
+
 		// 3. 使用 PlantUML 的特殊 Base64 编码
 		let result = "";
 		for (let i = 0; i < compressed.length; i += 3) {
@@ -331,7 +334,11 @@ export function encodePlantUML(plantumlCode: string): string {
 			} else if (i + 1 === compressed.length) {
 				result += encode3bytes(compressed[i], 0, 0);
 			} else {
-				result += encode3bytes(compressed[i], compressed[i + 1], compressed[i + 2]);
+				result += encode3bytes(
+					compressed[i],
+					compressed[i + 1],
+					compressed[i + 2],
+				);
 			}
 		}
 
@@ -347,7 +354,7 @@ export function encodePlantUML(plantumlCode: string): string {
  */
 export function getPlantUMLImageUrl(
 	plantumlCode: string,
-	format: "svg" | "png" = "svg"
+	format: "svg" | "png" = "svg",
 ): string {
 	const encoded = encodePlantUML(plantumlCode);
 	return `https://www.plantuml.com/plantuml/${format}/${encoded}`;

@@ -48,6 +48,7 @@ import {
 	SidebarHeader,
 	Sidebar as UISidebar,
 } from "@/components/ui/sidebar";
+import { useSceneCreation } from "@/hooks/use-scene-creation";
 import { cn } from "@/lib/utils";
 import {
 	createChapter,
@@ -64,8 +65,6 @@ import {
 	useRolesByProject,
 } from "@/services/roles";
 import {
-	createCanvasScene,
-	createScene,
 	deleteScene,
 	moveScene,
 	renameScene,
@@ -78,6 +77,7 @@ import {
 	updateWorldEntry,
 	useWorldEntriesByProject,
 } from "@/services/world";
+import { useSceneCreationStore } from "@/stores/scene-creation";
 import { type SelectionState, useSelectionStore } from "@/stores/selection";
 import { useUIStore } from "@/stores/ui";
 
@@ -117,6 +117,29 @@ export function StoryRightSidebar() {
 		Record<string, boolean>
 	>({});
 	const [renamingId, setRenamingId] = useState<string | null>(null);
+	const [openPopovers, setOpenPopovers] = useState<Record<string, boolean>>({});
+
+	// Scene creation management
+	const { createTextScene, createCanvasScene: createCanvasSceneHandler } =
+		useSceneCreation({
+			selectedProjectId,
+			scenesOfProject,
+			onSceneCreated: (sceneId, chapterId) => {
+				setSelectedSceneId(sceneId);
+				setSelectedChapterId(chapterId);
+				if (!expandedChapters[chapterId]) {
+					toggleChapter(chapterId);
+				}
+				// Delay renaming to ensure UI has updated
+				setTimeout(() => setRenamingId(sceneId), 150);
+			},
+			onError: (error, chapterId) => {
+				console.error(`Scene creation error for chapter ${chapterId}:`, error);
+			},
+		});
+
+	// Get reactive creation states for all chapters
+	const creationStates = useSceneCreationStore((state) => state.creationStates);
 
 	// Drag and Drop State
 	const [dragState, setDragState] = useState<{
@@ -178,72 +201,23 @@ export function StoryRightSidebar() {
 
 	const handleAddScene = useCallback(
 		async (chapterId: string) => {
-			if (!selectedProjectId) return;
-			const existingScenes = scenesOfProject.filter(
-				(s) => s.chapter === chapterId,
-			);
-			const nextOrder = existingScenes.length
-				? Math.max(...existingScenes.map((s) => s.order)) + 1
-				: 1;
-			try {
-				const newScene = await createScene({
-					projectId: selectedProjectId,
-					chapterId,
-					title: `Scene ${nextOrder}`,
-					order: nextOrder,
-					content: "",
-				});
-				setSelectedSceneId(newScene.id);
-				setSelectedChapterId(chapterId);
-				if (!expandedChapters[chapterId]) toggleChapter(chapterId);
-				toast.success("Scene created");
-				setTimeout(() => setRenamingId(newScene.id), 100);
-			} catch {
-				toast.error("Failed to create scene");
-			}
+			console.log(`[UI] Add Scene clicked for chapter:`, chapterId);
+			// Close the popover first
+			setOpenPopovers((prev) => ({ ...prev, [chapterId]: false }));
+			await createTextScene(chapterId);
 		},
-		[
-			selectedProjectId,
-			scenesOfProject,
-			setSelectedSceneId,
-			setSelectedChapterId,
-			expandedChapters,
-		],
+		[createTextScene],
 	);
 
 	// 创建绘图场景
 	const handleAddCanvasScene = useCallback(
 		async (chapterId: string) => {
-			if (!selectedProjectId) return;
-			const existingScenes = scenesOfProject.filter(
-				(s) => s.chapter === chapterId,
-			);
-			const nextOrder = existingScenes.length
-				? Math.max(...existingScenes.map((s) => s.order)) + 1
-				: 1;
-			try {
-				const newScene = await createCanvasScene({
-					projectId: selectedProjectId,
-					chapterId,
-					title: `Canvas ${nextOrder}`,
-					order: nextOrder,
-				});
-				setSelectedSceneId(newScene.id);
-				setSelectedChapterId(chapterId);
-				if (!expandedChapters[chapterId]) toggleChapter(chapterId);
-				toast.success("Canvas scene created");
-				setTimeout(() => setRenamingId(newScene.id), 100);
-			} catch {
-				toast.error("Failed to create canvas scene");
-			}
+			console.log(`[UI] Add Canvas Scene clicked for chapter:`, chapterId);
+			// Close the popover first
+			setOpenPopovers((prev) => ({ ...prev, [chapterId]: false }));
+			await createCanvasSceneHandler(chapterId);
 		},
-		[
-			selectedProjectId,
-			scenesOfProject,
-			setSelectedSceneId,
-			setSelectedChapterId,
-			expandedChapters,
-		],
+		[createCanvasSceneHandler],
 	);
 
 	const handleAddRole = useCallback(async () => {
@@ -775,7 +749,15 @@ export function StoryRightSidebar() {
 													)}
 
 													<div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity flex items-center">
-														<Popover>
+														<Popover
+															open={openPopovers[chapter.id] || false}
+															onOpenChange={(open) =>
+																setOpenPopovers((prev) => ({
+																	...prev,
+																	[chapter.id]: open,
+																}))
+															}
+														>
 															<PopoverTrigger asChild>
 																<Button
 																	variant="ghost"
@@ -789,33 +771,57 @@ export function StoryRightSidebar() {
 																<div className="grid gap-0.5">
 																	<button
 																		onClick={() => handleAddScene(chapter.id)}
-																		className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-xs hover:bg-accent w-full text-left"
+																		disabled={
+																			creationStates[chapter.id]?.isCreating ||
+																			false
+																		}
+																		className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-xs hover:bg-accent w-full text-left disabled:opacity-50 disabled:cursor-not-allowed"
 																	>
-																		<Plus className="size-3" /> Add Scene
+																		<Plus className="size-3" />
+																		{creationStates[chapter.id]?.isCreating
+																			? "Creating..."
+																			: "Add Scene"}
 																	</button>
 																	<button
 																		onClick={() =>
 																			handleAddCanvasScene(chapter.id)
 																		}
-																		className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-xs hover:bg-accent w-full text-left"
+																		disabled={
+																			creationStates[chapter.id]?.isCreating ||
+																			false
+																		}
+																		className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-xs hover:bg-accent w-full text-left disabled:opacity-50 disabled:cursor-not-allowed"
 																	>
-																		<PenTool className="size-3" /> Add Canvas
+																		<PenTool className="size-3" />
+																		{creationStates[chapter.id]?.isCreating
+																			? "Creating..."
+																			: "Add Canvas"}
 																	</button>
 																	<button
-																		onClick={() => setRenamingId(chapter.id)}
+																		onClick={() => {
+																			setRenamingId(chapter.id);
+																			setOpenPopovers((prev) => ({
+																				...prev,
+																				[chapter.id]: false,
+																			}));
+																		}}
 																		className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-xs hover:bg-accent w-full text-left"
 																	>
 																		<Pencil className="size-3" /> Rename
 																	</button>
 																	<div className="h-px bg-border my-1" />
 																	<button
-																		onClick={() =>
+																		onClick={() => {
 																			handleDelete(
 																				chapter.id,
 																				"chapter",
 																				chapter.title,
-																			)
-																		}
+																			);
+																			setOpenPopovers((prev) => ({
+																				...prev,
+																				[chapter.id]: false,
+																			}));
+																		}}
 																		className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-xs hover:bg-destructive/10 text-destructive w-full text-left"
 																	>
 																		<Trash2 className="size-3" /> Delete
@@ -919,7 +925,15 @@ export function StoryRightSidebar() {
 																		)}
 
 																		<div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity flex items-center">
-																			<Popover>
+																			<Popover
+																				open={openPopovers[scene.id] || false}
+																				onOpenChange={(open) =>
+																					setOpenPopovers((prev) => ({
+																						...prev,
+																						[scene.id]: open,
+																					}))
+																				}
+																			>
 																				<PopoverTrigger asChild>
 																					<Button
 																						variant="ghost"
@@ -935,9 +949,13 @@ export function StoryRightSidebar() {
 																				>
 																					<div className="grid gap-0.5">
 																						<button
-																							onClick={() =>
-																								setRenamingId(scene.id)
-																							}
+																							onClick={() => {
+																								setRenamingId(scene.id);
+																								setOpenPopovers((prev) => ({
+																									...prev,
+																									[scene.id]: false,
+																								}));
+																							}}
 																							className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-xs hover:bg-accent w-full text-left"
 																						>
 																							<Pencil className="size-3" />{" "}
@@ -945,13 +963,17 @@ export function StoryRightSidebar() {
 																						</button>
 																						<div className="h-px bg-border my-1" />
 																						<button
-																							onClick={() =>
+																							onClick={() => {
 																								handleDelete(
 																									scene.id,
 																									"scene",
 																									scene.title,
-																								)
-																							}
+																								);
+																								setOpenPopovers((prev) => ({
+																									...prev,
+																									[scene.id]: false,
+																								}));
+																							}}
 																							className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-xs hover:bg-destructive/10 text-destructive w-full text-left"
 																						>
 																							<Trash2 className="size-3" />{" "}

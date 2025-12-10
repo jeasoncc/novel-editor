@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from "react";
-import mermaid from "mermaid";
-import { Button } from "@/components/ui/button";
 import { Copy, Download } from "lucide-react";
+import mermaid from "mermaid";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 interface MermaidViewerProps {
 	code: string;
@@ -16,8 +16,8 @@ export function MermaidViewer({ code, title }: MermaidViewerProps) {
 
 	useEffect(() => {
 		// 检测当前主题
-		const isDark = document.documentElement.classList.contains('dark');
-		
+		const isDark = document.documentElement.classList.contains("dark");
+
 		// 初始化 Mermaid
 		mermaid.initialize({
 			startOnLoad: false,
@@ -115,7 +115,9 @@ export function MermaidViewer({ code, title }: MermaidViewerProps) {
 	return (
 		<div className="space-y-4">
 			<div className="flex items-center justify-between pb-3 border-b border-border/50">
-				{title && <h3 className="text-base font-semibold text-foreground">{title}</h3>}
+				{title && (
+					<h3 className="text-base font-semibold text-foreground">{title}</h3>
+				)}
 				<div className="flex gap-1.5">
 					<Button
 						variant="ghost"
@@ -151,7 +153,9 @@ export function MermaidViewer({ code, title }: MermaidViewerProps) {
 
 			{error ? (
 				<div className="p-6 bg-red-50/50 dark:bg-red-950/20 rounded-xl border border-red-200/50 dark:border-red-900/30">
-					<p className="text-sm font-medium text-red-600 dark:text-red-400">渲染错误：{error}</p>
+					<p className="text-sm font-medium text-red-600 dark:text-red-400">
+						渲染错误：{error}
+					</p>
 					<pre className="mt-3 text-xs text-red-500 dark:text-red-400 overflow-auto p-3 bg-red-100/50 dark:bg-red-900/20 rounded-lg">
 						{code}
 					</pre>

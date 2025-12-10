@@ -10,7 +10,7 @@ interface DiagramSettings {
 	// Kroki 服务器配置
 	krokiServerUrl: string;
 	enableKroki: boolean;
-	
+
 	// 操作方法
 	setKrokiServerUrl: (url: string) => void;
 	setEnableKroki: (enabled: boolean) => void;
@@ -39,7 +39,7 @@ export const useDiagramSettings = create<DiagramSettings>()(
 					// 测试简单的 PlantUML 图表
 					const testDiagram = "@startuml\nBob -> Alice : hello\n@enduml";
 					const url = `${krokiServerUrl}/plantuml/svg`;
-					
+
 					const response = await fetch(url, {
 						method: "POST",
 						headers: {
@@ -57,8 +57,8 @@ export const useDiagramSettings = create<DiagramSettings>()(
 		}),
 		{
 			name: "diagram-settings",
-		}
-	)
+		},
+	),
 );
 
 /**
@@ -66,7 +66,7 @@ export const useDiagramSettings = create<DiagramSettings>()(
  */
 export function getKrokiPlantUMLUrl(
 	plantumlCode: string,
-	format: "svg" | "png" = "svg"
+	format: "svg" | "png" = "svg",
 ): string {
 	const { krokiServerUrl } = useDiagramSettings.getState();
 	if (!krokiServerUrl) {

@@ -131,7 +131,9 @@ export function getAllPresets(): DiagramPreset[] {
 /**
  * 根据类型获取预设
  */
-export function getPresetsByType(type: "mermaid" | "plantuml"): DiagramPreset[] {
+export function getPresetsByType(
+	type: "mermaid" | "plantuml",
+): DiagramPreset[] {
 	return type === "mermaid" ? mermaidPresets : plantumlPresets;
 }
 
@@ -139,7 +141,7 @@ export function getPresetsByType(type: "mermaid" | "plantuml"): DiagramPreset[] 
  * 根据分类获取预设
  */
 export function getPresetsByCategory(
-	category: DiagramPreset["category"]
+	category: DiagramPreset["category"],
 ): DiagramPreset[] {
 	return getAllPresets().filter((preset) => preset.category === category);
 }

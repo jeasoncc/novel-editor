@@ -3,19 +3,22 @@
  * 集成 Mermaid 和 PlantUML 图表
  */
 
-import { useState, useMemo } from "react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Plus } from "lucide-react";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import type { ChapterInterface, SceneInterface } from "@/db/schema";
-import type { RoleInterface } from "@/db/schema";
-import { MermaidViewer } from "./mermaid-viewer";
-import { PlantUMLViewer } from "./plantuml-viewer";
-import { DiagramEditorDialog } from "./diagram-editor-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type {
+	ChapterInterface,
+	RoleInterface,
+	SceneInterface,
+} from "@/db/schema";
 import { isKrokiEnabled } from "@/lib/diagram-settings";
 import * as MermaidGen from "@/lib/mermaid-generator";
 import * as PlantUMLGen from "@/lib/plantuml-generator";
-import { Plus } from "lucide-react";
-import { toast } from "sonner";
+import { DiagramEditorDialog } from "./diagram-editor-dialog";
+import { MermaidViewer } from "./mermaid-viewer";
+import { PlantUMLViewer } from "./plantuml-viewer";
 
 interface DiagramViewProps {
 	chapters: ChapterInterface[];
@@ -38,77 +41,88 @@ export function DiagramView({
 	const [activeTab, setActiveTab] = useState("mermaid-structure");
 	const [editorOpen, setEditorOpen] = useState(false);
 	const [customDiagrams, setCustomDiagrams] = useState<CustomDiagram[]>([]);
-	const [editingDiagram, setEditingDiagram] = useState<CustomDiagram | null>(null);
+	const [editingDiagram, setEditingDiagram] = useState<CustomDiagram | null>(
+		null,
+	);
 	const krokiEnabled = isKrokiEnabled();
 
 	// 生成 Mermaid 图表代码
 	const mermaidStructureCode = useMemo(
 		() => MermaidGen.generateChapterStructure(chapters, scenes),
-		[chapters, scenes]
+		[chapters, scenes],
 	);
 
 	const mermaidFlowCode = useMemo(
 		() => MermaidGen.generateChapterFlow(chapters),
-		[chapters]
+		[chapters],
 	);
 
 	const mermaidThreeActCode = useMemo(
 		() => MermaidGen.generateThreeActStructure(chapters),
-		[chapters]
+		[chapters],
 	);
 
 	const mermaidTimelineCode = useMemo(
 		() => MermaidGen.generateTimeline(chapters),
-		[chapters]
+		[chapters],
 	);
 
 	const mermaidGanttCode = useMemo(
 		() => MermaidGen.generateGanttChart(chapters),
-		[chapters]
+		[chapters],
 	);
 
 	const mermaidCharacterCode = useMemo(
 		() => MermaidGen.generateCharacterRelations(characters),
-		[characters]
+		[characters],
 	);
 
 	// 生成 PlantUML 图表代码（仅在启用时）
 	const plantumlStructureCode = useMemo(
-		() => krokiEnabled ? PlantUMLGen.generateChapterStructure(chapters, scenes) : "",
-		[chapters, scenes, krokiEnabled]
+		() =>
+			krokiEnabled
+				? PlantUMLGen.generateChapterStructure(chapters, scenes)
+				: "",
+		[chapters, scenes, krokiEnabled],
 	);
 
 	const plantumlFlowCode = useMemo(
-		() => krokiEnabled ? PlantUMLGen.generateChapterFlow(chapters) : "",
-		[chapters, krokiEnabled]
+		() => (krokiEnabled ? PlantUMLGen.generateChapterFlow(chapters) : ""),
+		[chapters, krokiEnabled],
 	);
 
 	const plantumlThreeActCode = useMemo(
-		() => krokiEnabled ? PlantUMLGen.generateThreeActStructure(chapters) : "",
-		[chapters, krokiEnabled]
+		() => (krokiEnabled ? PlantUMLGen.generateThreeActStructure(chapters) : ""),
+		[chapters, krokiEnabled],
 	);
 
 	const plantumlTimelineCode = useMemo(
-		() => krokiEnabled ? PlantUMLGen.generateTimeline(chapters) : "",
-		[chapters, krokiEnabled]
+		() => (krokiEnabled ? PlantUMLGen.generateTimeline(chapters) : ""),
+		[chapters, krokiEnabled],
 	);
 
 	const plantumlGanttCode = useMemo(
-		() => krokiEnabled ? PlantUMLGen.generateGanttChart(chapters) : "",
-		[chapters, krokiEnabled]
+		() => (krokiEnabled ? PlantUMLGen.generateGanttChart(chapters) : ""),
+		[chapters, krokiEnabled],
 	);
 
 	const plantumlCharacterCode = useMemo(
-		() => krokiEnabled ? PlantUMLGen.generateCharacterRelations(characters) : "",
-		[characters, krokiEnabled]
+		() =>
+			krokiEnabled ? PlantUMLGen.generateCharacterRelations(characters) : "",
+		[characters, krokiEnabled],
 	);
 
 	// 处理自定义图表保存
-	const handleSaveCustomDiagram = (code: string, type: "mermaid" | "plantuml") => {
+	const handleSaveCustomDiagram = (
+		code: string,
+		type: "mermaid" | "plantuml",
+	) => {
 		if (editingDiagram) {
 			// 更新现有图表
-			setCustomDiagrams(prev =>
-				prev.map(d => d.id === editingDiagram.id ? { ...d, code, type } : d)
+			setCustomDiagrams((prev) =>
+				prev.map((d) =>
+					d.id === editingDiagram.id ? { ...d, code, type } : d,
+				),
 			);
 			toast.success("图表已更新");
 		} else {
@@ -119,7 +133,7 @@ export function DiagramView({
 				code,
 				type,
 			};
-			setCustomDiagrams(prev => [...prev, newDiagram]);
+			setCustomDiagrams((prev) => [...prev, newDiagram]);
 			toast.success("图表已创建");
 		}
 		setEditingDiagram(null);
@@ -144,7 +158,11 @@ export function DiagramView({
 
 	return (
 		<div className="h-full flex flex-col bg-background">
-			<Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+			<Tabs
+				value={activeTab}
+				onValueChange={setActiveTab}
+				className="flex-1 flex flex-col"
+			>
 				<div className="border-b border-border/50 px-4 py-2 flex items-center justify-between bg-muted/20">
 					<TabsList className="h-9 bg-background/50 border border-border/40">
 						{/* Mermaid 图表 */}
@@ -168,7 +186,7 @@ export function DiagramView({
 								角色关系
 							</TabsTrigger>
 						)}
-						
+
 						{/* PlantUML 图表（仅在启用时显示） */}
 						{krokiEnabled && (
 							<>
@@ -184,15 +202,19 @@ export function DiagramView({
 								</TabsTrigger>
 							</>
 						)}
-						
+
 						{/* 自定义图表标签 */}
 						{customDiagrams.map((diagram) => (
-							<TabsTrigger key={diagram.id} value={diagram.id} className="text-xs">
+							<TabsTrigger
+								key={diagram.id}
+								value={diagram.id}
+								className="text-xs"
+							>
 								{diagram.name}
 							</TabsTrigger>
 						))}
 					</TabsList>
-					
+
 					{/* 添加自定义图表按钮 */}
 					<Button
 						variant="ghost"
@@ -279,15 +301,12 @@ export function DiagramView({
 							</TabsContent>
 						</>
 					)}
-					
+
 					{/* 自定义图表内容 */}
 					{customDiagrams.map((diagram) => (
 						<TabsContent key={diagram.id} value={diagram.id} className="m-0">
 							{diagram.type === "mermaid" ? (
-								<MermaidViewer
-									code={diagram.code}
-									title={diagram.name}
-								/>
+								<MermaidViewer code={diagram.code} title={diagram.name} />
 							) : (
 								<PlantUMLViewer
 									code={diagram.code}
@@ -307,7 +326,9 @@ export function DiagramView({
 									variant="outline"
 									size="sm"
 									onClick={() => {
-										setCustomDiagrams(prev => prev.filter(d => d.id !== diagram.id));
+										setCustomDiagrams((prev) =>
+											prev.filter((d) => d.id !== diagram.id),
+										);
 										toast.success("图表已删除");
 									}}
 								>
@@ -318,7 +339,7 @@ export function DiagramView({
 					))}
 				</div>
 			</Tabs>
-			
+
 			{/* 图表编辑器对话框 */}
 			<DiagramEditorDialog
 				open={editorOpen}

@@ -4,47 +4,47 @@
  */
 
 import {
+	AtSign,
+	Award,
 	Book,
-	BookOpen,
 	BookMarked,
+	Bookmark,
+	BookOpen,
 	BookText,
-	Library,
-	Notebook,
-	FileText,
+	Circle,
+	Crown,
+	Diamond,
+	Edit,
+	Edit3,
+	Feather,
 	File,
 	Files,
+	FileText,
+	Flag,
+	Flame,
 	Folder,
 	FolderOpen,
 	FolderTree,
-	Scroll,
-	Feather,
-	Pen,
-	PenTool,
-	Edit,
-	Edit3,
-	Pencil,
-	Sparkles,
-	Star,
-	Heart,
-	Flame,
-	Zap,
-	Crown,
-	Award,
-	Trophy,
-	Target,
-	Flag,
-	Bookmark,
-	Tag,
 	Hash,
-	AtSign,
-	Circle,
-	Square,
-	Triangle,
-	Diamond,
+	Heart,
 	Hexagon,
-	Octagon,
-	Pentagon,
+	Library,
 	type LucideIcon,
+	Notebook,
+	Octagon,
+	Pen,
+	Pencil,
+	PenTool,
+	Pentagon,
+	Scroll,
+	Sparkles,
+	Square,
+	Star,
+	Tag,
+	Target,
+	Triangle,
+	Trophy,
+	Zap,
 } from "lucide-react";
 
 export interface IconOption {
@@ -410,7 +410,9 @@ export function getIconByKey(key: string): IconOption | undefined {
 }
 
 // 获取默认图标
-export function getDefaultIcon(type: "project" | "chapter" | "scene"): IconOption {
+export function getDefaultIcon(
+	type: "project" | "chapter" | "scene",
+): IconOption {
 	switch (type) {
 		case "project":
 			return icons.find((i) => i.key === "book") || icons[0];

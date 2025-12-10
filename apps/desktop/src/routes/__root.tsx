@@ -8,8 +8,6 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ActivityBar } from "@/components/activity-bar";
-import { AppSidebar } from "@/components/app-sidebar";
-import { SearchSidebar } from "@/components/search-sidebar";
 import { GlobalSearch } from "@/components/blocks/global-search";
 import { BottomDrawer } from "@/components/bottom-drawer";
 import { BottomDrawerContent } from "@/components/bottom-drawer-content";
@@ -18,26 +16,33 @@ import { DevtoolsWrapper } from "@/components/devtools-wrapper";
 import { FontStyleInjector } from "@/components/font-style-injector";
 import { OnboardingTour } from "@/components/onboarding-tour";
 import { ConfirmProvider } from "@/components/ui/confirm";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/sonner";
+import { UnifiedSidebar } from "@/components/unified-sidebar";
 import { initializeTheme } from "@/hooks/use-theme";
 import { autoBackupManager } from "@/services/backup";
+import { useUnifiedSidebarStore } from "@/stores/unified-sidebar";
 
 function RootComponent() {
 	const [commandOpen, setCommandOpen] = useState(false);
 	const [searchOpen, setSearchOpen] = useState(false);
-	const [searchSidebarOpen, setSearchSidebarOpen] = useState(false);
-	
-	// 侧边栏默认状态：从 localStorage 读取，默认关闭
-	const [sidebarOpen, setSidebarOpen] = useState(() => {
-		const saved = localStorage.getItem("sidebar-open");
+	const {
+		activePanel,
+		isOpen: unifiedSidebarOpen,
+		setActivePanel,
+		toggleSidebar,
+	} = useUnifiedSidebarStore();
+
+	// 右侧边栏状态（用于章节和场景管理）
+	const [rightSidebarOpen, setRightSidebarOpen] = useState(() => {
+		const saved = localStorage.getItem("right-sidebar-open");
 		return saved ? saved === "true" : false;
 	});
 
-	// 保存侧边栏状态到 localStorage
+	// 保存右侧边栏状态到 localStorage
 	useEffect(() => {
-		localStorage.setItem("sidebar-open", String(sidebarOpen));
-	}, [sidebarOpen]);
+		localStorage.setItem("right-sidebar-open", String(rightSidebarOpen));
+	}, [rightSidebarOpen]);
 
 	// 初始化主题系统（包括系统主题监听）
 	useEffect(() => {
@@ -62,32 +67,44 @@ function RootComponent() {
 				e.preventDefault();
 				setCommandOpen(true);
 			}
-			// Ctrl/Cmd + Shift + F 打开全局搜索
+			// Ctrl/Cmd + Shift + F 打开搜索面板
 			if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "f") {
 				e.preventDefault();
-				setSearchOpen(true);
+				if (activePanel === "search" && unifiedSidebarOpen) {
+					toggleSidebar();
+				} else {
+					setActivePanel("search");
+				}
 			}
-			// 注意：Ctrl/Cmd + B 由 SidebarProvider 内置处理
+			// Ctrl/Cmd + B 切换书库面板
+			if ((e.ctrlKey || e.metaKey) && e.key === "b") {
+				e.preventDefault();
+				if (activePanel === "books" && unifiedSidebarOpen) {
+					toggleSidebar();
+				} else {
+					setActivePanel("books");
+				}
+			}
 		};
 
 		// 监听自定义事件（从命令面板触发）
 		const handleOpenSearch = () => setSearchOpen(true);
-		const handleToggleSearchSidebar = () => setSearchSidebarOpen((prev) => !prev);
-		
+
 		window.addEventListener("open-global-search", handleOpenSearch);
-		window.addEventListener("toggle-search-sidebar", handleToggleSearchSidebar);
 		window.addEventListener("keydown", handleKeyDown);
-		
+
 		return () => {
 			window.removeEventListener("keydown", handleKeyDown);
 			window.removeEventListener("open-global-search", handleOpenSearch);
-			window.removeEventListener("toggle-search-sidebar", handleToggleSearchSidebar);
 		};
 	}, []);
 
 	return (
 		<ConfirmProvider>
-			<SidebarProvider open={sidebarOpen} onOpenChange={setSidebarOpen}>
+			<SidebarProvider
+				open={rightSidebarOpen}
+				onOpenChange={setRightSidebarOpen}
+			>
 				<Toaster
 					icons={{
 						success: <CircleCheckIcon className="size-4 text-green-500" />,
@@ -101,18 +118,12 @@ function RootComponent() {
 				/>
 				<div className="flex min-h-screen w-full">
 					<ActivityBar />
-					<AppSidebar />
-					{/* 搜索侧边栏 */}
-					{searchSidebarOpen && (
-						<div className="w-80 shrink-0">
-							<SearchSidebar />
-						</div>
-					)}
-					<SidebarInset className="bg-background text-foreground flex-1 min-h-svh transition-colors duration-300 ease-in-out">
+					<UnifiedSidebar />
+					<div className="bg-background text-foreground flex-1 min-h-svh transition-colors duration-300 ease-in-out">
 						<div className="flex-1 min-h-0 overflow-auto">
 							<Outlet />
 						</div>
-					</SidebarInset>
+					</div>
 					{/* 底部抽屉 */}
 					<BottomDrawer>
 						<BottomDrawerContent />
