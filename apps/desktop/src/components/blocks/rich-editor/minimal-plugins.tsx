@@ -91,7 +91,6 @@ export function MinimalPlugins({
 			{/* 只在选中文字时显示的浮动工具栏 */}
 			<FloatingTextFormatToolbarPlugin
 				anchorElem={floatingAnchorElem}
-				setIsLinkEditMode={setIsLinkEditMode}
 			/>
 
 			{/* @ 角色提及功能 */}

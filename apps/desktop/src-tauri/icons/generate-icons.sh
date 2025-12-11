@@ -25,20 +25,21 @@ else
     exit 1
 fi
 
-# 生成 PNG 图标
+# 生成 PNG 图标 (确保 RGBA 格式)
 generate_png() {
     local size=$1
     local output=$2
     
     if [ "$CONVERTER" = "imagemagick" ]; then
-        magick "$SOURCE_FILE" -resize "${size}x${size}" "$output"
+        # 使用 magick 并强制转换为 RGBA 格式
+        magick "$SOURCE_FILE" -resize "${size}x${size}" -background transparent -alpha on "$output"
     elif [ "$CONVERTER" = "inkscape" ]; then
         # For PNG source, use ImageMagick convert instead of Inkscape
-        convert "$SOURCE_FILE" -resize "${size}x${size}" "$output"
+        convert "$SOURCE_FILE" -resize "${size}x${size}" -background transparent -alpha on "$output"
     fi
     
     if [ -f "$output" ]; then
-        echo "✓ 生成 $output (${size}x${size})"
+        echo "✓ 生成 $output (${size}x${size}) - RGBA 格式"
     else
         echo "✗ 失败: $output"
     fi

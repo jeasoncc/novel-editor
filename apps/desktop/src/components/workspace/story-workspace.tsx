@@ -28,6 +28,7 @@ import { NovelEditor } from "@/components/blocks/rich-editor/novel-editor";
 import { SaveStatusIndicator } from "@/components/blocks/save-status-indicator";
 import { ThemeSelector } from "@/components/blocks/theme-selector";
 import { WordCountBadge } from "@/components/blocks/word-count-badge";
+import { ExportButton } from "@/components/export/export-button";
 import { WritingStatsPanel } from "@/components/blocks/writing-stats-panel";
 import { StoryRightSidebar } from "@/components/story-right-sidebar";
 import {
@@ -987,6 +988,17 @@ export function StoryWorkspace({
 
 							{/* 主题选择器 */}
 							<ThemeSelector />
+
+							{/* 导出按钮 */}
+							{currentProject && (
+								<ExportButton
+									projectId={currentProject.id}
+									projectTitle={currentProject.title}
+									variant="ghost"
+									size="sm"
+									showQuickExport={false}
+								/>
+							)}
 
 							{/* 快捷键帮助 */}
 							<div data-tour="command-palette">

@@ -35,6 +35,7 @@ import { db } from "@/db/curd";
 import { useTheme } from "@/hooks/use-theme";
 import { useSelectionStore } from "@/stores/selection";
 import { useUIStore } from "@/stores/ui";
+import { exportDialogManager } from "@/components/export/export-dialog-manager";
 
 interface CommandPaletteProps {
 	open: boolean;
@@ -46,16 +47,20 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
 	const { theme, setTheme } = useTheme();
 	const [search, setSearch] = useState("");
 
+	const selectedProjectId = useSelectionStore((s) => s.selectedProjectId);
 	const setSelectedProjectId = useSelectionStore((s) => s.setSelectedProjectId);
 	const setSelectedChapterId = useSelectionStore((s) => s.setSelectedChapterId);
 	const setSelectedSceneId = useSelectionStore((s) => s.setSelectedSceneId);
 	const toggleBottomDrawer = useUIStore((s) => s.toggleBottomDrawer);
-	const setExportDialogOpen = useState(false)[1];
+
 
 	// 获取数据
 	const projects = useLiveQuery(() => db.getAllProjects(), []) ?? [];
 	const chapters = useLiveQuery(() => db.getAllChapters(), []) ?? [];
 	const scenes = useLiveQuery(() => db.getAllScenes(), []) ?? [];
+	
+	// 获取当前项目信息
+	const currentProject = projects.find(p => p.id === selectedProjectId);
 
 	// 最近访问的场景（从 localStorage 读取）
 	const recentScenes = useMemo(() => {
@@ -181,7 +186,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
 					icon: <Download className="size-4" />,
 					onSelect: () => {
 						onOpenChange(false);
-						setExportDialogOpen(true);
+						exportDialogManager.open(selectedProjectId || undefined, currentProject?.title);
 					},
 				},
 				{

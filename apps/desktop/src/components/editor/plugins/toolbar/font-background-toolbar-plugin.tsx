@@ -52,7 +52,6 @@ export function FontBackgroundToolbarPlugin() {
 			activeEditor.update(
 				() => {
 					const selection = $getSelection();
-					activeEditor.setEditable(false);
 					if (selection !== null) {
 						$patchStyleText(selection, styles);
 					}
@@ -65,6 +64,7 @@ export function FontBackgroundToolbarPlugin() {
 
 	const onBgColorSelect = useCallback(
 		(value: string) => {
+			setBgColor(value);
 			applyStyleText({ "background-color": value }, true);
 		},
 		[applyStyleText],
@@ -74,18 +74,24 @@ export function FontBackgroundToolbarPlugin() {
 		<ColorPicker
 			modal
 			defaultFormat="hex"
-			defaultValue={bgColor}
+			value={bgColor}
 			onValueChange={onBgColorSelect}
 			onOpenChange={(open) => {
 				if (!open) {
-					activeEditor.setEditable(true);
-					activeEditor.focus();
+					// Small delay to ensure color picker closes properly
+					setTimeout(() => {
+						activeEditor.focus();
+					}, 100);
 				}
 			}}
 		>
 			<ColorPickerTrigger asChild>
-				<Button variant={"outline"} size={"icon-sm"}>
+				<Button variant="outline" size="sm" className="relative px-3">
 					<PaintBucketIcon className="h-4 w-4" />
+					<div 
+						className="absolute bottom-1 left-1/2 h-1 w-4 -translate-x-1/2 rounded-sm border border-border"
+						style={{ backgroundColor: bgColor || '#ffffff' }}
+					/>
 				</Button>
 			</ColorPickerTrigger>
 			<ColorPickerContent>

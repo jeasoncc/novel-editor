@@ -105,7 +105,6 @@ export function NovelEditor({
 
 				<FloatingTextFormatToolbarPlugin
 					anchorElem={null}
-					setIsLinkEditMode={() => {}}
 				/>
 
 				<ExcalidrawPlugin />

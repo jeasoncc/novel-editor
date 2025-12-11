@@ -7,8 +7,6 @@ import {
 } from "lexical";
 import {
 	BoldIcon,
-	ItalicIcon,
-	StrikethroughIcon,
 	UnderlineIcon,
 } from "lucide-react";
 import { useCallback, useState } from "react";
@@ -19,9 +17,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 const FORMATS = [
 	{ format: "bold", icon: BoldIcon, label: "Bold" },
-	{ format: "italic", icon: ItalicIcon, label: "Italic" },
 	{ format: "underline", icon: UnderlineIcon, label: "Underline" },
-	{ format: "strikethrough", icon: StrikethroughIcon, label: "Strikethrough" },
 ] as const;
 
 export function FontFormatToolbarPlugin() {
@@ -55,7 +51,26 @@ export function FontFormatToolbarPlugin() {
 		<ToggleGroup
 			type="multiple"
 			value={activeFormats}
-			onValueChange={setActiveFormats}
+			onValueChange={(newFormats) => {
+				// Handle format changes properly
+				const currentFormats = new Set(activeFormats);
+				const newFormatsSet = new Set(newFormats);
+				
+				// Find formats that were toggled
+				FORMATS.forEach(({ format }) => {
+					const wasActive = currentFormats.has(format);
+					const isActive = newFormatsSet.has(format);
+					
+					if (wasActive !== isActive) {
+						activeEditor.dispatchCommand(
+							FORMAT_TEXT_COMMAND,
+							format as TextFormatType,
+						);
+					}
+				});
+				
+				setActiveFormats(newFormats);
+			}}
 			variant="outline"
 			size="sm"
 		>
@@ -64,12 +79,8 @@ export function FontFormatToolbarPlugin() {
 					key={format}
 					value={format}
 					aria-label={label}
-					onClick={() => {
-						activeEditor.dispatchCommand(
-							FORMAT_TEXT_COMMAND,
-							format as TextFormatType,
-						);
-					}}
+					data-state={activeFormats.includes(format) ? "on" : "off"}
+					className="data-[state=on]:bg-accent data-[state=on]:text-accent-foreground"
 				>
 					<Icon className="h-4 w-4" />
 				</ToggleGroupItem>

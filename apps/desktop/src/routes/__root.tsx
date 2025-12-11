@@ -12,6 +12,7 @@ import { GlobalSearch } from "@/components/blocks/global-search";
 import { BottomDrawer } from "@/components/bottom-drawer";
 import { BottomDrawerContent } from "@/components/bottom-drawer-content";
 import { CommandPalette } from "@/components/command-palette";
+import { ExportDialogManager } from "@/components/export/export-dialog-manager";
 import { DevtoolsWrapper } from "@/components/devtools-wrapper";
 import { FontStyleInjector } from "@/components/font-style-injector";
 import { OnboardingTour } from "@/components/onboarding-tour";
@@ -133,6 +134,8 @@ function RootComponent() {
 				<CommandPalette open={commandOpen} onOpenChange={setCommandOpen} />
 				{/* 全局搜索 */}
 				<GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} />
+				{/* 导出对话框管理器 */}
+				<ExportDialogManager />
 				{/* 字体样式注入 */}
 				<FontStyleInjector />
 				{/* 新手引导 */}

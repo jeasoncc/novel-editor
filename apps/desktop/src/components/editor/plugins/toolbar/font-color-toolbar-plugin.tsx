@@ -40,7 +40,6 @@ export function FontColorToolbarPlugin() {
 		(styles: Record<string, string>) => {
 			activeEditor.update(() => {
 				const selection = $getSelection();
-				activeEditor.setEditable(false);
 				if (selection !== null) {
 					$patchStyleText(selection, styles);
 				}
@@ -51,6 +50,7 @@ export function FontColorToolbarPlugin() {
 
 	const onFontColorSelect = useCallback(
 		(value: string) => {
+			setFontColor(value);
 			applyStyleText({ color: value });
 		},
 		[applyStyleText],
@@ -60,18 +60,24 @@ export function FontColorToolbarPlugin() {
 		<ColorPicker
 			modal
 			defaultFormat="hex"
-			defaultValue={fontColor}
+			value={fontColor}
 			onValueChange={onFontColorSelect}
 			onOpenChange={(open) => {
 				if (!open) {
-					activeEditor.setEditable(true);
-					activeEditor.focus();
+					// Small delay to ensure color picker closes properly
+					setTimeout(() => {
+						activeEditor.focus();
+					}, 100);
 				}
 			}}
 		>
 			<ColorPickerTrigger asChild>
-				<Button variant="outline" size="icon-sm">
+				<Button variant="outline" size="sm" className="relative px-3">
 					<BaselineIcon className="h-4 w-4" />
+					<div 
+						className="absolute bottom-1 left-1/2 h-1 w-4 -translate-x-1/2 rounded-sm border border-border"
+						style={{ backgroundColor: fontColor || '#000000' }}
+					/>
 				</Button>
 			</ColorPickerTrigger>
 			<ColorPickerContent>
