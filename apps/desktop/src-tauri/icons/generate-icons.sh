@@ -4,7 +4,7 @@
 # 需要安装: ImageMagick 或 inkscape
 
 ICON_DIR="$(cd "$(dirname "$0")" && pwd)"
-SVG_FILE="$ICON_DIR/icon.svg"
+SOURCE_FILE="$ICON_DIR/new-icon.png"
 
 echo "开始生成图标文件..."
 
@@ -31,10 +31,10 @@ generate_png() {
     local output=$2
     
     if [ "$CONVERTER" = "imagemagick" ]; then
-        convert -background none -density 300 "$SVG_FILE" -resize "${size}x${size}" "$output"
+        magick "$SOURCE_FILE" -resize "${size}x${size}" "$output"
     elif [ "$CONVERTER" = "inkscape" ]; then
-        inkscape --export-type=png --export-filename="$output" -w "$size" -h "$size" "$SVG_FILE" 2>/dev/null || \
-        inkscape "$SVG_FILE" --export-png="$output" -w "$size" -h "$size" 2>/dev/null
+        # For PNG source, use ImageMagick convert instead of Inkscape
+        convert "$SOURCE_FILE" -resize "${size}x${size}" "$output"
     fi
     
     if [ -f "$output" ]; then
@@ -50,11 +50,36 @@ generate_png 128 "$ICON_DIR/128x128.png"
 generate_png 256 "$ICON_DIR/128x128@2x.png"
 generate_png 512 "$ICON_DIR/icon.png"
 
+# 生成 Windows Store 图标
+generate_png 30 "$ICON_DIR/Square30x30Logo.png"
+generate_png 44 "$ICON_DIR/Square44x44Logo.png"
+generate_png 71 "$ICON_DIR/Square71x71Logo.png"
+generate_png 89 "$ICON_DIR/Square89x89Logo.png"
+generate_png 107 "$ICON_DIR/Square107x107Logo.png"
+generate_png 142 "$ICON_DIR/Square142x142Logo.png"
+generate_png 150 "$ICON_DIR/Square150x150Logo.png"
+generate_png 284 "$ICON_DIR/Square284x284Logo.png"
+generate_png 310 "$ICON_DIR/Square310x310Logo.png"
+generate_png 50 "$ICON_DIR/StoreLogo.png"
+
 # 生成 ICO (Windows)
-if command -v convert &> /dev/null; then
+if command -v magick &> /dev/null; then
+    magick "$ICON_DIR/icon.png" -define icon:auto-resize=256,128,64,48,32,16 "$ICON_DIR/icon.ico"
+    if [ -f "$ICON_DIR/icon.ico" ]; then
+        echo "✓ 生成 icon.ico"
+    fi
+elif command -v convert &> /dev/null; then
     convert "$ICON_DIR/icon.png" -define icon:auto-resize=256,128,64,48,32,16 "$ICON_DIR/icon.ico"
     if [ -f "$ICON_DIR/icon.ico" ]; then
         echo "✓ 生成 icon.ico"
+    fi
+fi
+
+# 生成 ICNS (macOS)
+if command -v magick &> /dev/null; then
+    magick "$ICON_DIR/icon.png" "$ICON_DIR/icon.icns"
+    if [ -f "$ICON_DIR/icon.icns" ]; then
+        echo "✓ 生成 icon.icns"
     fi
 fi
 

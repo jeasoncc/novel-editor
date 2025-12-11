@@ -15,7 +15,8 @@
 
 ### 源文件
 
-- `icon.svg` - SVG 源文件（可编辑）
+- `new-icon.png` - 新图标源文件（960x960 像素）
+- `icon.svg` - 旧 SVG 源文件（已弃用）
 
 ## 🎨 图标设计
 
@@ -32,20 +33,20 @@ cd apps/desktop/src-tauri/icons
 
 ### 手动生成
 
-#### 从 SVG 生成 PNG（使用 ImageMagick）
+#### 从 PNG 生成各种尺寸（使用 ImageMagick）
 
 ```bash
 # 生成 32x32
-magick -background none -density 300 icon.svg -resize 32x32 32x32.png
+magick new-icon.png -resize 32x32 32x32.png
 
 # 生成 128x128
-magick -background none -density 300 icon.svg -resize 128x128 128x128.png
+magick new-icon.png -resize 128x128 128x128.png
 
 # 生成 256x256 (128x128@2x)
-magick -background none -density 300 icon.svg -resize 256x256 128x128@2x.png
+magick new-icon.png -resize 256x256 128x128@2x.png
 
 # 生成 512x512
-magick -background none -density 300 icon.svg -resize 512x512 icon.png
+magick new-icon.png -resize 512x512 icon.png
 ```
 
 #### 生成 ICO 文件（Windows）
@@ -85,12 +86,20 @@ rm -rf icon.iconset
 - https://convertio.co/png-icns/
 - https://cloudconvert.com/png-to-icns
 
-### 使用 Inkscape（如果 ImageMagick 不可用）
+### 生成 Windows Store 图标
 
 ```bash
-inkscape --export-type=png --export-filename=32x32.png -w 32 -h 32 icon.svg
-inkscape --export-type=png --export-filename=128x128.png -w 128 -h 128 icon.svg
-# ... 以此类推
+# 生成各种 Windows Store 尺寸
+magick new-icon.png -resize 30x30 Square30x30Logo.png
+magick new-icon.png -resize 44x44 Square44x44Logo.png
+magick new-icon.png -resize 71x71 Square71x71Logo.png
+magick new-icon.png -resize 89x89 Square89x89Logo.png
+magick new-icon.png -resize 107x107 Square107x107Logo.png
+magick new-icon.png -resize 142x142 Square142x142Logo.png
+magick new-icon.png -resize 150x150 Square150x150Logo.png
+magick new-icon.png -resize 284x284 Square284x284Logo.png
+magick new-icon.png -resize 310x310 Square310x310Logo.png
+magick new-icon.png -resize 50x50 StoreLogo.png
 ```
 
 ## ✅ 验证
@@ -103,9 +112,13 @@ ls -lh 32x32.png 128x128.png 128x128@2x.png icon.png icon.ico icon.icns
 
 ## 📝 更新图标
 
-1. 编辑 `icon.svg` 文件
+1. 替换 `new-icon.png` 文件（建议使用 960x960 像素或更高分辨率）
 2. 运行 `./generate-icons.sh` 重新生成所有尺寸
 3. 重新构建应用查看效果
+
+## 📋 备份
+
+旧图标文件已备份到 `backup-old-icons/` 目录中。
 
 ## 🔗 相关文档
 
