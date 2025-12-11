@@ -8,6 +8,7 @@ import {
 	ArrowLeft,
 	BarChart3,
 	Database,
+	FolderOutput,
 	Info,
 	Palette,
 	Settings2,
@@ -53,6 +54,11 @@ function SettingsLayout() {
 			to: "/settings/data",
 			label: "数据管理",
 			icon: Database,
+		},
+		{
+			to: "/settings/export",
+			label: "导出设置",
+			icon: FolderOutput,
 		},
 		{
 			to: "/settings/scroll-test",

@@ -11,13 +11,11 @@ import {
 	FileText,
 	Folder,
 	ListTree,
-	Maximize2,
 	Moon,
 	Plus,
 	Search,
 	Settings,
 	Sun,
-	Upload,
 	Users,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -34,7 +32,6 @@ import {
 import { db } from "@/db/curd";
 import { useTheme } from "@/hooks/use-theme";
 import { useSelectionStore } from "@/stores/selection";
-import { useUIStore } from "@/stores/ui";
 import { exportDialogManager } from "@/components/export/export-dialog-manager";
 
 interface CommandPaletteProps {
@@ -51,7 +48,6 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
 	const setSelectedProjectId = useSelectionStore((s) => s.setSelectedProjectId);
 	const setSelectedChapterId = useSelectionStore((s) => s.setSelectedChapterId);
 	const setSelectedSceneId = useSelectionStore((s) => s.setSelectedSceneId);
-	const toggleBottomDrawer = useUIStore((s) => s.toggleBottomDrawer);
 
 
 	// 获取数据
@@ -190,26 +186,26 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
 					},
 				},
 				{
-					label: "打开大纲面板",
+					label: "打开大纲页面",
 					icon: <ListTree className="size-4" />,
 					onSelect: () => {
-						toggleBottomDrawer("outline");
+						navigate({ to: "/outline" });
 						onOpenChange(false);
 					},
 				},
 				{
-					label: "打开角色面板",
+					label: "打开角色页面",
 					icon: <Users className="size-4" />,
 					onSelect: () => {
-						toggleBottomDrawer("characters");
+						navigate({ to: "/characters" });
 						onOpenChange(false);
 					},
 				},
 				{
-					label: "打开世界观面板",
+					label: "打开世界观页面",
 					icon: <BookOpen className="size-4" />,
 					onSelect: () => {
-						toggleBottomDrawer("world");
+						navigate({ to: "/world" });
 						onOpenChange(false);
 					},
 				},

@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export type UnifiedSidebarPanel = "search" | "books" | null;
+export type UnifiedSidebarPanel = "search" | "books" | "drawings" | "wiki" | null;
 
 interface SearchPanelState {
 	query: string;
@@ -16,6 +16,14 @@ interface BooksPanelState {
 	selectedScene: string | null;
 }
 
+interface DrawingsPanelState {
+	selectedDrawingId: string | null;
+}
+
+interface WikiPanelState {
+	selectedEntryId: string | null;
+}
+
 interface UnifiedSidebarState {
 	// Main sidebar state
 	activePanel: UnifiedSidebarPanel;
@@ -25,6 +33,8 @@ interface UnifiedSidebarState {
 	// Panel states
 	searchState: SearchPanelState;
 	booksState: BooksPanelState;
+	drawingsState: DrawingsPanelState;
+	wikiState: WikiPanelState;
 
 	// Actions
 	setActivePanel: (panel: UnifiedSidebarPanel) => void;
@@ -42,6 +52,12 @@ interface UnifiedSidebarState {
 	setExpandedChapters: (chapters: Record<string, boolean>) => void;
 	setSelectedChapter: (id: string | null) => void;
 	setSelectedScene: (id: string | null) => void;
+
+	// Drawings panel actions
+	setSelectedDrawingId: (id: string | null) => void;
+
+	// Wiki panel actions
+	setSelectedWikiEntryId: (id: string | null) => void;
 }
 
 export const useUnifiedSidebarStore = create<UnifiedSidebarState>()(
@@ -63,6 +79,12 @@ export const useUnifiedSidebarStore = create<UnifiedSidebarState>()(
 				expandedChapters: {},
 				selectedChapter: null,
 				selectedScene: null,
+			},
+			drawingsState: {
+				selectedDrawingId: null,
+			},
+			wikiState: {
+				selectedEntryId: null,
 			},
 
 			// Actions
@@ -111,6 +133,18 @@ export const useUnifiedSidebarStore = create<UnifiedSidebarState>()(
 				set((state) => ({
 					booksState: { ...state.booksState, selectedScene: id },
 				})),
+
+			// Drawings panel actions
+			setSelectedDrawingId: (id) =>
+				set((state) => ({
+					drawingsState: { ...state.drawingsState, selectedDrawingId: id },
+				})),
+
+			// Wiki panel actions
+			setSelectedWikiEntryId: (id) =>
+				set((state) => ({
+					wikiState: { ...state.wikiState, selectedEntryId: id },
+				})),
 		}),
 		{
 			name: "novel-editor-unified-sidebar",
@@ -120,6 +154,8 @@ export const useUnifiedSidebarStore = create<UnifiedSidebarState>()(
 				width: state.width,
 				searchState: state.searchState,
 				booksState: state.booksState,
+				drawingsState: state.drawingsState,
+				wikiState: state.wikiState,
 			}),
 		},
 	),

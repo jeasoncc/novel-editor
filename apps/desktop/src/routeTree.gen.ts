@@ -26,6 +26,7 @@ import { Route as SettingsTypographyRouteImport } from './routes/settings/typogr
 import { Route as SettingsScrollTestRouteImport } from './routes/settings/scroll-test'
 import { Route as SettingsIconsRouteImport } from './routes/settings/icons'
 import { Route as SettingsGeneralRouteImport } from './routes/settings/general'
+import { Route as SettingsExportRouteImport } from './routes/settings/export'
 import { Route as SettingsEditorRouteImport } from './routes/settings/editor'
 import { Route as SettingsDiagramsRouteImport } from './routes/settings/diagrams'
 import { Route as SettingsDesignRouteImport } from './routes/settings/design'
@@ -118,6 +119,11 @@ const SettingsGeneralRoute = SettingsGeneralRouteImport.update({
   path: '/general',
   getParentRoute: () => SettingsRoute,
 } as any)
+const SettingsExportRoute = SettingsExportRouteImport.update({
+  id: '/export',
+  path: '/export',
+  getParentRoute: () => SettingsRoute,
+} as any)
 const SettingsEditorRoute = SettingsEditorRouteImport.update({
   id: '/editor',
   path: '/editor',
@@ -168,6 +174,7 @@ export interface FileRoutesByFullPath {
   '/settings/design': typeof SettingsDesignRoute
   '/settings/diagrams': typeof SettingsDiagramsRoute
   '/settings/editor': typeof SettingsEditorRoute
+  '/settings/export': typeof SettingsExportRoute
   '/settings/general': typeof SettingsGeneralRoute
   '/settings/icons': typeof SettingsIconsRoute
   '/settings/scroll-test': typeof SettingsScrollTestRoute
@@ -192,6 +199,7 @@ export interface FileRoutesByTo {
   '/settings/design': typeof SettingsDesignRoute
   '/settings/diagrams': typeof SettingsDiagramsRoute
   '/settings/editor': typeof SettingsEditorRoute
+  '/settings/export': typeof SettingsExportRoute
   '/settings/general': typeof SettingsGeneralRoute
   '/settings/icons': typeof SettingsIconsRoute
   '/settings/scroll-test': typeof SettingsScrollTestRoute
@@ -218,6 +226,7 @@ export interface FileRoutesById {
   '/settings/design': typeof SettingsDesignRoute
   '/settings/diagrams': typeof SettingsDiagramsRoute
   '/settings/editor': typeof SettingsEditorRoute
+  '/settings/export': typeof SettingsExportRoute
   '/settings/general': typeof SettingsGeneralRoute
   '/settings/icons': typeof SettingsIconsRoute
   '/settings/scroll-test': typeof SettingsScrollTestRoute
@@ -245,6 +254,7 @@ export interface FileRouteTypes {
     | '/settings/design'
     | '/settings/diagrams'
     | '/settings/editor'
+    | '/settings/export'
     | '/settings/general'
     | '/settings/icons'
     | '/settings/scroll-test'
@@ -269,6 +279,7 @@ export interface FileRouteTypes {
     | '/settings/design'
     | '/settings/diagrams'
     | '/settings/editor'
+    | '/settings/export'
     | '/settings/general'
     | '/settings/icons'
     | '/settings/scroll-test'
@@ -294,6 +305,7 @@ export interface FileRouteTypes {
     | '/settings/design'
     | '/settings/diagrams'
     | '/settings/editor'
+    | '/settings/export'
     | '/settings/general'
     | '/settings/icons'
     | '/settings/scroll-test'
@@ -438,6 +450,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsGeneralRouteImport
       parentRoute: typeof SettingsRoute
     }
+    '/settings/export': {
+      id: '/settings/export'
+      path: '/export'
+      fullPath: '/settings/export'
+      preLoaderRoute: typeof SettingsExportRouteImport
+      parentRoute: typeof SettingsRoute
+    }
     '/settings/editor': {
       id: '/settings/editor'
       path: '/editor'
@@ -489,6 +508,7 @@ interface SettingsRouteChildren {
   SettingsDesignRoute: typeof SettingsDesignRoute
   SettingsDiagramsRoute: typeof SettingsDiagramsRoute
   SettingsEditorRoute: typeof SettingsEditorRoute
+  SettingsExportRoute: typeof SettingsExportRoute
   SettingsGeneralRoute: typeof SettingsGeneralRoute
   SettingsIconsRoute: typeof SettingsIconsRoute
   SettingsScrollTestRoute: typeof SettingsScrollTestRoute
@@ -502,6 +522,7 @@ const SettingsRouteChildren: SettingsRouteChildren = {
   SettingsDesignRoute: SettingsDesignRoute,
   SettingsDiagramsRoute: SettingsDiagramsRoute,
   SettingsEditorRoute: SettingsEditorRoute,
+  SettingsExportRoute: SettingsExportRoute,
   SettingsGeneralRoute: SettingsGeneralRoute,
   SettingsIconsRoute: SettingsIconsRoute,
   SettingsScrollTestRoute: SettingsScrollTestRoute,

@@ -9,8 +9,6 @@ import {
 import { useEffect, useState } from "react";
 import { ActivityBar } from "@/components/activity-bar";
 import { GlobalSearch } from "@/components/blocks/global-search";
-import { BottomDrawer } from "@/components/bottom-drawer";
-import { BottomDrawerContent } from "@/components/bottom-drawer-content";
 import { CommandPalette } from "@/components/command-palette";
 import { ExportDialogManager } from "@/components/export/export-dialog-manager";
 import { DevtoolsWrapper } from "@/components/devtools-wrapper";
@@ -127,10 +125,6 @@ function RootComponent() {
 							</div>
 						</div>
 					</div>
-					{/* 底部抽屉 */}
-					<BottomDrawer>
-						<BottomDrawerContent />
-					</BottomDrawer>
 				</div>
 				{/* 命令面板 */}
 				<CommandPalette open={commandOpen} onOpenChange={setCommandOpen} />

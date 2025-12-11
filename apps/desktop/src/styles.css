@@ -309,11 +309,6 @@ canvas:focus {
   border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
 }
 
-/* 底部抽屉 */
-.bottom-drawer {
-  border-top: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
-}
-
 /* ========================================
    组件样式
    ======================================== */

@@ -2,6 +2,17 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/db/curd";
 import type { DrawingInterface } from "@/db/schema";
 
+export function useDrawingById(drawingId: string | null): DrawingInterface | null {
+	const data = useLiveQuery(
+		() =>
+			drawingId
+				? db.getDrawing(drawingId)
+				: Promise.resolve(null),
+		[drawingId] as const,
+	);
+	return (data ?? null) as DrawingInterface | null;
+}
+
 export function useDrawingsByProject(projectId: string | null): DrawingInterface[] {
 	const data = useLiveQuery(
 		() =>

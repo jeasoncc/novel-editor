@@ -28,7 +28,6 @@ import {
 	triggerBlobDownload,
 } from "@/services/projects";
 import { useSelectionStore } from "@/stores/selection";
-import { type BottomDrawerView, useUIStore } from "@/stores/ui";
 import { useUnifiedSidebarStore } from "@/stores/unified-sidebar";
 
 export function ActivityBar(): React.ReactElement {
@@ -44,10 +43,6 @@ export function ActivityBar(): React.ReactElement {
 		setActivePanel,
 		toggleSidebar,
 	} = useUnifiedSidebarStore();
-
-	// 底部抽屉状态
-	const { bottomDrawerOpen, bottomDrawerView, toggleBottomDrawer } =
-		useUIStore();
 
 	// 图标主题
 	const [iconTheme, setIconTheme] = useState(getCurrentIconTheme());
@@ -137,7 +132,7 @@ export function ActivityBar(): React.ReactElement {
 	return (
 		<aside className="activity-bar fixed left-0 top-0 z-50 flex h-screen w-12 shrink-0 flex-col items-center bg-sidebar py-3">
 			<TooltipProvider>
-				{/* 主导航 */}
+				{/* 主导航 - 侧边栏面板切换 */}
 				<nav className="flex flex-col items-center gap-1">
 					<ActionButton
 						icon={<LibraryIcon className="size-5" />}
@@ -163,6 +158,36 @@ export function ActivityBar(): React.ReactElement {
 							}
 						}}
 					/>
+					<ActionButton
+						icon={<CanvasIcon className="size-5" />}
+						label="绘图"
+						active={activePanel === "drawings" && unifiedSidebarOpen}
+						onClick={() => {
+							if (activePanel === "drawings" && unifiedSidebarOpen) {
+								toggleSidebar();
+							} else {
+								setActivePanel("drawings");
+							}
+						}}
+					/>
+					<ActionButton
+						icon={<WorldIcon className="size-5" />}
+						label="世界观"
+						active={activePanel === "wiki" && unifiedSidebarOpen}
+						onClick={() => {
+							if (activePanel === "wiki" && unifiedSidebarOpen) {
+								toggleSidebar();
+							} else {
+								setActivePanel("wiki");
+							}
+						}}
+					/>
+				</nav>
+
+				<div className="my-3 h-px w-6 bg-border/20" />
+
+				{/* 页面导航 */}
+				<nav className="flex flex-col items-center gap-1">
 					<NavItem
 						to="/outline"
 						icon={<OutlineIcon className="size-5" />}
@@ -175,54 +200,19 @@ export function ActivityBar(): React.ReactElement {
 						label="角色"
 						active={isActive("/characters")}
 					/>
-					<NavItem
-						to="/world"
-						icon={<WorldIcon className="size-5" />}
-						label="世界观"
-						active={isActive("/world")}
-					/>
-					<NavItem
-						to="/canvas"
-						icon={<CanvasIcon className="size-5" />}
-						label="绘图"
-						active={isActive("/canvas")}
-					/>
 				</nav>
 
 				<div className="my-3 h-px w-6 bg-border/20" />
 
-				{/* 操作按钮 */}
-				<div className="flex flex-col items-center gap-1">
+				{/* 统计 */}
+				<nav className="flex flex-col items-center gap-1">
 					<NavItem
 						to="/statistics"
 						icon={<StatisticsIcon className="size-5" />}
 						label="统计"
 						active={isActive("/statistics")}
 					/>
-				</div>
-
-				<div className="my-3 h-px w-6 bg-border/20" />
-
-				{/* 底部抽屉快捷按钮 */}
-				<div
-					className="flex flex-col items-center gap-1"
-					data-tour="bottom-drawer"
-				>
-					<DrawerToggle
-						view="outline"
-						icon={<OutlineIcon className="size-5" />}
-						label="大纲面板"
-						active={bottomDrawerOpen && bottomDrawerView === "outline"}
-						onClick={() => toggleBottomDrawer("outline")}
-					/>
-					<DrawerToggle
-						view="characters"
-						icon={<CharactersIcon className="size-5" />}
-						label="角色面板"
-						active={bottomDrawerOpen && bottomDrawerView === "characters"}
-						onClick={() => toggleBottomDrawer("characters")}
-					/>
-				</div>
+				</nav>
 
 				{/* 底部 */}
 				<div className="mt-auto flex flex-col items-center gap-1">
@@ -360,38 +350,4 @@ function ActionButton({
 	);
 }
 
-// 底部抽屉切换按钮
-function DrawerToggle({
-	icon,
-	label,
-	active,
-	onClick,
-}: {
-	view: BottomDrawerView;
-	icon: React.ReactNode;
-	label: string;
-	active: boolean;
-	onClick: () => void;
-}) {
-	return (
-		<Tooltip>
-			<TooltipTrigger asChild>
-				<button
-					onClick={onClick}
-					className={cn(
-						"relative flex size-10 items-center justify-center rounded-lg transition-all",
-						active
-							? "bg-sidebar-accent text-primary"
-							: "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground",
-					)}
-				>
-					{active && (
-						<div className="absolute bottom-0 left-1/2 h-0.5 w-6 -translate-x-1/2 rounded-t bg-primary" />
-					)}
-					{icon}
-				</button>
-			</TooltipTrigger>
-			<TooltipContent side="right">{label}</TooltipContent>
-		</Tooltip>
-	);
-}
+
