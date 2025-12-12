@@ -91,6 +91,36 @@ jobs:
           echo "📄 Generated .SRCINFO:"
           cat .SRCINFO
       
+      - name: Test DEB extraction
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          echo "🧪 Testing DEB file extraction..."
+          
+          # 下载 DEB 文件进行测试
+          DEB_URL="https://github.com/${{ github.repository }}/releases/download/desktop-v$VERSION/novel-editor_${VERSION}_amd64.deb"
+          curl -L -o test.deb "$DEB_URL"
+          
+          # 检查 DEB 包内容
+          echo "📦 DEB package contents:"
+          ar t test.deb
+          
+          # 提取并检查数据文件格式
+          ar x test.deb
+          if [ -f data.tar.xz ]; then
+            echo "✅ Found data.tar.xz"
+          elif [ -f data.tar.gz ]; then
+            echo "✅ Found data.tar.gz"
+          elif [ -f data.tar.zst ]; then
+            echo "✅ Found data.tar.zst"
+          else
+            echo "❌ No supported data archive found"
+            ls -la
+            exit 1
+          fi
+          
+          # 清理测试文件
+          rm -f test.deb control.tar.* data.tar.* debian-binary
+      
       - name: Validate PKGBUILD
         run: |
           cd aur

@@ -23,7 +23,18 @@ prepare() {
   # 提取 DEB 包
   cd "$srcdir"
   ar x "$pkgname-$pkgver.deb"
-  tar -xf data.tar.xz
+  
+  # 检查数据文件格式并解压
+  if [ -f data.tar.xz ]; then
+    tar -xf data.tar.xz
+  elif [ -f data.tar.gz ]; then
+    tar -xf data.tar.gz
+  elif [ -f data.tar.zst ]; then
+    tar -xf data.tar.zst
+  else
+    echo "Error: No supported data archive found"
+    exit 1
+  fi
 }
 
 package() {
