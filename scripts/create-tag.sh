@@ -40,13 +40,23 @@ get_version_from_json() {
 show_help() {
     echo -e "${BLUE}Git Tag 创建脚本${NC}"
     echo ""
-    echo "用法: $0 {desktop|snap|aur|aur-bin|all}"
+    echo "用法: $0 {desktop|snap|aur|aur-bin|flatpak|winget|chocolatey|scoop|homebrew|web|ppa|copr|obs|gentoo|all}"
     echo ""
     echo "参数:"
     echo "  desktop  - 创建 desktop-v{version} 标签，触发桌面应用发布"
     echo "  snap     - 创建 snap-v{version} 标签，触发 Snap Store 发布"
     echo "  aur      - 创建 aur-v{version} 标签，触发 AUR 源码包发布"
     echo "  aur-bin  - 创建 aur-bin-v{version} 标签，触发 AUR 二进制包发布"
+    echo "  flatpak  - 创建 flatpak-v{version} 标签，触发 Flatpak 发布"
+    echo "  winget   - 创建 winget-v{version} 标签，触发 Winget 发布"
+    echo "  chocolatey - 创建 chocolatey-v{version} 标签，触发 Chocolatey 发布"
+    echo "  scoop    - 创建 scoop-v{version} 标签，触发 Scoop 发布"
+    echo "  homebrew - 创建 homebrew-v{version} 标签，触发 Homebrew 发布"
+    echo "  web      - 创建 web-v{version} 标签，触发 Web 应用部署"
+    echo "  ppa      - 创建 ppa-v{version} 标签，触发 Debian PPA 发布"
+    echo "  copr     - 创建 copr-v{version} 标签，触发 Fedora COPR 发布"
+    echo "  obs      - 创建 obs-v{version} 标签，触发 openSUSE OBS 发布"
+    echo "  gentoo   - 创建 gentoo-v{version} 标签，触发 Gentoo Overlay 发布"
     echo "  all      - 创建所有标签"
     echo ""
     echo "示例:"
@@ -159,6 +169,36 @@ main() {
         aur-bin)
             create_and_push_tag "aur-bin" "$VERSION"
             ;;
+        flatpak)
+            create_and_push_tag "flatpak" "$VERSION"
+            ;;
+        winget)
+            create_and_push_tag "winget" "$VERSION"
+            ;;
+        chocolatey)
+            create_and_push_tag "chocolatey" "$VERSION"
+            ;;
+        scoop)
+            create_and_push_tag "scoop" "$VERSION"
+            ;;
+        homebrew)
+            create_and_push_tag "homebrew" "$VERSION"
+            ;;
+        web)
+            create_and_push_tag "web" "$VERSION"
+            ;;
+        ppa)
+            create_and_push_tag "ppa" "$VERSION"
+            ;;
+        copr)
+            create_and_push_tag "copr" "$VERSION"
+            ;;
+        obs)
+            create_and_push_tag "obs" "$VERSION"
+            ;;
+        gentoo)
+            create_and_push_tag "gentoo" "$VERSION"
+            ;;
         all)
             echo -e "${BLUE}创建所有标签...${NC}"
             echo ""
@@ -175,6 +215,36 @@ main() {
             echo ""
             
             create_and_push_tag "aur-bin" "$VERSION" || failed=1
+            echo ""
+            
+            create_and_push_tag "flatpak" "$VERSION" || failed=1
+            echo ""
+            
+            create_and_push_tag "winget" "$VERSION" || failed=1
+            echo ""
+            
+            create_and_push_tag "chocolatey" "$VERSION" || failed=1
+            echo ""
+            
+            create_and_push_tag "scoop" "$VERSION" || failed=1
+            echo ""
+            
+            create_and_push_tag "homebrew" "$VERSION" || failed=1
+            echo ""
+            
+            create_and_push_tag "web" "$VERSION" || failed=1
+            echo ""
+            
+            create_and_push_tag "ppa" "$VERSION" || failed=1
+            echo ""
+            
+            create_and_push_tag "copr" "$VERSION" || failed=1
+            echo ""
+            
+            create_and_push_tag "obs" "$VERSION" || failed=1
+            echo ""
+            
+            create_and_push_tag "gentoo" "$VERSION" || failed=1
             
             if [ $failed -eq 1 ]; then
                 echo ""

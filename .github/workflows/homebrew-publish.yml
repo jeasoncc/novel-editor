@@ -1,0 +1,220 @@
+name: Publish to Homebrew
+
+on:
+  push:
+    tags:
+      - 'homebrew-v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g., 0.1.53)'
+        required: true
+        type: string
+
+jobs:
+  publish-homebrew:
+    runs-on: macos-latest
+    if: startsWith(github.ref, 'refs/tags/homebrew-v') || github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/homebrew-v}
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Creating Homebrew cask for version: $VERSION"
+
+      - name: Verify release and get download info
+        id: release_info
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          RELEASE_URL="https://api.github.com/repos/${{ github.repository }}/releases/tags/desktop-v$VERSION"
+          
+          echo "🔍 Checking release: desktop-v$VERSION"
+          
+          # 获取 release 信息
+          RESPONSE=$(curl -s "$RELEASE_URL")
+          
+          if echo "$RESPONSE" | jq -e '.message == "Not Found"' > /dev/null; then
+            echo "❌ Release desktop-v$VERSION not found"
+            echo ""
+            echo "📋 To fix this:"
+            echo "1. Create desktop release first: npm run tag:desktop"
+            echo "2. Wait for build to complete"
+            echo "3. Then retry Homebrew publish"
+            exit 1
+          fi
+          
+          echo "✅ Release found"
+          
+          # 查找 macOS DMG 文件（优先 Apple Silicon，然后 Intel）
+          ARM_DMG=$(echo "$RESPONSE" | jq -r '.assets[] | select(.name | contains("aarch64") and contains(".dmg")) | .browser_download_url' | head -1)
+          INTEL_DMG=$(echo "$RESPONSE" | jq -r '.assets[] | select(.name | contains("x64") and contains(".dmg")) | .browser_download_url' | head -1)
+          
+          if [ -n "$ARM_DMG" ] && [ "$ARM_DMG" != "null" ]; then
+            DOWNLOAD_URL="$ARM_DMG"
+            ARCH="arm64"
+            echo "✅ Found Apple Silicon DMG: $DOWNLOAD_URL"
+          elif [ -n "$INTEL_DMG" ] && [ "$INTEL_DMG" != "null" ]; then
+            DOWNLOAD_URL="$INTEL_DMG"
+            ARCH="intel"
+            echo "✅ Found Intel DMG: $DOWNLOAD_URL"
+          else
+            echo "❌ No macOS DMG files found in release"
+            echo "Available assets:"
+            echo "$RESPONSE" | jq -r '.assets[].name'
+            exit 1
+          fi
+          
+          # 下载文件计算 SHA256
+          FILE_NAME=$(basename "$DOWNLOAD_URL")
+          echo "📥 Downloading $FILE_NAME to calculate SHA256..."
+          curl -L -o "$FILE_NAME" "$DOWNLOAD_URL"
+          
+          SHA256=$(shasum -a 256 "$FILE_NAME" | cut -d' ' -f1)
+          rm "$FILE_NAME"
+          
+          echo "✅ SHA256: $SHA256"
+          
+          # 输出变量
+          echo "download_url=$DOWNLOAD_URL" >> $GITHUB_OUTPUT
+          echo "sha256=$SHA256" >> $GITHUB_OUTPUT
+          echo "arch=$ARCH" >> $GITHUB_OUTPUT
+          echo "file_name=$FILE_NAME" >> $GITHUB_OUTPUT
+
+      - name: Create Homebrew Cask
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          DOWNLOAD_URL="${{ steps.release_info.outputs.download_url }}"
+          SHA256="${{ steps.release_info.outputs.sha256 }}"
+          ARCH="${{ steps.release_info.outputs.arch }}"
+          
+          # 创建 cask 目录
+          mkdir -p homebrew-cask
+          
+          # 创建 Cask 文件
+          cat > homebrew-cask/novel-editor.rb << EOF
+          cask "novel-editor" do
+            version "$VERSION"
+            sha256 "$SHA256"
+          
+            url "https://github.com/${{ github.repository }}/releases/download/desktop-v#{version}/novel-editor_#{version}_aarch64.dmg",
+                verified: "github.com/${{ github.repository }}/"
+            name "Novel Editor"
+            desc "Modern, powerful novel writing application for serious writers"
+            homepage "https://github.com/${{ github.repository }}"
+          
+            livecheck do
+              url :url
+              regex(/desktop-v?(\d+(?:\.\d+)+)/i)
+            end
+          
+            app "novel-editor.app"
+          
+            zap trash: [
+              "~/Library/Application Support/com.lotus.novel-editor",
+              "~/Library/Caches/com.lotus.novel-editor",
+              "~/Library/Preferences/com.lotus.novel-editor.plist",
+              "~/Library/Saved Application State/com.lotus.novel-editor.savedState",
+              "~/Library/WebKit/com.lotus.novel-editor",
+            ]
+          end
+          EOF
+          
+          echo "✅ Homebrew Cask created"
+          echo ""
+          echo "📄 Cask content:"
+          cat homebrew-cask/novel-editor.rb
+
+      - name: Install Homebrew and test cask
+        run: |
+          echo "🧪 Testing Homebrew cask..."
+          
+          # 确保 Homebrew 已安装
+          if ! command -v brew &> /dev/null; then
+            echo "Installing Homebrew..."
+            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          fi
+          
+          # 验证 cask 语法
+          echo "Validating cask syntax..."
+          brew cask style homebrew-cask/novel-editor.rb
+          
+          echo "✅ Cask syntax validation passed"
+
+      - name: Create PR to Homebrew Cask repository
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          
+          echo "🍺 Preparing Homebrew Cask submission..."
+          
+          # 配置 git
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # 克隆 homebrew-cask 仓库
+          echo "📥 Cloning homebrew-cask repository..."
+          git clone https://github.com/Homebrew/homebrew-cask.git
+          cd homebrew-cask
+          
+          # 创建新分支
+          BRANCH_NAME="novel-editor-$VERSION"
+          git checkout -b "$BRANCH_NAME"
+          
+          # 复制 cask 文件
+          cp ../homebrew-cask/novel-editor.rb Casks/n/novel-editor.rb
+          
+          # 提交更改
+          git add Casks/n/novel-editor.rb
+          git commit -m "Add novel-editor $VERSION"
+          
+          echo "✅ Prepared Homebrew Cask update"
+          echo ""
+          echo "📋 Next steps (manual):"
+          echo "1. Fork https://github.com/Homebrew/homebrew-cask"
+          echo "2. Add the cask file to Casks/n/ directory"
+          echo "3. Create PR with title: 'Add novel-editor $VERSION'"
+          echo ""
+          echo "📄 Cask file ready in artifacts"
+
+      - name: Upload Homebrew Cask artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: homebrew-cask
+          path: "homebrew-cask/novel-editor.rb"
+          retention-days: 30
+
+      - name: Create success summary
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          ARCH="${{ steps.release_info.outputs.arch }}"
+          
+          echo ""
+          echo "🎉 Homebrew Cask Summary"
+          echo "========================"
+          echo "✅ Version: $VERSION"
+          echo "✅ Architecture: $ARCH"
+          echo "✅ Cask: novel-editor.rb"
+          echo "✅ SHA256 verified"
+          echo ""
+          echo "📦 Installation command (after approval):"
+          echo "   brew install --cask novel-editor"
+          echo ""
+          echo "🔗 Repository:"
+          echo "   https://github.com/Homebrew/homebrew-cask"
+          echo ""
+          echo "📋 Manual submission:"
+          echo "1. Download cask from artifacts"
+          echo "2. Fork Homebrew/homebrew-cask"
+          echo "3. Add to Casks/n/ directory"
+          echo "4. Create PR"

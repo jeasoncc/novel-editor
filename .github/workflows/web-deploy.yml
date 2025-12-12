@@ -1,0 +1,130 @@
+name: Deploy Web App
+
+on:
+  push:
+    tags:
+      - 'web-v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to deploy (e.g., 0.1.53)'
+        required: true
+        type: string
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+        - production
+        - staging
+
+jobs:
+  deploy-web:
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/web-v') || github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+            ENVIRONMENT="${{ github.event.inputs.environment }}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/web-v}
+            ENVIRONMENT="production"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
+          echo "🚀 Deploying web app version: $VERSION to $ENVIRONMENT"
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Build web app
+        run: |
+          echo "🔨 Building web application..."
+          cd apps/web
+          bun run build
+          
+          # 验证构建
+          if [ ! -d "dist" ]; then
+            echo "❌ Build failed: dist directory not found"
+            exit 1
+          fi
+          
+          echo "✅ Web app built successfully"
+          ls -la dist/
+
+      - name: Deploy to Vercel
+        if: steps.version.outputs.environment == 'production'
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: apps/web
+          vercel-args: '--prod'
+
+      - name: Deploy to Vercel (Staging)
+        if: steps.version.outputs.environment == 'staging'
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: apps/web
+
+      - name: Deploy to Netlify
+        uses: nwtgck/actions-netlify@v3.0
+        with:
+          publish-dir: 'apps/web/dist'
+          production-branch: main
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "Deploy web app v${{ steps.version.outputs.version }}"
+          enable-pull-request-comment: false
+          enable-commit-comment: true
+          overwrites-pull-request-comment: true
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        if: steps.version.outputs.environment == 'production'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: apps/web/dist
+          cname: novel-editor.example.com  # 替换为你的域名
+
+      - name: Create deployment summary
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          ENVIRONMENT="${{ steps.version.outputs.environment }}"
+          
+          echo ""
+          echo "🎉 Web App Deployment Summary"
+          echo "============================="
+          echo "✅ Version: $VERSION"
+          echo "✅ Environment: $ENVIRONMENT"
+          echo "✅ Build completed"
+          echo ""
+          echo "🌐 Deployment URLs:"
+          echo "   Vercel: https://novel-editor.vercel.app"
+          echo "   Netlify: https://novel-editor.netlify.app"
+          echo "   GitHub Pages: https://yourusername.github.io/novel-editor"
+          echo ""
+          echo "📱 Features available:"
+          echo "   ✅ Progressive Web App (PWA)"
+          echo "   ✅ Offline functionality"
+          echo "   ✅ Cross-platform compatibility"
+          echo "   ✅ No installation required"

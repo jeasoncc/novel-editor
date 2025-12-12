@@ -1,0 +1,336 @@
+name: Publish to Gentoo Overlay
+
+on:
+  push:
+    tags:
+      - 'gentoo-v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g., 0.1.53)'
+        required: true
+        type: string
+
+jobs:
+  publish-gentoo:
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/gentoo-v') || github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/gentoo-v}
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Creating Gentoo ebuild for version: $VERSION"
+
+      - name: Install Gentoo tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            python3-pip \
+            git
+          
+          # 安装 repoman（Gentoo 包管理工具）
+          pip3 install --user pkgcheck
+
+      - name: Create Gentoo ebuild
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          
+          # 创建 overlay 结构
+          mkdir -p gentoo-overlay/app-editors/novel-editor
+          cd gentoo-overlay/app-editors/novel-editor
+          
+          # 创建 ebuild 文件
+          cat > "novel-editor-$VERSION.ebuild" << 'EOF'
+          # Copyright 2024 Gentoo Authors
+          # Distributed under the terms of the GNU General Public License v2
+          
+          EAPI=8
+          
+          CRATES="
+          	# Cargo dependencies will be listed here
+          	# Generated with: cargo ebuild
+          "
+          
+          inherit cargo desktop xdg
+          
+          DESCRIPTION="A modern, powerful novel writing application for serious writers"
+          HOMEPAGE="https://github.com/${{ github.repository }}"
+          SRC_URI="
+          	https://github.com/${{ github.repository }}/archive/refs/tags/desktop-v${PV}.tar.gz -> ${P}.tar.gz
+          	$(cargo_crate_uris)
+          "
+          
+          LICENSE="MIT"
+          SLOT="0"
+          KEYWORDS="~amd64"
+          IUSE=""
+          
+          DEPEND="
+          	dev-libs/glib:2
+          	dev-libs/libappindicator:3
+          	net-libs/webkit-gtk:4
+          	x11-libs/gtk+:3
+          "
+          RDEPEND="${DEPEND}"
+          BDEPEND="
+          	net-libs/nodejs[npm]
+          	sys-apps/yarn
+          "
+          
+          S="${WORKDIR}/novel-editor-desktop-v${PV}"
+          
+          src_prepare() {
+          	default
+          	
+          	# Install Node.js dependencies
+          	cd apps/desktop || die
+          	npm install || die "npm install failed"
+          }
+          
+          src_compile() {
+          	cd apps/desktop || die
+          	
+          	# Build frontend
+          	npm run build || die "Frontend build failed"
+          	
+          	# Build Tauri app
+          	cargo_src_compile --manifest-path src-tauri/Cargo.toml
+          }
+          
+          src_install() {
+          	cd apps/desktop || die
+          	
+          	# Install binary
+          	dobin src-tauri/target/release/novel-editor
+          	
+          	# Install desktop file
+          	domenu src-tauri/novel-editor.desktop
+          	
+          	# Install icons
+          	local size
+          	for size in 32 128 256; do
+          		doicon -s ${size} src-tauri/icons/${size}x${size}.png
+          	done
+          	
+          	# Install documentation
+          	dodoc ../../README.md
+          }
+          
+          pkg_postinst() {
+          	xdg_pkg_postinst
+          	
+          	elog "Novel Editor has been installed."
+          	elog "You can start it from your application menu or by running 'novel-editor'"
+          }
+          EOF
+          
+          # 创建 metadata.xml
+          cat > metadata.xml << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+          <pkgmetadata>
+          	<maintainer type="person">
+          		<email>xiaomiquan@aliyun.com</email>
+          		<name>Jeason</name>
+          	</maintainer>
+          	<longdescription lang="en">
+          		Novel Editor is a professional writing tool designed specifically for
+          		novelists and long-form fiction writers. Built with modern technologies,
+          		it provides a distraction-free writing environment with powerful
+          		organizational features.
+          		
+          		Features include rich text editing, chapter organization, character
+          		management, and export to multiple formats.
+          	</longdescription>
+          	<upstream>
+          		<remote-id type="github">${{ github.repository }}</remote-id>
+          	</upstream>
+          </pkgmetadata>
+          EOF
+          
+          # 创建 Manifest 文件（校验和）
+          echo "DIST novel-editor-$VERSION.tar.gz $(curl -sL https://github.com/${{ github.repository }}/archive/refs/tags/desktop-v$VERSION.tar.gz | sha512sum | cut -d' ' -f1) $(curl -sL https://github.com/${{ github.repository }}/archive/refs/tags/desktop-v$VERSION.tar.gz | wc -c)" > Manifest
+          
+          echo "✅ Gentoo ebuild created"
+
+      - name: Create overlay metadata
+        run: |
+          cd gentoo-overlay
+          
+          # 创建 overlay 配置
+          cat > layout.conf << EOF
+          masters = gentoo
+          repo-name = novel-editor-overlay
+          EOF
+          
+          # 创建 repositories.xml
+          cat > repositories.xml << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE repositories SYSTEM "/dtd/repositories.dtd">
+          <repositories xmlns="" version="1.0">
+          	<repo quality="experimental" status="unofficial">
+          		<name>novel-editor-overlay</name>
+          		<description>Novel Editor Gentoo Overlay</description>
+          		<homepage>https://github.com/${{ github.repository }}</homepage>
+          		<owner type="person">
+          			<email>xiaomiquan@aliyun.com</email>
+          			<name>Jeason</name>
+          		</owner>
+          		<source type="git">https://github.com/${{ github.repository }}-gentoo-overlay.git</source>
+          	</repo>
+          </repositories>
+          EOF
+          
+          echo "✅ Overlay metadata created"
+
+      - name: Validate ebuild
+        run: |
+          cd gentoo-overlay
+          
+          echo "🧪 Validating ebuild..."
+          
+          # 基本语法检查
+          VERSION="${{ steps.version.outputs.version }}"
+          EBUILD_FILE="app-editors/novel-editor/novel-editor-$VERSION.ebuild"
+          
+          # 检查必需的变量
+          for var in DESCRIPTION HOMEPAGE SRC_URI LICENSE SLOT; do
+            if ! grep -q "^$var=" "$EBUILD_FILE"; then
+              echo "❌ Missing required variable: $var"
+              exit 1
+            fi
+          done
+          
+          # 检查必需的函数
+          for func in src_compile src_install; do
+            if ! grep -q "^$func()" "$EBUILD_FILE"; then
+              echo "❌ Missing required function: $func"
+              exit 1
+            fi
+          done
+          
+          echo "✅ Ebuild validation passed"
+
+      - name: Create installation instructions
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          
+          cat > gentoo-overlay/README.md << EOF
+          # Novel Editor Gentoo Overlay
+          
+          This overlay provides the Novel Editor package for Gentoo Linux.
+          
+          ## Installation
+          
+          ### Method 1: Using eselect repository
+          
+          \`\`\`bash
+          # Install eselect-repository if not already installed
+          emerge --ask app-eselect/eselect-repository
+          
+          # Add the overlay
+          eselect repository add novel-editor-overlay git https://github.com/${{ github.repository }}-gentoo-overlay.git
+          
+          # Sync the overlay
+          emerge --sync novel-editor-overlay
+          
+          # Install Novel Editor
+          emerge --ask app-editors/novel-editor
+          \`\`\`
+          
+          ### Method 2: Manual overlay setup
+          
+          \`\`\`bash
+          # Create overlay directory
+          mkdir -p /var/db/repos/novel-editor-overlay
+          
+          # Clone the overlay
+          git clone https://github.com/${{ github.repository }}-gentoo-overlay.git /var/db/repos/novel-editor-overlay
+          
+          # Add to repos.conf
+          echo '[novel-editor-overlay]
+          location = /var/db/repos/novel-editor-overlay
+          sync-type = git
+          sync-uri = https://github.com/${{ github.repository }}-gentoo-overlay.git
+          auto-sync = yes' >> /etc/portage/repos.conf/novel-editor-overlay.conf
+          
+          # Sync and install
+          emerge --sync
+          emerge --ask app-editors/novel-editor
+          \`\`\`
+          
+          ## Package Information
+          
+          - **Category**: app-editors
+          - **Package**: novel-editor
+          - **Version**: $VERSION
+          - **License**: MIT
+          - **Keywords**: ~amd64
+          
+          ## Dependencies
+          
+          - dev-libs/glib:2
+          - dev-libs/libappindicator:3
+          - net-libs/webkit-gtk:4
+          - x11-libs/gtk+:3
+          - net-libs/nodejs[npm]
+          - sys-apps/yarn
+          
+          ## USE Flags
+          
+          Currently no USE flags are defined for this package.
+          
+          ## Maintainer
+          
+          - Jeason <xiaomiquan@aliyun.com>
+          
+          ## Issues
+          
+          Please report issues at: https://github.com/${{ github.repository }}/issues
+          EOF
+          
+          echo "✅ Installation instructions created"
+
+      - name: Upload Gentoo overlay artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: gentoo-overlay
+          path: "gentoo-overlay/"
+          retention-days: 30
+
+      - name: Create success summary
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          echo ""
+          echo "🎉 Gentoo Overlay Summary"
+          echo "========================="
+          echo "✅ Version: $VERSION"
+          echo "✅ Ebuild created"
+          echo "✅ Metadata files created"
+          echo "✅ Installation instructions ready"
+          echo ""
+          echo "📦 Installation commands:"
+          echo "   eselect repository add novel-editor-overlay git <overlay-url>"
+          echo "   emerge --sync novel-editor-overlay"
+          echo "   emerge --ask app-editors/novel-editor"
+          echo ""
+          echo "🔗 Next steps:"
+          echo "1. Create separate repository for the overlay"
+          echo "2. Upload overlay files to the repository"
+          echo "3. Submit to Gentoo overlays list (optional)"
+          echo ""
+          echo "📋 Files ready in artifacts:"
+          echo "   - Ebuild file"
+          echo "   - Metadata.xml"
+          echo "   - Overlay configuration"
+          echo "   - Installation instructions"

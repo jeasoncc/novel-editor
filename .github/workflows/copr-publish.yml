@@ -1,0 +1,236 @@
+name: Publish to Fedora COPR
+
+on:
+  push:
+    tags:
+      - 'copr-v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g., 0.1.53)'
+        required: true
+        type: string
+
+jobs:
+  publish-copr:
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/copr-v') || github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/copr-v}
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Creating COPR package for version: $VERSION"
+
+      - name: Install COPR CLI
+        run: |
+          sudo dnf install -y python3-copr-cli || sudo apt-get install -y python3-pip && pip3 install copr-cli
+
+      - name: Setup COPR configuration
+        env:
+          COPR_CONFIG: ${{ secrets.COPR_CONFIG }}
+        run: |
+          if [ -z "$COPR_CONFIG" ]; then
+            echo "⚠ COPR_CONFIG not set, creating example config"
+            
+            mkdir -p ~/.config
+            cat > ~/.config/copr << EOF
+          [copr-cli]
+          login = your-fedora-username
+          username = your-fedora-username
+          token = your-copr-token
+          copr_url = https://copr.fedorainfracloud.org
+          EOF
+            
+            echo "📋 COPR configuration example created"
+            echo "To use COPR, add COPR_CONFIG secret with your ~/.config/copr content"
+          else
+            mkdir -p ~/.config
+            echo "$COPR_CONFIG" > ~/.config/copr
+            echo "✅ COPR configuration loaded"
+          fi
+
+      - name: Verify release and get RPM info
+        id: rpm_info
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          RELEASE_URL="https://api.github.com/repos/${{ github.repository }}/releases/tags/desktop-v$VERSION"
+          
+          echo "🔍 Checking for RPM package in release desktop-v$VERSION"
+          
+          RESPONSE=$(curl -s "$RELEASE_URL")
+          if echo "$RESPONSE" | jq -e '.message == "Not Found"' > /dev/null; then
+            echo "❌ Release desktop-v$VERSION not found"
+            echo ""
+            echo "📋 To fix this:"
+            echo "1. Create desktop release first: npm run tag:desktop"
+            echo "2. Wait for build to complete"
+            echo "3. Then retry COPR publish"
+            exit 1
+          fi
+          
+          # 查找 RPM 文件
+          RPM_URL=$(echo "$RESPONSE" | jq -r '.assets[] | select(.name | contains(".rpm")) | .browser_download_url' | head -1)
+          
+          if [ -z "$RPM_URL" ] || [ "$RPM_URL" = "null" ]; then
+            echo "❌ No RPM package found in release"
+            exit 1
+          fi
+          
+          RPM_NAME=$(basename "$RPM_URL")
+          echo "✅ Found RPM package: $RPM_NAME"
+          echo "   URL: $RPM_URL"
+          
+          echo "rpm_url=$RPM_URL" >> $GITHUB_OUTPUT
+          echo "rpm_name=$RPM_NAME" >> $GITHUB_OUTPUT
+
+      - name: Create COPR spec file
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          RPM_URL="${{ steps.rpm_info.outputs.rpm_url }}"
+          
+          # 下载 RPM 包以获取信息
+          wget -O temp.rpm "$RPM_URL"
+          
+          # 创建 spec 文件
+          mkdir -p copr-package
+          cat > copr-package/novel-editor.spec << EOF
+          Name:           novel-editor
+          Version:        $VERSION
+          Release:        1%{?dist}
+          Summary:        A modern, powerful novel writing application
+          
+          License:        MIT
+          URL:            https://github.com/${{ github.repository }}
+          Source0:        %{url}/releases/download/desktop-v%{version}/novel-editor_%{version}_x64.rpm
+          
+          BuildArch:      x86_64
+          
+          %description
+          Novel Editor is a professional writing tool designed specifically for
+          novelists and long-form fiction writers. Built with modern technologies,
+          it provides a distraction-free writing environment with powerful
+          organizational features.
+          
+          Features include:
+          - Rich text editing with Lexical editor
+          - Chapter and scene organization
+          - Character and world-building tools
+          - Export to multiple formats (DOCX, PDF, etc.)
+          - Dark/light theme support
+          - Offline-first with local storage
+          - Cross-platform compatibility
+          
+          %prep
+          # No prep needed - using pre-built RPM
+          
+          %build
+          # No build needed - using pre-built RPM
+          
+          %install
+          # Extract the pre-built RPM
+          rpm2cpio %{SOURCE0} | cpio -idmv
+          cp -r * %{buildroot}/
+          
+          %files
+          %license usr/share/doc/novel-editor/copyright
+          %doc usr/share/doc/novel-editor/
+          %{_bindir}/novel-editor
+          %{_datadir}/applications/novel-editor.desktop
+          %{_datadir}/icons/hicolor/*/apps/novel-editor.*
+          
+          %changelog
+          * $(date +'%a %b %d %Y') Jeason <xiaomiquan@aliyun.com> - $VERSION-1
+          - Update to version $VERSION
+          - See https://github.com/${{ github.repository }}/releases/tag/desktop-v$VERSION
+          EOF
+          
+          echo "✅ COPR spec file created"
+          
+          # 清理临时文件
+          rm temp.rpm
+
+      - name: Create COPR source package
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          cd copr-package
+          
+          # 创建源码 tarball
+          tar -czf "novel-editor-$VERSION.tar.gz" novel-editor.spec
+          
+          echo "✅ COPR source package created"
+          ls -la
+
+      - name: Submit to COPR
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        env:
+          COPR_PROJECT: ${{ secrets.COPR_PROJECT }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          
+          if [ -z "$COPR_PROJECT" ]; then
+            echo "⚠ COPR_PROJECT not set, skipping submission"
+            echo ""
+            echo "📋 To submit to COPR:"
+            echo "1. Create Fedora account and COPR project"
+            echo "2. Add COPR_CONFIG secret with ~/.config/copr content"
+            echo "3. Add COPR_PROJECT secret (format: username/projectname)"
+            echo "4. Re-run this workflow"
+            echo ""
+            echo "📦 Files ready for manual submission:"
+            ls -la copr-package/
+            exit 0
+          fi
+          
+          echo "📤 Submitting to COPR project: $COPR_PROJECT"
+          
+          cd copr-package
+          
+          # 提交构建
+          copr-cli build "$COPR_PROJECT" "novel-editor-$VERSION.tar.gz"
+          
+          echo "✅ Successfully submitted to COPR!"
+          echo ""
+          echo "🎉 Package will be available at:"
+          echo "   https://copr.fedorainfracloud.org/coprs/$COPR_PROJECT/"
+          echo ""
+          echo "📥 Users can install with:"
+          echo "   sudo dnf copr enable $COPR_PROJECT"
+          echo "   sudo dnf install novel-editor"
+
+      - name: Upload COPR artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: copr-package
+          path: "copr-package/*"
+          retention-days: 30
+
+      - name: Create success summary
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          echo ""
+          echo "🎉 COPR Package Summary"
+          echo "======================="
+          echo "✅ Version: $VERSION"
+          echo "✅ Spec file created"
+          echo "✅ Source package built"
+          echo ""
+          echo "📦 Installation commands:"
+          echo "   sudo dnf copr enable username/novel-editor"
+          echo "   sudo dnf install novel-editor"
+          echo ""
+          echo "🔗 Supported distributions:"
+          echo "   - Fedora (all supported versions)"
+          echo "   - CentOS Stream"
+          echo "   - RHEL 8+"
+          echo "   - Rocky Linux"
+          echo "   - AlmaLinux"

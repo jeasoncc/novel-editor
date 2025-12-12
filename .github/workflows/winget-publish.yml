@@ -3,6 +3,9 @@ name: Publish to Winget
 on:
   release:
     types: [published]
+  push:
+    tags:
+      - 'winget-v*.*.*'   # 支持 winget 标签触发
   workflow_dispatch:
     inputs:
       version:
@@ -13,7 +16,7 @@ on:
 jobs:
   winget-publish:
     runs-on: windows-latest
-    if: startsWith(github.event.release.tag_name, 'desktop-v') || github.event_name == 'workflow_dispatch'
+    if: startsWith(github.event.release.tag_name, 'desktop-v') || startsWith(github.ref, 'refs/tags/winget-v') || github.event_name == 'workflow_dispatch'
     
     steps:
       - name: Checkout repository
@@ -24,6 +27,8 @@ jobs:
         run: |
           if ("${{ github.event_name }}" -eq "workflow_dispatch") {
             $version = "${{ github.event.inputs.version }}"
+          } elseif ("${{ github.ref }}" -like "refs/tags/winget-v*") {
+            $version = "${{ github.ref }}" -replace "refs/tags/winget-v", ""
           } else {
             $version = "${{ github.event.release.tag_name }}" -replace "desktop-v", ""
           }

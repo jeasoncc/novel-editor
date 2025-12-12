@@ -1,0 +1,332 @@
+name: Publish to Debian PPA
+
+on:
+  push:
+    tags:
+      - 'ppa-v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g., 0.1.53)'
+        required: true
+        type: string
+
+jobs:
+  publish-ppa:
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/ppa-v') || github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/ppa-v}
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Creating PPA package for version: $VERSION"
+
+      - name: Install packaging tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            devscripts \
+            debhelper \
+            dh-make \
+            build-essential \
+            lintian \
+            fakeroot \
+            gpg \
+            dput
+
+      - name: Setup GPG key
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          if [ -z "$GPG_PRIVATE_KEY" ]; then
+            echo "⚠ GPG_PRIVATE_KEY not set, creating temporary key for testing"
+            
+            # 创建临时 GPG 密钥用于测试
+            cat > gpg-batch << EOF
+          %echo Generating a basic OpenPGP key
+          Key-Type: RSA
+          Key-Length: 2048
+          Subkey-Type: RSA
+          Subkey-Length: 2048
+          Name-Real: Novel Editor CI
+          Name-Email: ci@novel-editor.example.com
+          Expire-Date: 1y
+          Passphrase: temp123
+          %commit
+          %echo done
+          EOF
+            
+            gpg --batch --generate-key gpg-batch
+            GPG_KEY_ID=$(gpg --list-secret-keys --keyid-format LONG | grep sec | head -1 | sed 's/.*\/\([A-F0-9]*\).*/\1/')
+            echo "GPG_KEY_ID=$GPG_KEY_ID" >> $GITHUB_ENV
+            echo "GPG_PASSPHRASE=temp123" >> $GITHUB_ENV
+          else
+            echo "$GPG_PRIVATE_KEY" | gpg --batch --import
+            GPG_KEY_ID=$(gpg --list-secret-keys --keyid-format LONG | grep sec | head -1 | sed 's/.*\/\([A-F0-9]*\).*/\1/')
+            echo "GPG_KEY_ID=$GPG_KEY_ID" >> $GITHUB_ENV
+            echo "GPG_PASSPHRASE=$GPG_PASSPHRASE" >> $GITHUB_ENV
+          fi
+          
+          echo "✅ GPG key configured: $GPG_KEY_ID"
+
+      - name: Verify DEB package exists
+        id: deb_info
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          RELEASE_URL="https://api.github.com/repos/${{ github.repository }}/releases/tags/desktop-v$VERSION"
+          
+          echo "🔍 Checking for DEB package in release desktop-v$VERSION"
+          
+          RESPONSE=$(curl -s "$RELEASE_URL")
+          if echo "$RESPONSE" | jq -e '.message == "Not Found"' > /dev/null; then
+            echo "❌ Release desktop-v$VERSION not found"
+            echo ""
+            echo "📋 To fix this:"
+            echo "1. Create desktop release first: npm run tag:desktop"
+            echo "2. Wait for build to complete"
+            echo "3. Then retry PPA publish"
+            exit 1
+          fi
+          
+          # 查找 DEB 文件
+          DEB_URL=$(echo "$RESPONSE" | jq -r '.assets[] | select(.name | contains(".deb")) | .browser_download_url' | head -1)
+          
+          if [ -z "$DEB_URL" ] || [ "$DEB_URL" = "null" ]; then
+            echo "❌ No DEB package found in release"
+            exit 1
+          fi
+          
+          DEB_NAME=$(basename "$DEB_URL")
+          echo "✅ Found DEB package: $DEB_NAME"
+          echo "   URL: $DEB_URL"
+          
+          # 下载 DEB 包
+          wget -O "$DEB_NAME" "$DEB_URL"
+          
+          echo "deb_url=$DEB_URL" >> $GITHUB_OUTPUT
+          echo "deb_name=$DEB_NAME" >> $GITHUB_OUTPUT
+
+      - name: Extract and prepare source package
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          DEB_NAME="${{ steps.deb_info.outputs.deb_name }}"
+          
+          # 创建工作目录
+          WORK_DIR="novel-editor-$VERSION"
+          mkdir -p "$WORK_DIR"
+          cd "$WORK_DIR"
+          
+          # 提取 DEB 包内容
+          ar x "../$DEB_NAME"
+          tar -xf data.tar.*
+          
+          # 创建源码目录结构
+          mkdir -p "novel-editor-$VERSION"
+          
+          # 复制应用文件
+          if [ -d "usr" ]; then
+            cp -r usr "novel-editor-$VERSION/"
+          fi
+          
+          cd "novel-editor-$VERSION"
+          
+          # 创建 debian 目录
+          mkdir -p debian
+          
+          # 创建 debian/control
+          cat > debian/control << EOF
+          Source: novel-editor
+          Section: editors
+          Priority: optional
+          Maintainer: Jeason <xiaomiquan@aliyun.com>
+          Build-Depends: debhelper (>= 10)
+          Standards-Version: 4.1.2
+          Homepage: https://github.com/${{ github.repository }}
+          
+          Package: novel-editor
+          Architecture: amd64
+          Depends: \${shlibs:Depends}, \${misc:Depends}
+          Description: A modern, powerful novel writing application
+           Novel Editor is a professional writing tool designed specifically for
+           novelists and long-form fiction writers. Built with modern technologies,
+           it provides a distraction-free writing environment with powerful
+           organizational features.
+           .
+           Features include rich text editing, chapter organization, character
+           management, and export to multiple formats.
+          EOF
+          
+          # 创建 debian/changelog
+          cat > debian/changelog << EOF
+          novel-editor ($VERSION-1) unstable; urgency=medium
+          
+            * New upstream release $VERSION
+            * See https://github.com/${{ github.repository }}/releases/tag/desktop-v$VERSION
+          
+           -- Jeason <xiaomiquan@aliyun.com>  $(date -R)
+          EOF
+          
+          # 创建 debian/copyright
+          cat > debian/copyright << EOF
+          Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+          Upstream-Name: novel-editor
+          Source: https://github.com/${{ github.repository }}
+          
+          Files: *
+          Copyright: 2024 Jeason
+          License: MIT
+          
+          License: MIT
+           Permission is hereby granted, free of charge, to any person obtaining a
+           copy of this software and associated documentation files (the "Software"),
+           to deal in the Software without restriction, including without limitation
+           the rights to use, copy, modify, merge, publish, distribute, sublicense,
+           and/or sell copies of the Software, and to permit persons to whom the
+           Software is furnished to do so, subject to the following conditions:
+           .
+           The above copyright notice and this permission notice shall be included
+           in all copies or substantial portions of the Software.
+           .
+           THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+           OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+           FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+           THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+           LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+           FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+           DEALINGS IN THE SOFTWARE.
+          EOF
+          
+          # 创建 debian/rules
+          cat > debian/rules << 'EOF'
+          #!/usr/bin/make -f
+          
+          %:
+          	dh $@
+          
+          override_dh_auto_build:
+          	# Skip build - we're packaging pre-built binaries
+          
+          override_dh_auto_install:
+          	# Copy files to package directory
+          	mkdir -p debian/novel-editor
+          	cp -r usr debian/novel-editor/
+          EOF
+          
+          chmod +x debian/rules
+          
+          # 创建 debian/compat
+          echo "10" > debian/compat
+          
+          echo "✅ Debian package structure created"
+
+      - name: Build source package
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          cd "novel-editor-$VERSION/novel-editor-$VERSION"
+          
+          # 创建原始 tarball
+          cd ..
+          tar -czf "novel-editor_$VERSION.orig.tar.gz" "novel-editor-$VERSION"
+          cd "novel-editor-$VERSION"
+          
+          # 构建源码包
+          debuild -S -sa -k$GPG_KEY_ID
+          
+          echo "✅ Source package built"
+          
+          # 列出生成的文件
+          cd ..
+          ls -la *.dsc *.tar.* *.changes
+
+      - name: Test package with lintian
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          cd "novel-editor-$VERSION"
+          
+          # 检查源码包
+          lintian -i *.changes || echo "⚠ Lintian warnings found (non-fatal)"
+          
+          echo "✅ Package validation completed"
+
+      - name: Upload to PPA (Launchpad)
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        env:
+          LAUNCHPAD_PPA: ${{ secrets.LAUNCHPAD_PPA }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          cd "novel-editor-$VERSION"
+          
+          if [ -z "$LAUNCHPAD_PPA" ]; then
+            echo "⚠ LAUNCHPAD_PPA not set, skipping upload"
+            echo ""
+            echo "📋 To upload to PPA:"
+            echo "1. Create Launchpad account and PPA"
+            echo "2. Add LAUNCHPAD_PPA secret (format: ppa:username/ppaname)"
+            echo "3. Add GPG_PRIVATE_KEY and GPG_PASSPHRASE secrets"
+            echo "4. Re-run this workflow"
+            echo ""
+            echo "📦 Files ready for manual upload:"
+            ls -la *.changes *.dsc *.tar.*
+            exit 0
+          fi
+          
+          echo "📤 Uploading to PPA: $LAUNCHPAD_PPA"
+          
+          # 上传到 PPA
+          dput "$LAUNCHPAD_PPA" *.changes
+          
+          echo "✅ Successfully uploaded to PPA!"
+          echo ""
+          echo "🎉 Package will be available at:"
+          echo "   https://launchpad.net/~$(echo $LAUNCHPAD_PPA | cut -d: -f2)"
+          echo ""
+          echo "📥 Users can install with:"
+          echo "   sudo add-apt-repository $LAUNCHPAD_PPA"
+          echo "   sudo apt update"
+          echo "   sudo apt install novel-editor"
+
+      - name: Upload PPA artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ppa-package
+          path: |
+            novel-editor-*/*.changes
+            novel-editor-*/*.dsc
+            novel-editor-*/*.tar.*
+          retention-days: 30
+
+      - name: Create success summary
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          echo ""
+          echo "🎉 PPA Package Summary"
+          echo "======================"
+          echo "✅ Version: $VERSION"
+          echo "✅ Source package built"
+          echo "✅ GPG signed"
+          echo "✅ Lintian checked"
+          echo ""
+          echo "📦 Installation commands:"
+          echo "   sudo add-apt-repository ppa:username/novel-editor"
+          echo "   sudo apt update"
+          echo "   sudo apt install novel-editor"
+          echo ""
+          echo "🔗 Supported distributions:"
+          echo "   - Ubuntu (all supported versions)"
+          echo "   - Debian (stable/testing/unstable)"
+          echo "   - Linux Mint"
+          echo "   - Pop!_OS"
+          echo "   - Elementary OS"

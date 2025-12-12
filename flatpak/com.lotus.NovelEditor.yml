@@ -172,7 +172,7 @@ modules:
     sources:
       - type: git
         url: https://github.com/jeasoncc/novel-editor.git
-        tag: v0.1.53
+        tag: v0.1.54
         commit: HEAD
     
     sdk-extensions:

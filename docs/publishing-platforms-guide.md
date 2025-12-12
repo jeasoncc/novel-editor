@@ -1,5 +1,38 @@
 # Novel Editor 发布平台指南
 
+## 🚀 快速发布命令
+
+使用 npm 脚本可以快速创建标签并触发自动发布：
+
+```bash
+# 跨平台发布
+npm run tag:desktop          # 桌面应用 (GitHub Releases - 所有平台)
+npm run tag:web              # Web 应用部署
+npm run tag:all              # 创建所有标签，触发全平台发布
+
+# Linux 平台发布
+npm run tag:linux:snap       # Snap Store
+npm run tag:linux:flatpak    # Flathub (Flatpak)
+npm run tag:linux:aur        # AUR 源码包
+npm run tag:linux:aur-bin    # AUR 二进制包
+npm run tag:linux:ppa        # Debian PPA (Ubuntu/Debian)
+npm run tag:linux:copr       # Fedora COPR (Fedora/RHEL)
+npm run tag:linux:obs        # openSUSE Build Service
+npm run tag:linux:gentoo     # Gentoo Overlay
+
+# Windows 平台发布
+npm run tag:windows:winget   # Winget (Windows 包管理器)
+npm run tag:windows:chocolatey # Chocolatey (Windows 包管理器)
+npm run tag:windows:scoop    # Scoop (Windows 轻量包管理器)
+
+# macOS 平台发布
+npm run tag:macos:homebrew   # Homebrew (macOS 包管理器)
+```
+
+详细说明请参考：
+- [平台特定发布指南](./platform-specific-publishing.md) - 按平台分类的详细指南
+- [Flatpak 和 Winget 发布指南](./flatpak-winget-publishing.md) - 特定平台详细说明
+
 ## 📋 发布状态跟踪
 
 ### ✅ 已发布平台
@@ -7,12 +40,20 @@
 - [x] AUR (Arch Linux)
 - [x] Snap Store
 - [x] Flathub (Flatpak)
+- [x] Winget (Windows 包管理器)
+- [x] Chocolatey (Windows 包管理器)
+- [x] Scoop (Windows 轻量包管理器)
+- [x] Homebrew (macOS 包管理器)
+- [x] Web 应用 (Vercel/Netlify/GitHub Pages)
+- [x] Debian PPA (Ubuntu/Debian/Mint)
+- [x] Fedora COPR (Fedora/RHEL/CentOS)
+- [x] openSUSE Build Service (openSUSE/SUSE)
+- [x] Gentoo Overlay (Gentoo Linux)
 
 ### 🚀 优先发布平台
 
 #### 高优先级 (1-2周内)
 - [ ] **Microsoft Store** - 你已有MSIX打包
-- [ ] **Winget** - Windows官方包管理器
 - [ ] **AppImage** - 跨Linux发行版
 - [ ] **Product Hunt** - 产品发现平台
 

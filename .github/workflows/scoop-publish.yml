@@ -1,0 +1,241 @@
+name: Publish to Scoop
+
+on:
+  push:
+    tags:
+      - 'scoop-v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g., 0.1.53)'
+        required: true
+        type: string
+
+jobs:
+  publish-scoop:
+    runs-on: windows-latest
+    if: startsWith(github.ref, 'refs/tags/scoop-v') || github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract version
+        id: version
+        shell: pwsh
+        run: |
+          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+            $version = "${{ github.event.inputs.version }}"
+          } else {
+            $version = "${{ github.ref }}" -replace "refs/tags/scoop-v", ""
+          }
+          echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+          Write-Output "📦 Creating Scoop manifest for version: $version"
+
+      - name: Verify release and get download info
+        id: release_info
+        shell: pwsh
+        run: |
+          $version = "${{ steps.version.outputs.VERSION }}"
+          $releaseUrl = "https://api.github.com/repos/${{ github.repository }}/releases/tags/desktop-v$version"
+          
+          try {
+            $response = Invoke-RestMethod -Uri $releaseUrl -Method Get
+            Write-Output "✅ Release desktop-v$version found"
+            
+            # 查找 NSIS 安装包
+            $nsisAsset = $response.assets | Where-Object { $_.name -like "*setup.exe" }
+            if (-not $nsisAsset) {
+              throw "NSIS installer not found in release"
+            }
+            
+            $downloadUrl = $nsisAsset.browser_download_url
+            $fileName = $nsisAsset.name
+            
+            Write-Output "✅ Found installer: $fileName"
+            Write-Output "   Download URL: $downloadUrl"
+            
+            # 下载文件计算哈希
+            Write-Output "📥 Downloading to calculate hash..."
+            Invoke-WebRequest -Uri $downloadUrl -OutFile $fileName
+            $hash = (Get-FileHash -Path $fileName -Algorithm SHA256).Hash
+            Remove-Item $fileName
+            
+            Write-Output "✅ SHA256: $hash"
+            
+            # 输出变量
+            echo "DOWNLOAD_URL=$downloadUrl" >> $env:GITHUB_OUTPUT
+            echo "FILE_NAME=$fileName" >> $env:GITHUB_OUTPUT
+            echo "HASH=$hash" >> $env:GITHUB_OUTPUT
+            
+          } catch {
+            Write-Error "❌ Release desktop-v$version not found or installer missing"
+            Write-Output ""
+            Write-Output "📋 To fix this:"
+            Write-Output "1. Create desktop release first: npm run tag:desktop"
+            Write-Output "2. Wait for build to complete"
+            Write-Output "3. Then retry Scoop publish"
+            exit 1
+          }
+
+      - name: Create Scoop manifest
+        shell: pwsh
+        run: |
+          $version = "${{ steps.version.outputs.VERSION }}"
+          $downloadUrl = "${{ steps.release_info.outputs.DOWNLOAD_URL }}"
+          $hash = "${{ steps.release_info.outputs.HASH }}"
+          
+          # 创建 Scoop manifest
+          $manifest = @{
+            version = $version
+            description = "A modern, powerful novel writing application for serious writers"
+            homepage = "https://github.com/${{ github.repository }}"
+            license = "MIT"
+            url = $downloadUrl
+            hash = $hash
+            installer = @{
+              script = @(
+                "Start-Process -FilePath `"`$dir\`$fname`" -ArgumentList '/S' -Wait"
+              )
+            }
+            uninstaller = @{
+              script = @(
+                "`$uninstall = Get-ItemProperty -Path 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*' | Where-Object { `$_.DisplayName -like '*novel-editor*' }",
+                "if (`$uninstall) {",
+                "    Start-Process -FilePath `$uninstall.UninstallString -ArgumentList '/S' -Wait",
+                "}"
+              )
+            }
+            checkver = @{
+              github = "https://github.com/${{ github.repository }}"
+              regex = "desktop-v([\\d.]+)"
+            }
+            autoupdate = @{
+              url = "https://github.com/${{ github.repository }}/releases/download/desktop-v`$version/novel-editor_`$version_x64-setup.exe"
+            }
+          }
+          
+          # 转换为 JSON
+          $manifestJson = $manifest | ConvertTo-Json -Depth 10
+          
+          # 创建目录并保存文件
+          New-Item -ItemType Directory -Force -Path "scoop-manifest" | Out-Null
+          Set-Content -Path "scoop-manifest/novel-editor.json" -Value $manifestJson -Encoding UTF8
+          
+          Write-Output "✅ Scoop manifest created"
+          Write-Output ""
+          Write-Output "📄 Manifest content:"
+          Get-Content "scoop-manifest/novel-editor.json"
+
+      - name: Test Scoop manifest
+        shell: pwsh
+        run: |
+          Write-Output "🧪 Testing Scoop manifest..."
+          
+          # 安装 Scoop（如果未安装）
+          if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
+            Write-Output "Installing Scoop..."
+            Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+            irm get.scoop.sh | iex
+          }
+          
+          # 验证 manifest 格式
+          $manifestPath = "scoop-manifest/novel-editor.json"
+          try {
+            $manifest = Get-Content $manifestPath | ConvertFrom-Json
+            Write-Output "✅ Manifest JSON is valid"
+            
+            # 检查必需字段
+            $requiredFields = @('version', 'description', 'url', 'hash')
+            foreach ($field in $requiredFields) {
+              if (-not $manifest.$field) {
+                throw "Missing required field: $field"
+              }
+            }
+            
+            Write-Output "✅ All required fields present"
+            
+          } catch {
+            Write-Error "❌ Manifest validation failed: $_"
+            exit 1
+          }
+
+      - name: Fork and update Scoop bucket
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          Write-Output "🍴 Preparing Scoop bucket update..."
+          
+          # 配置 git
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          $version = "${{ steps.version.outputs.VERSION }}"
+          
+          try {
+            # 克隆 scoop-extras bucket（这是社区维护的主要 bucket）
+            Write-Output "📥 Cloning scoop-extras bucket..."
+            git clone https://github.com/ScoopInstaller/Extras.git scoop-extras
+            cd scoop-extras
+            
+            # 创建新分支
+            $branchName = "novel-editor-$version"
+            git checkout -b $branchName
+            
+            # 复制 manifest
+            Copy-Item "../scoop-manifest/novel-editor.json" "bucket/"
+            
+            # 提交更改
+            git add bucket/novel-editor.json
+            git commit -m "novel-editor: Update to version $version"
+            
+            Write-Output "✅ Prepared update for scoop-extras bucket"
+            Write-Output ""
+            Write-Output "📋 Next steps (manual):"
+            Write-Output "1. Fork https://github.com/ScoopInstaller/Extras"
+            Write-Output "2. Add the manifest file to bucket/ directory"
+            Write-Output "3. Create PR with title: 'novel-editor: Add version $version'"
+            Write-Output ""
+            Write-Output "📄 Manifest file ready in artifacts"
+            
+          } catch {
+            Write-Warning "⚠ Automatic PR creation failed: $_"
+            Write-Output ""
+            Write-Output "📋 Manual submission steps:"
+            Write-Output "1. Download the manifest from artifacts"
+            Write-Output "2. Fork https://github.com/ScoopInstaller/Extras"
+            Write-Output "3. Add novel-editor.json to bucket/ directory"
+            Write-Output "4. Create PR to upstream repository"
+          }
+
+      - name: Upload Scoop manifest artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: scoop-manifest
+          path: "scoop-manifest/novel-editor.json"
+          retention-days: 30
+
+      - name: Create success summary
+        shell: pwsh
+        run: |
+          $version = "${{ steps.version.outputs.VERSION }}"
+          Write-Output ""
+          Write-Output "🎉 Scoop Manifest Summary"
+          Write-Output "=========================="
+          Write-Output "✅ Version: $version"
+          Write-Output "✅ Manifest: novel-editor.json"
+          Write-Output "✅ Hash verified"
+          Write-Output ""
+          Write-Output "📦 Installation command (after approval):"
+          Write-Output "   scoop install extras/novel-editor"
+          Write-Output ""
+          Write-Output "🔗 Bucket repository:"
+          Write-Output "   https://github.com/ScoopInstaller/Extras"
+          Write-Output ""
+          Write-Output "📋 Manual submission:"
+          Write-Output "1. Download manifest from artifacts"
+          Write-Output "2. Fork ScoopInstaller/Extras"
+          Write-Output "3. Add to bucket/ directory"
+          Write-Output "4. Create PR"

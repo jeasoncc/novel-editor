@@ -1,0 +1,309 @@
+name: Publish to Chocolatey
+
+on:
+  push:
+    tags:
+      - 'chocolatey-v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g., 0.1.53)'
+        required: true
+        type: string
+
+jobs:
+  publish-chocolatey:
+    runs-on: windows-latest
+    if: startsWith(github.ref, 'refs/tags/chocolatey-v') || github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract version
+        id: version
+        shell: pwsh
+        run: |
+          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+            $version = "${{ github.event.inputs.version }}"
+          } else {
+            $version = "${{ github.ref }}" -replace "refs/tags/chocolatey-v", ""
+          }
+          echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+          Write-Output "📦 Publishing Chocolatey package for version: $version"
+
+      - name: Verify release exists
+        shell: pwsh
+        run: |
+          $version = "${{ steps.version.outputs.VERSION }}"
+          $releaseUrl = "https://api.github.com/repos/${{ github.repository }}/releases/tags/desktop-v$version"
+          
+          try {
+            $response = Invoke-RestMethod -Uri $releaseUrl -Method Get
+            Write-Output "✅ Release desktop-v$version found"
+            
+            # 检查 NSIS 安装包是否存在
+            $nsisAsset = $response.assets | Where-Object { $_.name -like "*setup.exe" }
+            if (-not $nsisAsset) {
+              throw "NSIS installer not found in release"
+            }
+            
+            $downloadUrl = $nsisAsset.browser_download_url
+            $fileName = $nsisAsset.name
+            $fileSize = $nsisAsset.size
+            
+            Write-Output "✅ Found NSIS installer: $fileName"
+            Write-Output "   Download URL: $downloadUrl"
+            Write-Output "   File Size: $([math]::Round($fileSize / 1MB, 2)) MB"
+            
+            # 保存信息供后续步骤使用
+            echo "DOWNLOAD_URL=$downloadUrl" >> $env:GITHUB_OUTPUT
+            echo "FILE_NAME=$fileName" >> $env:GITHUB_OUTPUT
+            echo "FILE_SIZE=$fileSize" >> $env:GITHUB_OUTPUT
+            
+          } catch {
+            Write-Error "❌ Release desktop-v$version not found or NSIS installer missing"
+            Write-Output ""
+            Write-Output "📋 To fix this:"
+            Write-Output "1. Create desktop release first: npm run tag:desktop"
+            Write-Output "2. Wait for build to complete"
+            Write-Output "3. Then retry Chocolatey publish"
+            exit 1
+          }
+
+      - name: Create Chocolatey package
+        shell: pwsh
+        run: |
+          $version = "${{ steps.version.outputs.VERSION }}"
+          $downloadUrl = "${{ steps.version.outputs.DOWNLOAD_URL }}"
+          $fileName = "${{ steps.version.outputs.FILE_NAME }}"
+          
+          # 创建包目录
+          $packageDir = "chocolatey-package"
+          New-Item -ItemType Directory -Force -Path $packageDir | Out-Null
+          New-Item -ItemType Directory -Force -Path "$packageDir/tools" | Out-Null
+          
+          # 下载安装包以计算校验和
+          Write-Output "📥 Downloading installer to calculate checksum..."
+          Invoke-WebRequest -Uri $downloadUrl -OutFile $fileName
+          $checksum = (Get-FileHash -Path $fileName -Algorithm SHA256).Hash
+          Remove-Item $fileName
+          
+          Write-Output "✅ SHA256 Checksum: $checksum"
+          
+          # 创建 nuspec 文件
+          $nuspec = @"
+          <?xml version="1.0" encoding="utf-8"?>
+          <package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+            <metadata>
+              <id>novel-editor</id>
+              <version>$version</version>
+              <packageSourceUrl>https://github.com/${{ github.repository }}</packageSourceUrl>
+              <owners>Jeason</owners>
+              <title>Novel Editor</title>
+              <authors>Jeason</authors>
+              <projectUrl>https://github.com/${{ github.repository }}</projectUrl>
+              <iconUrl>https://raw.githubusercontent.com/${{ github.repository }}/main/apps/desktop/src-tauri/icons/128x128.png</iconUrl>
+              <copyright>2024 Jeason</copyright>
+              <licenseUrl>https://github.com/${{ github.repository }}/blob/main/LICENSE</licenseUrl>
+              <requireLicenseAcceptance>false</requireLicenseAcceptance>
+              <projectSourceUrl>https://github.com/${{ github.repository }}</projectSourceUrl>
+              <docsUrl>https://github.com/${{ github.repository }}/blob/main/README.md</docsUrl>
+              <bugTrackerUrl>https://github.com/${{ github.repository }}/issues</bugTrackerUrl>
+              <tags>novel editor writing tool desktop tauri rust</tags>
+              <summary>A modern, powerful novel writing application for serious writers</summary>
+              <description>
+          Novel Editor is a professional writing tool designed specifically for novelists and long-form fiction writers. Built with modern technologies, it provides a distraction-free writing environment with powerful organizational features.
+          
+          Features:
+          * Rich text editing with Lexical editor
+          * Chapter and scene organization
+          * Character and world-building tools
+          * Export to multiple formats (DOCX, PDF, etc.)
+          * Dark/light theme support
+          * Offline-first with local storage
+          * Cross-platform compatibility
+              </description>
+              <releaseNotes>https://github.com/${{ github.repository }}/releases/tag/desktop-v$version</releaseNotes>
+            </metadata>
+            <files>
+              <file src="tools\**" target="tools" />
+            </files>
+          </package>
+          "@
+          
+          Set-Content -Path "$packageDir/novel-editor.nuspec" -Value $nuspec -Encoding UTF8
+          
+          # 创建安装脚本
+          $installScript = @"
+          `$ErrorActionPreference = 'Stop'
+          
+          `$packageName = 'novel-editor'
+          `$toolsDir = "`$(Split-Path -parent `$MyInvocation.MyCommand.Definition)"
+          `$url = '$downloadUrl'
+          `$checksum = '$checksum'
+          `$checksumType = 'sha256'
+          
+          `$packageArgs = @{
+            packageName   = `$packageName
+            unzipLocation = `$toolsDir
+            fileType      = 'exe'
+            url           = `$url
+            checksum      = `$checksum
+            checksumType  = `$checksumType
+            silentArgs    = '/S'
+            validExitCodes= @(0)
+          }
+          
+          Install-ChocolateyPackage @packageArgs
+          "@
+          
+          Set-Content -Path "$packageDir/tools/chocolateyinstall.ps1" -Value $installScript -Encoding UTF8
+          
+          # 创建卸载脚本
+          $uninstallScript = @"
+          `$ErrorActionPreference = 'Stop'
+          
+          `$packageName = 'novel-editor'
+          `$softwareName = 'novel-editor*'
+          `$installerType = 'exe'
+          `$silentArgs = '/S'
+          `$validExitCodes = @(0)
+          
+          [array]`$key = Get-UninstallRegistryKey -SoftwareName `$softwareName
+          
+          if (`$key.Count -eq 1) {
+            `$key | % { 
+              `$packageArgs = @{
+                packageName = `$packageName
+                fileType    = `$installerType
+                silentArgs  = `$silentArgs
+                validExitCodes = `$validExitCodes
+                file        = "`$(`$_.UninstallString)"
+              }
+              
+              Uninstall-ChocolateyPackage @packageArgs
+            }
+          } elseif (`$key.Count -eq 0) {
+            Write-Warning "`$packageName has already been uninstalled by other means."
+          } elseif (`$key.Count -gt 1) {
+            Write-Warning "`$key.Count matches found!"
+            Write-Warning "To prevent accidental data loss, no programs will be uninstalled."
+            Write-Warning "Please alert package maintainer the following keys were matched:"
+            `$key | % {Write-Warning "- `$_.DisplayName"}
+          }
+          "@
+          
+          Set-Content -Path "$packageDir/tools/chocolateyuninstall.ps1" -Value $uninstallScript -Encoding UTF8
+          
+          Write-Output "✅ Chocolatey package created"
+
+      - name: Install Chocolatey CLI
+        shell: pwsh
+        run: |
+          if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
+            Write-Output "Installing Chocolatey..."
+            Set-ExecutionPolicy Bypass -Scope Process -Force
+            [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+            iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+          }
+          
+          Write-Output "Chocolatey version:"
+          choco --version
+
+      - name: Pack Chocolatey package
+        shell: pwsh
+        run: |
+          cd chocolatey-package
+          choco pack novel-editor.nuspec
+          
+          $version = "${{ steps.version.outputs.VERSION }}"
+          $packageFile = "novel-editor.$version.nupkg"
+          
+          if (Test-Path $packageFile) {
+            Write-Output "✅ Package created: $packageFile"
+            $fileInfo = Get-Item $packageFile
+            Write-Output "   Size: $([math]::Round($fileInfo.Length / 1KB, 2)) KB"
+          } else {
+            Write-Error "❌ Package creation failed"
+            exit 1
+          }
+
+      - name: Test Chocolatey package
+        shell: pwsh
+        run: |
+          Write-Output "🧪 Testing Chocolatey package..."
+          cd chocolatey-package
+          
+          $version = "${{ steps.version.outputs.VERSION }}"
+          $packageFile = "novel-editor.$version.nupkg"
+          
+          # 测试包结构
+          choco info $packageFile
+          
+          Write-Output "✅ Package test completed"
+
+      - name: Publish to Chocolatey Community Repository
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        shell: pwsh
+        env:
+          CHOCOLATEY_API_KEY: ${{ secrets.CHOCOLATEY_API_KEY }}
+        run: |
+          $version = "${{ steps.version.outputs.VERSION }}"
+          $packageFile = "chocolatey-package/novel-editor.$version.nupkg"
+          
+          if ([string]::IsNullOrEmpty($env:CHOCOLATEY_API_KEY)) {
+            Write-Warning "⚠ CHOCOLATEY_API_KEY not set, skipping publish"
+            Write-Output ""
+            Write-Output "📋 To publish to Chocolatey:"
+            Write-Output "1. Get API key from https://community.chocolatey.org/account"
+            Write-Output "2. Add CHOCOLATEY_API_KEY to repository secrets"
+            Write-Output "3. Re-run this workflow"
+            Write-Output ""
+            Write-Output "📦 Package ready for manual upload:"
+            Write-Output "   File: $packageFile"
+            exit 0
+          }
+          
+          Write-Output "📤 Publishing to Chocolatey Community Repository..."
+          
+          try {
+            choco push $packageFile --source https://push.chocolatey.org/ --api-key $env:CHOCOLATEY_API_KEY
+            Write-Output "✅ Successfully published to Chocolatey!"
+            Write-Output ""
+            Write-Output "🎉 Package will be available at:"
+            Write-Output "   https://community.chocolatey.org/packages/novel-editor/$version"
+            Write-Output ""
+            Write-Output "📥 Users can install with:"
+            Write-Output "   choco install novel-editor"
+          } catch {
+            Write-Error "❌ Failed to publish to Chocolatey: $_"
+            Write-Output ""
+            Write-Output "📋 Manual publish steps:"
+            Write-Output "1. Download the artifact: $packageFile"
+            Write-Output "2. Upload manually at: https://community.chocolatey.org/packages/upload"
+            exit 1
+          }
+
+      - name: Upload Chocolatey package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: chocolatey-package
+          path: "chocolatey-package/*.nupkg"
+          retention-days: 30
+
+      - name: Create success summary
+        run: |
+          $version = "${{ steps.version.outputs.VERSION }}"
+          Write-Output ""
+          Write-Output "🎉 Chocolatey Package Summary"
+          Write-Output "================================"
+          Write-Output "✅ Version: $version"
+          Write-Output "✅ Package: novel-editor.$version.nupkg"
+          Write-Output "✅ Checksum verified"
+          Write-Output ""
+          Write-Output "📦 Installation command:"
+          Write-Output "   choco install novel-editor"
+          Write-Output ""
+          Write-Output "🔗 Package URL (after approval):"
+          Write-Output "   https://community.chocolatey.org/packages/novel-editor"

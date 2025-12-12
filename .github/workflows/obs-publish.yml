@@ -1,0 +1,295 @@
+name: Publish to openSUSE Build Service
+
+on:
+  push:
+    tags:
+      - 'obs-v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g., 0.1.53)'
+        required: true
+        type: string
+
+jobs:
+  publish-obs:
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/obs-v') || github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/obs-v}
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Creating OBS package for version: $VERSION"
+
+      - name: Install OBS tools
+        run: |
+          # 添加 OBS 仓库
+          echo 'deb http://download.opensuse.org/repositories/openSUSE:/Tools/xUbuntu_22.04/ /' | sudo tee /etc/apt/sources.list.d/opensuse-tools.list
+          curl -fsSL https://download.opensuse.org/repositories/openSUSE:Tools/xUbuntu_22.04/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/opensuse-tools.gpg > /dev/null
+          
+          sudo apt-get update
+          sudo apt-get install -y osc
+
+      - name: Setup OBS configuration
+        env:
+          OBS_CONFIG: ${{ secrets.OBS_CONFIG }}
+        run: |
+          if [ -z "$OBS_CONFIG" ]; then
+            echo "⚠ OBS_CONFIG not set, creating example config"
+            
+            mkdir -p ~/.config/osc
+            cat > ~/.config/osc/oscrc << EOF
+          [general]
+          apiurl = https://api.opensuse.org
+          
+          [https://api.opensuse.org]
+          user = your-obs-username
+          pass = your-obs-password
+          EOF
+            
+            echo "📋 OBS configuration example created"
+            echo "To use OBS, add OBS_CONFIG secret with your ~/.config/osc/oscrc content"
+          else
+            mkdir -p ~/.config/osc
+            echo "$OBS_CONFIG" > ~/.config/osc/oscrc
+            echo "✅ OBS configuration loaded"
+          fi
+
+      - name: Verify release exists
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          RELEASE_URL="https://api.github.com/repos/${{ github.repository }}/releases/tags/desktop-v$VERSION"
+          
+          echo "🔍 Checking release desktop-v$VERSION"
+          
+          RESPONSE=$(curl -s "$RELEASE_URL")
+          if echo "$RESPONSE" | jq -e '.message == "Not Found"' > /dev/null; then
+            echo "❌ Release desktop-v$VERSION not found"
+            echo ""
+            echo "📋 To fix this:"
+            echo "1. Create desktop release first: npm run tag:desktop"
+            echo "2. Wait for build to complete"
+            echo "3. Then retry OBS publish"
+            exit 1
+          fi
+          
+          echo "✅ Release found"
+
+      - name: Create OBS package structure
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          
+          # 创建包目录
+          mkdir -p obs-package
+          cd obs-package
+          
+          # 创建 spec 文件
+          cat > novel-editor.spec << EOF
+          #
+          # spec file for package novel-editor
+          #
+          # Copyright (c) 2024 Jeason
+          #
+          
+          Name:           novel-editor
+          Version:        $VERSION
+          Release:        1
+          Summary:        A modern, powerful novel writing application
+          License:        MIT
+          Group:          Productivity/Text/Editors
+          URL:            https://github.com/${{ github.repository }}
+          Source0:        https://github.com/${{ github.repository }}/archive/refs/tags/desktop-v%{version}.tar.gz
+          BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+          
+          # Build dependencies
+          BuildRequires:  cargo
+          BuildRequires:  rust
+          BuildRequires:  nodejs
+          BuildRequires:  npm
+          BuildRequires:  webkit2gtk3-devel
+          BuildRequires:  gtk3-devel
+          BuildRequires:  libappindicator3-devel
+          BuildRequires:  librsvg2-devel
+          
+          # Runtime dependencies
+          Requires:       webkit2gtk3
+          Requires:       gtk3
+          
+          %description
+          Novel Editor is a professional writing tool designed specifically for
+          novelists and long-form fiction writers. Built with modern technologies,
+          it provides a distraction-free writing environment with powerful
+          organizational features.
+          
+          Features include:
+          - Rich text editing with Lexical editor
+          - Chapter and scene organization
+          - Character and world-building tools
+          - Export to multiple formats (DOCX, PDF, etc.)
+          - Dark/light theme support
+          - Offline-first with local storage
+          - Cross-platform compatibility
+          
+          %prep
+          %setup -q -n novel-editor-desktop-v%{version}
+          
+          %build
+          # Install Bun
+          curl -fsSL https://bun.sh/install | bash
+          export PATH="\$HOME/.bun/bin:\$PATH"
+          
+          # Install dependencies
+          bun install
+          
+          # Build the application
+          cd apps/desktop
+          bun install
+          bun run tauri build
+          
+          %install
+          cd apps/desktop/src-tauri/target/release
+          
+          # Install binary
+          install -D -m 755 novel-editor %{buildroot}%{_bindir}/novel-editor
+          
+          # Install desktop file
+          install -D -m 644 bundle/deb/novel-editor_*_amd64/data/usr/share/applications/novel-editor.desktop \\
+              %{buildroot}%{_datadir}/applications/novel-editor.desktop
+          
+          # Install icons
+          for size in 32 128 256; do
+              install -D -m 644 ../icons/\${size}x\${size}.png \\
+                  %{buildroot}%{_datadir}/icons/hicolor/\${size}x\${size}/apps/novel-editor.png
+          done
+          
+          %files
+          %defattr(-,root,root,-)
+          %{_bindir}/novel-editor
+          %{_datadir}/applications/novel-editor.desktop
+          %{_datadir}/icons/hicolor/*/apps/novel-editor.png
+          
+          %changelog
+          * $(date +'%a %b %d %Y') Jeason <xiaomiquan@aliyun.com> - $VERSION-1
+          - Update to version $VERSION
+          - See https://github.com/${{ github.repository }}/releases/tag/desktop-v$VERSION
+          EOF
+          
+          # 创建 _service 文件（用于自动获取源码）
+          cat > _service << EOF
+          <services>
+            <service name="obs_scm">
+              <param name="url">https://github.com/${{ github.repository }}.git</param>
+              <param name="scm">git</param>
+              <param name="revision">desktop-v$VERSION</param>
+            </service>
+            <service name="tar" mode="buildtime"/>
+            <service name="recompress" mode="buildtime">
+              <param name="file">*.tar</param>
+              <param name="compression">gz</param>
+            </service>
+          </services>
+          EOF
+          
+          echo "✅ OBS package structure created"
+
+      - name: Test spec file
+        run: |
+          cd obs-package
+          
+          # 基本语法检查
+          echo "🧪 Testing spec file syntax..."
+          
+          # 检查必需的字段
+          for field in Name Version Release Summary License; do
+            if ! grep -q "^$field:" novel-editor.spec; then
+              echo "❌ Missing required field: $field"
+              exit 1
+            fi
+          done
+          
+          echo "✅ Spec file validation passed"
+
+      - name: Submit to OBS
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        env:
+          OBS_PROJECT: ${{ secrets.OBS_PROJECT }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          
+          if [ -z "$OBS_PROJECT" ]; then
+            echo "⚠ OBS_PROJECT not set, skipping submission"
+            echo ""
+            echo "📋 To submit to OBS:"
+            echo "1. Create openSUSE Build Service account"
+            echo "2. Create a project (e.g., home:username:novel-editor)"
+            echo "3. Add OBS_CONFIG secret with ~/.config/osc/oscrc content"
+            echo "4. Add OBS_PROJECT secret (format: home:username:novel-editor)"
+            echo "5. Re-run this workflow"
+            echo ""
+            echo "📦 Files ready for manual submission:"
+            ls -la obs-package/
+            exit 0
+          fi
+          
+          echo "📤 Submitting to OBS project: $OBS_PROJECT"
+          
+          # 检出项目
+          osc co "$OBS_PROJECT" || osc mkpac "$OBS_PROJECT" novel-editor
+          
+          # 复制文件
+          cp obs-package/* "$OBS_PROJECT/novel-editor/"
+          
+          cd "$OBS_PROJECT/novel-editor"
+          
+          # 添加文件
+          osc add *
+          
+          # 提交
+          osc ci -m "Update novel-editor to version $VERSION"
+          
+          echo "✅ Successfully submitted to OBS!"
+          echo ""
+          echo "🎉 Package will be available at:"
+          echo "   https://build.opensuse.org/package/show/$OBS_PROJECT/novel-editor"
+          echo ""
+          echo "📥 Users can install with:"
+          echo "   # Add repository"
+          echo "   sudo zypper ar https://download.opensuse.org/repositories/$OBS_PROJECT/openSUSE_Tumbleweed/ novel-editor"
+          echo "   sudo zypper refresh"
+          echo "   sudo zypper install novel-editor"
+
+      - name: Upload OBS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: obs-package
+          path: "obs-package/*"
+          retention-days: 30
+
+      - name: Create success summary
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          echo ""
+          echo "🎉 OBS Package Summary"
+          echo "======================"
+          echo "✅ Version: $VERSION"
+          echo "✅ Spec file created"
+          echo "✅ Service file created"
+          echo ""
+          echo "📦 Installation commands:"
+          echo "   sudo zypper ar <repo-url> novel-editor"
+          echo "   sudo zypper install novel-editor"
+          echo ""
+          echo "🔗 Supported distributions:"
+          echo "   - openSUSE Tumbleweed"
+          echo "   - openSUSE Leap"
+          echo "   - SUSE Linux Enterprise"

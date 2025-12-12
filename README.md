@@ -171,6 +171,36 @@ npm run web:dev              # Start web app only
 # Building
 npm run build                 # Build all apps
 npm run build:prod:desktop   # Build desktop app for production
+
+# Publishing (Create tags to trigger releases)
+
+# Cross-platform
+npm run tag:desktop          # Release desktop app to GitHub (all platforms)
+npm run tag:web              # Deploy web app
+npm run tag:all              # Release to all platforms
+
+# Linux platforms
+npm run tag:linux:snap       # Release to Snap Store
+npm run tag:linux:flatpak    # Release to Flathub
+npm run tag:linux:aur        # Release to AUR (source)
+npm run tag:linux:aur-bin    # Release to AUR (binary)
+npm run tag:linux:ppa        # Release to Debian PPA
+npm run tag:linux:copr       # Release to Fedora COPR
+npm run tag:linux:obs        # Release to openSUSE OBS
+npm run tag:linux:gentoo     # Release to Gentoo Overlay
+
+# Windows platforms
+npm run tag:windows:winget   # Release to Winget
+npm run tag:windows:chocolatey # Release to Chocolatey
+npm run tag:windows:scoop    # Release to Scoop
+
+# macOS platforms
+npm run tag:macos:homebrew   # Release to Homebrew
+
+# Platform group releases
+npm run tag:linux:all        # Release to all Linux platforms
+npm run tag:windows:all      # Release to all Windows platforms
+npm run tag:macos:all        # Release to all macOS platforms
 ```
 
 ### Icon Management
