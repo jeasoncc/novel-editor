@@ -149,7 +149,41 @@ Novel Editor is a **Monorepo** project containing:
 
 If you find Novel Editor useful, please consider giving it a star! ⭐
 
-## � Liceanse
+## 🛠️ Development
+
+### Quick Commands
+
+```bash
+# Update application icons across all platforms
+npm run icons:update
+
+# Generate Tauri icons only
+npm run icons:generate
+
+# Bump version number automatically
+npm run version:bump
+
+# Development
+npm run dev                    # Start all apps in development mode
+npm run desktop:dev           # Start desktop app only
+npm run web:dev              # Start web app only
+
+# Building
+npm run build                 # Build all apps
+npm run build:prod:desktop   # Build desktop app for production
+```
+
+### Icon Management
+
+To update the application icon:
+
+1. Place your new icon file at `apps/desktop/src-tauri/icons/my-new-icon.jpg`
+2. Run `npm run icons:update` to generate all platform-specific icons
+3. Commit the changes and create a new release
+
+For more details, see [Icon Configuration Guide](./docs/icon-configuration.md).
+
+## 📄 License
 
 This project is licensed under the [MIT License](./LICENSE).
 

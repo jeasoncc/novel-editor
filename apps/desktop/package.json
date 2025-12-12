@@ -1,7 +1,7 @@
 {
   "name": "desktop",
   "private": true,
-  "version": "0.1.47",
+  "version": "0.1.48",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -13,7 +13,9 @@
     "format": "biome format --write",
     "lint": "biome lint",
     "check": "biome check --write",
-    "diff": "git diff --staged > diff.txt"
+    "diff": "git diff --staged > diff.txt",
+    "icon:generate": "tauri icon src-tauri/icons/my-new-icon.jpg",
+    "icon:update": "bash ../../scripts/update-icons.sh"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

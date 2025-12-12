@@ -35,15 +35,24 @@ jobs:
         uses: snapcore/action-build@v1
         id: build
       
-      - name: Determine channel
-        id: channel
+      - name: Extract version and determine channel
+        id: version_channel
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "channel=${{ github.event.inputs.channel }}" >> $GITHUB_OUTPUT
+            # 从 package.json 读取版本号
+            VERSION=$(grep -o '"version":\s*"[^"]*"' package.json | sed 's/.*"version":\s*"\([^"]*\)".*/\1/')
           else
-            # Tag 推送默认发布到 edge
+            # 从 tag 提取版本号 (snap-v0.1.47 -> 0.1.47)
+            VERSION=${GITHUB_REF#refs/tags/snap-v}
             echo "channel=edge" >> $GITHUB_OUTPUT
           fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Version: $VERSION"
+          
+          # 更新 snapcraft.yaml 中的版本号
+          sed -i "s/^version: .*/version: '$VERSION'/" snap/snapcraft.yaml
+          echo "✅ Updated snapcraft.yaml version to $VERSION"
       
       - name: Publish to Snap Store
         uses: snapcore/action-publish@v1
@@ -65,7 +74,8 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const channel = '${{ steps.channel.outputs.channel }}';
+            const channel = '${{ steps.version_channel.outputs.channel }}';
+            const version = '${{ steps.version_channel.outputs.version }}';
             const tag = context.ref.replace('refs/tags/', '');
             
             try {
@@ -76,7 +86,7 @@ jobs:
                 body: `🎉 **Snap 发布成功！**
             
             **频道：** ${channel}
-            **版本：** ${tag}
+            **版本：** ${version}
             
             **安装命令：**
             \`\`\`bash

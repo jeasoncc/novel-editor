@@ -107,20 +107,20 @@ jobs:
       
       - name: Check AUR credentials
         run: |
-          if [ -z "${{ secrets.AUR_BIN_USERNAME }}" ] || [ -z "${{ secrets.AUR_BIN_EMAIL }}" ] || [ -z "${{ secrets.AUR_BIN_SSH_PRIVATE_KEY }}" ]; then
-            echo "❌ Missing AUR binary package credentials. Please set AUR_BIN_USERNAME, AUR_BIN_EMAIL, and AUR_BIN_SSH_PRIVATE_KEY secrets."
+          if [ -z "${{ secrets.AUR_USERNAME }}" ] || [ -z "${{ secrets.AUR_EMAIL }}" ] || [ -z "${{ secrets.AUR_SSH_PRIVATE_KEY }}" ]; then
+            echo "❌ Missing AUR credentials. Please set AUR_USERNAME, AUR_EMAIL, and AUR_SSH_PRIVATE_KEY secrets."
             exit 1
           fi
-          echo "✅ AUR binary package credentials found"
+          echo "✅ AUR credentials found"
       
       - name: Publish to AUR (Binary Package)
         uses: KSXGitHub/github-actions-deploy-aur@v2.7.2
         with:
           pkgname: novel-editor-bin
           pkgbuild: aur/PKGBUILD-bin
-          commit_username: ${{ secrets.AUR_BIN_USERNAME }}
-          commit_email: ${{ secrets.AUR_BIN_EMAIL }}
-          ssh_private_key: ${{ secrets.AUR_BIN_SSH_PRIVATE_KEY }}
+          commit_username: ${{ secrets.AUR_USERNAME }}
+          commit_email: ${{ secrets.AUR_EMAIL }}
+          ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
           commit_message: "Update novel-editor-bin to version ${{ steps.version.outputs.version }}"
           ssh_keyscan_types: rsa,ecdsa,ed25519
           force_push: true

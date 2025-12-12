@@ -1,0 +1,191 @@
+name: Publish to Winget
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g., 0.1.45)'
+        required: true
+        type: string
+
+jobs:
+  winget-publish:
+    runs-on: windows-latest
+    if: startsWith(github.event.release.tag_name, 'desktop-v') || github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set version
+        id: version
+        run: |
+          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+            $version = "${{ github.event.inputs.version }}"
+          } else {
+            $version = "${{ github.event.release.tag_name }}" -replace "desktop-v", ""
+          }
+          echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+          echo "Version: $version"
+
+      - name: Download MSI installer
+        run: |
+          $version = "${{ steps.version.outputs.VERSION }}"
+          $url = "https://github.com/${{ github.repository }}/releases/download/desktop-v$version/novel-editor_${version}_x64_zh-CN.msi"
+          $output = "novel-editor_${version}_x64_zh-CN.msi"
+          
+          Write-Host "Downloading from: $url"
+          try {
+            Invoke-WebRequest -Uri $url -OutFile $output -ErrorAction Stop
+            Write-Host "Downloaded successfully: $output"
+            
+            # 验证文件存在且大小合理
+            $fileInfo = Get-Item $output
+            Write-Host "File size: $($fileInfo.Length) bytes"
+            
+            if ($fileInfo.Length -lt 1MB) {
+              throw "Downloaded file is too small, likely not a valid MSI"
+            }
+          } catch {
+            Write-Error "Failed to download MSI: $_"
+            exit 1
+          }
+
+      - name: Calculate SHA256
+        id: sha256
+        run: |
+          $version = "${{ steps.version.outputs.VERSION }}"
+          $file = "novel-editor_${version}_x64_zh-CN.msi"
+          
+          if (Test-Path $file) {
+            $hash = (Get-FileHash -Path $file -Algorithm SHA256).Hash
+            echo "SHA256=$hash" >> $env:GITHUB_OUTPUT
+            Write-Host "SHA256: $hash"
+          } else {
+            Write-Error "MSI file not found: $file"
+            exit 1
+          }
+
+      - name: Update Winget manifests
+        run: |
+          $version = "${{ steps.version.outputs.VERSION }}"
+          $sha256 = "${{ steps.sha256.outputs.SHA256 }}"
+          $url = "https://github.com/${{ github.repository }}/releases/download/desktop-v$version/novel-editor_${version}_x64_zh-CN.msi"
+          
+          # 更新版本文件
+          $versionContent = @"
+# yaml-language-server: `$schema=https://aka.ms/winget-manifest.version.1.5.0.schema.json
+
+PackageIdentifier: Jeason.NovelEditor
+PackageVersion: $version
+DefaultLocale: zh-CN
+ManifestType: version
+ManifestVersion: 1.5.0
+"@
+          
+          # 更新安装器文件
+          $installerContent = @"
+# yaml-language-server: `$schema=https://aka.ms/winget-manifest.installer.1.5.0.schema.json
+
+PackageIdentifier: Jeason.NovelEditor
+PackageVersion: $version
+Platform:
+- Windows.Desktop
+MinimumOSVersion: 10.0.0.0
+InstallerType: wix
+Scope: machine
+InstallModes:
+- interactive
+- silent
+- silentWithProgress
+UpgradeBehavior: install
+Installers:
+- Architecture: x64
+  InstallerUrl: $url
+  InstallerSha256: $sha256
+ManifestType: installer
+ManifestVersion: 1.5.0
+"@
+          
+          # 写入文件
+          $versionContent | Out-File -FilePath "winget-manifests/Jeason.NovelEditor.yaml" -Encoding UTF8
+          $installerContent | Out-File -FilePath "winget-manifests/Jeason.NovelEditor.installer.yaml" -Encoding UTF8
+          
+          Write-Host "Updated manifest files for version $version"
+
+      - name: Install winget-create
+        run: |
+          # 下载并安装 winget-create
+          $url = "https://github.com/microsoft/winget-create/releases/latest/download/wingetcreate.exe"
+          Invoke-WebRequest -Uri $url -OutFile "wingetcreate.exe"
+          Write-Host "Downloaded winget-create"
+
+      - name: Submit to Winget Community Repository
+        env:
+          GITHUB_TOKEN: ${{ secrets.WINGET_GITHUB_TOKEN }}
+        run: |
+          $version = "${{ steps.version.outputs.VERSION }}"
+          
+          # 配置git
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          try {
+            # 使用winget-create提交到winget-pkgs仓库
+            ./wingetcreate.exe submit `
+              --id "Jeason.NovelEditor" `
+              --version "$version" `
+              --urls "https://github.com/${{ github.repository }}/releases/download/desktop-v$version/novel-editor_${version}_x64_zh-CN.msi" `
+              --token "$env:GITHUB_TOKEN" `
+              --submit
+              
+            Write-Host "Successfully submitted to winget-pkgs repository"
+          } catch {
+            Write-Warning "Failed to auto-submit to winget-pkgs: $_"
+            Write-Host "You may need to manually create a PR to microsoft/winget-pkgs"
+            
+            # 输出手动提交的信息
+            Write-Host ""
+            Write-Host "=== Manual Submission Info ==="
+            Write-Host "Package ID: Jeason.NovelEditor"
+            Write-Host "Version: $version"
+            Write-Host "Installer URL: https://github.com/${{ github.repository }}/releases/download/desktop-v$version/novel-editor_${version}_x64_zh-CN.msi"
+            Write-Host "SHA256: ${{ steps.sha256.outputs.SHA256 }}"
+            Write-Host "=============================="
+          }
+
+      - name: Commit updated manifests
+        run: |
+          $version = "${{ steps.version.outputs.VERSION }}"
+          
+          git add winget-manifests/
+          
+          if (git diff --staged --quiet) {
+            Write-Host "No changes to commit"
+          } else {
+            git commit -m "chore(winget): update manifests to version $version"
+            git push
+            Write-Host "Committed and pushed updated manifests"
+          }
+
+      - name: Create summary
+        run: |
+          $version = "${{ steps.version.outputs.VERSION }}"
+          
+          Write-Host ""
+          Write-Host "🎉 Winget Publication Summary"
+          Write-Host "================================"
+          Write-Host "✅ Version: $version"
+          Write-Host "✅ Manifests updated"
+          Write-Host "✅ SHA256 calculated: ${{ steps.sha256.outputs.SHA256 }}"
+          Write-Host ""
+          Write-Host "📋 Next Steps:"
+          Write-Host "1. Check if PR was auto-created in microsoft/winget-pkgs"
+          Write-Host "2. If not, manually create PR with updated manifests"
+          Write-Host "3. Wait for Microsoft review and approval"
+          Write-Host ""
+          Write-Host "🔗 Useful Links:"
+          Write-Host "- Winget-pkgs repo: https://github.com/microsoft/winget-pkgs"
+          Write-Host "- Your package: https://github.com/microsoft/winget-pkgs/tree/master/manifests/j/Jeason/NovelEditor"
