@@ -32,7 +32,7 @@ jobs:
 
     runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       # Ubuntu 系统依赖
       - name: Install dependencies (Ubuntu only)
@@ -50,7 +50,7 @@ jobs:
 
       # 安装 Bun
       - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
+        uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
 
@@ -106,7 +106,7 @@ jobs:
       # 预下载 WiX 工具包 (Windows only) - 避免 503 错误
       - name: Cache WiX Toolset
         if: runner.os == 'Windows'
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         id: wix-cache
         with:
           path: ~/.tauri/WixTools
@@ -159,7 +159,7 @@ jobs:
       # 上传到 GitHub Release (Linux)
       - name: Upload to Release (Linux)
         if: success() && runner.os == 'Linux' && startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           draft: false
           files: |
@@ -172,7 +172,7 @@ jobs:
       # 上传到 GitHub Release (macOS)
       - name: Upload to Release (macOS)
         if: success() && runner.os == 'macOS' && startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           draft: false
           files: |
@@ -184,7 +184,7 @@ jobs:
       # 上传到 GitHub Release (Windows)
       - name: Upload to Release (Windows)
         if: success() && runner.os == 'Windows' && startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           draft: false
           files: |
@@ -196,7 +196,7 @@ jobs:
       # 上传构建产物到 Artifacts (Linux)
       - name: Upload build artifacts (Linux)
         if: success() && runner.os == 'Linux'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: tauri-bundles-${{ matrix.platform }}
           path: |
@@ -207,7 +207,7 @@ jobs:
       # 上传构建产物 (macOS)
       - name: Upload build artifacts (macOS)
         if: success() && runner.os == 'macOS'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: tauri-bundles-${{ matrix.platform }}-${{ matrix.args }}
           path: |
@@ -217,7 +217,7 @@ jobs:
       # 上传构建产物 (Windows)
       - name: Upload build artifacts (Windows)
         if: success() && runner.os == 'Windows'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: tauri-bundles-windows
           path: |
@@ -233,7 +233,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/desktop-v')
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       # 安装 Rust
       - name: Install Rust stable
@@ -246,7 +246,7 @@ jobs:
 
       # 安装 Bun
       - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
+        uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
 
@@ -259,7 +259,7 @@ jobs:
 
       # 预下载 WiX 工具包 - 避免 503 错误
       - name: Cache WiX Toolset
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         id: wix-cache
         with:
           path: ~/.tauri/WixTools
@@ -529,7 +529,7 @@ jobs:
 
       # 上传 MSIX 产物
       - name: Upload MSIX artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: msix-package
           path: "*.msix"
@@ -538,7 +538,7 @@ jobs:
       # 发布到 GitHub Release
       - name: Upload MSIX to Release
         if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: "*.msix"
           draft: false
@@ -563,7 +563,7 @@ jobs:
           echo "📦 Desktop release completed for version: $VERSION"
 
       - name: Trigger dependent platform releases
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
