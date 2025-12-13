@@ -40,7 +40,8 @@ jobs:
           # 获取 release 信息
           RESPONSE=$(curl -s "$RELEASE_URL")
           
-          if echo "$RESPONSE" | jq -e '.message == "Not Found"' > /dev/null; then
+          # 检查是否找到 release
+          if echo "$RESPONSE" | jq -e '.message == "Not Found"' > /dev/null 2>&1; then
             echo "❌ Release desktop-v$VERSION not found"
             echo ""
             echo "📋 To fix this:"
@@ -52,22 +53,35 @@ jobs:
           
           echo "✅ Release found"
           
-          # 查找 macOS DMG 文件（优先 Apple Silicon，然后 Intel）
-          ARM_DMG=$(echo "$RESPONSE" | jq -r '.assets[] | select(.name | contains("aarch64") and contains(".dmg")) | .browser_download_url' | head -1)
-          INTEL_DMG=$(echo "$RESPONSE" | jq -r '.assets[] | select(.name | contains("x64") and contains(".dmg")) | .browser_download_url' | head -1)
+          # 检查 assets 是否存在
+          ASSETS_COUNT=$(echo "$RESPONSE" | jq '.assets | length // 0')
+          if [ "$ASSETS_COUNT" -eq 0 ]; then
+            echo "❌ No assets found in release"
+            echo "Release may still be building. Please wait and retry."
+            exit 1
+          fi
           
-          if [ -n "$ARM_DMG" ] && [ "$ARM_DMG" != "null" ]; then
+          echo "📦 Found $ASSETS_COUNT assets in release"
+          echo "Available assets:"
+          echo "$RESPONSE" | jq -r '.assets[].name // empty'
+          
+          # 查找 macOS DMG 文件（优先 Apple Silicon，然后 Intel）
+          ARM_DMG=$(echo "$RESPONSE" | jq -r '[.assets[] | select(.name | test("aarch64.*\\.dmg$"; "i")) | .browser_download_url][0] // empty')
+          INTEL_DMG=$(echo "$RESPONSE" | jq -r '[.assets[] | select(.name | test("x64.*\\.dmg$"; "i")) | .browser_download_url][0] // empty')
+          
+          if [ -n "$ARM_DMG" ]; then
             DOWNLOAD_URL="$ARM_DMG"
             ARCH="arm64"
             echo "✅ Found Apple Silicon DMG: $DOWNLOAD_URL"
-          elif [ -n "$INTEL_DMG" ] && [ "$INTEL_DMG" != "null" ]; then
+          elif [ -n "$INTEL_DMG" ]; then
             DOWNLOAD_URL="$INTEL_DMG"
             ARCH="intel"
             echo "✅ Found Intel DMG: $DOWNLOAD_URL"
           else
             echo "❌ No macOS DMG files found in release"
-            echo "Available assets:"
-            echo "$RESPONSE" | jq -r '.assets[].name'
+            echo ""
+            echo "📋 This workflow requires macOS DMG files."
+            echo "Make sure the desktop release includes macOS builds."
             exit 1
           fi
           

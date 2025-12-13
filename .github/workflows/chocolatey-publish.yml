@@ -31,6 +31,7 @@ jobs:
           Write-Output "📦 Publishing Chocolatey package for version: $version"
 
       - name: Verify release exists
+        id: release_info
         shell: pwsh
         run: |
           $version = "${{ steps.version.outputs.VERSION }}"
@@ -73,8 +74,8 @@ jobs:
         shell: pwsh
         run: |
           $version = "${{ steps.version.outputs.VERSION }}"
-          $downloadUrl = "${{ steps.version.outputs.DOWNLOAD_URL }}"
-          $fileName = "${{ steps.version.outputs.FILE_NAME }}"
+          $downloadUrl = "${{ steps.release_info.outputs.DOWNLOAD_URL }}"
+          $fileName = "${{ steps.release_info.outputs.FILE_NAME }}"
           
           # 创建包目录
           $packageDir = "chocolatey-package"

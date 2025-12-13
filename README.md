@@ -4,12 +4,6 @@
 
 > 🇨🇳 [中文文档](./README.zh-CN.md) | English
 
-![2025-12-08_21-55.png](https://s3.bmp.ovh/imgs/2025/12/13/71e3de193278ba4b.png)
-
-![2025-12-13_20-21.png](https://s3.bmp.ovh/imgs/2025/12/13/3c8f3105d88491f1.png)
-
-![2025-12-13_20-21_1.png](https://s3.bmp.ovh/imgs/2025/12/13/d2f9299e0b5f049f.png)
-
 ![Untitled123.png](https://s3.bmp.ovh/imgs/2025/12/13/6647787c1fa17679.png)
 
 

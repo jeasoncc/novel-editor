@@ -1,7 +1,10 @@
 app-id: com.lotus.NovelEditor
 runtime: org.freedesktop.Platform
-runtime-version: '23.08'
+runtime-version: '24.08'
 sdk: org.freedesktop.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.node20
+  - org.freedesktop.Sdk.Extension.rust-stable
 command: novel-editor
 
 finish-args:
@@ -43,7 +46,7 @@ modules:
   - name: novel-editor
     buildsystem: simple
     build-options:
-      append-path: /usr/lib/sdk/node18/bin:/usr/lib/sdk/rust-stable/bin
+      append-path: /usr/lib/sdk/node20/bin:/usr/lib/sdk/rust-stable/bin
       env:
         CARGO_HOME: /run/build/novel-editor/cargo
         npm_config_cache: /run/build/novel-editor/npm-cache
@@ -173,7 +176,3 @@ modules:
       - type: git
         url: https://github.com/Jeason-Lotus/novel-editor.git
         tag: desktop-v0.1.62
-    
-    sdk-extensions:
-      - org.freedesktop.Sdk.Extension.node18
-      - org.freedesktop.Sdk.Extension.rust-stable
