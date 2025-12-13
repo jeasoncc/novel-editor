@@ -2,10 +2,8 @@ import type { NextConfig } from "next";
 
 // 静态导出配置 - 用于部署到 nginx
 const nextConfig: NextConfig = {
-  // 启用静态导出
+  // 启用静态导出（输出到 out 目录）
   output: "export",
-  // 输出目录设为 dist（默认是 out）
-  distDir: "dist",
   images: {
     unoptimized: true,
   },

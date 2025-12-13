@@ -1,0 +1,602 @@
+name: Verify All Installations
+
+# 验证所有平台的安装包是否可以正常安装
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to verify (e.g., 0.1.66)'
+        required: true
+        type: string
+      platforms:
+        description: 'Platforms to verify (comma-separated or "all")'
+        required: false
+        default: 'all'
+        type: string
+  workflow_run:
+    workflows: ["Release Desktop App"]
+    types:
+      - completed
+
+env:
+  PACKAGE_ID: novel-editor
+  PACKAGE_NAME: Novel Editor
+
+jobs:
+  # 获取版本号
+  get-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Get version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=$(jq -r '.version' package.json)
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Verifying version: $VERSION"
+
+  # ==================== Windows 平台 ====================
+  
+  # Windows MSI 安装验证
+  verify-windows-msi:
+    needs: get-version
+    runs-on: windows-latest
+    steps:
+      - name: Download and test MSI
+        shell: pwsh
+        run: |
+          $version = "${{ needs.get-version.outputs.version }}"
+          $fileName = "novel-editor_${version}_x64_zh-CN.msi"
+          $url = "https://github.com/${{ github.repository }}/releases/download/desktop-v$version/$fileName"
+          
+          Write-Host "📥 Downloading MSI: $url"
+          try {
+            Invoke-WebRequest -Uri $url -OutFile $fileName -ErrorAction Stop
+            $size = (Get-Item $fileName).Length / 1MB
+            Write-Host "✅ Downloaded: $fileName ($([math]::Round($size, 2)) MB)"
+            
+            # 静默安装测试
+            Write-Host "🔧 Testing MSI installation..."
+            $proc = Start-Process msiexec.exe -ArgumentList "/i", $fileName, "/qn", "/norestart" -Wait -PassThru
+            if ($proc.ExitCode -eq 0) {
+              Write-Host "✅ MSI installation successful"
+              # 卸载
+              Start-Process msiexec.exe -ArgumentList "/x", $fileName, "/qn", "/norestart" -Wait
+              Write-Host "✅ MSI uninstallation successful"
+            } else {
+              Write-Host "❌ MSI installation failed: $($proc.ExitCode)"
+              exit 1
+            }
+          } catch {
+            Write-Host "❌ Failed: $_"
+            exit 1
+          }
+
+  # Windows NSIS 安装验证
+  verify-windows-nsis:
+    needs: get-version
+    runs-on: windows-latest
+    steps:
+      - name: Download and test NSIS
+        shell: pwsh
+        run: |
+          $version = "${{ needs.get-version.outputs.version }}"
+          $fileName = "novel-editor_${version}_x64-setup.exe"
+          $url = "https://github.com/${{ github.repository }}/releases/download/desktop-v$version/$fileName"
+          
+          Write-Host "📥 Downloading NSIS: $url"
+          try {
+            Invoke-WebRequest -Uri $url -OutFile $fileName -ErrorAction Stop
+            $size = (Get-Item $fileName).Length / 1MB
+            Write-Host "✅ Downloaded: $fileName ($([math]::Round($size, 2)) MB)"
+            
+            Write-Host "🔧 Testing NSIS installation..."
+            $proc = Start-Process $fileName -ArgumentList "/S" -Wait -PassThru
+            if ($proc.ExitCode -eq 0) {
+              Write-Host "✅ NSIS installation successful"
+              $uninstaller = "$env:LOCALAPPDATA\novel-editor\uninstall.exe"
+              if (Test-Path $uninstaller) {
+                Start-Process $uninstaller -ArgumentList "/S" -Wait
+                Write-Host "✅ NSIS uninstallation successful"
+              }
+            } else {
+              Write-Host "❌ NSIS installation failed: $($proc.ExitCode)"
+              exit 1
+            }
+          } catch {
+            Write-Host "❌ Failed: $_"
+            exit 1
+          }
+
+  # Winget 验证
+  verify-winget:
+    needs: get-version
+    runs-on: windows-latest
+    steps:
+      - name: Verify Winget package
+        shell: pwsh
+        run: |
+          $version = "${{ needs.get-version.outputs.version }}"
+          
+          Write-Host "🔍 Checking Winget package availability..."
+          
+          # 搜索包
+          $result = winget search --id Jeason.NovelEditor --accept-source-agreements 2>&1
+          
+          if ($result -match "Jeason.NovelEditor") {
+            Write-Host "✅ Package found in Winget"
+            Write-Host $result
+            
+            # 显示包信息
+            winget show --id Jeason.NovelEditor --accept-source-agreements
+          } else {
+            Write-Host "⚠ Package not yet available in Winget (may be pending review)"
+            Write-Host "This is expected for new submissions"
+          }
+
+  # Chocolatey 验证
+  verify-chocolatey:
+    needs: get-version
+    runs-on: windows-latest
+    steps:
+      - name: Verify Chocolatey package
+        shell: pwsh
+        run: |
+          Write-Host "🔍 Checking Chocolatey package availability..."
+          
+          # 搜索包
+          $result = choco search novel-editor --exact 2>&1
+          
+          if ($result -match "novel-editor") {
+            Write-Host "✅ Package found in Chocolatey"
+            Write-Host $result
+            
+            # 显示包信息
+            choco info novel-editor
+          } else {
+            Write-Host "⚠ Package not yet available in Chocolatey (may be pending review)"
+          }
+
+  # Scoop 验证
+  verify-scoop:
+    needs: get-version
+    runs-on: windows-latest
+    steps:
+      - name: Verify Scoop package
+        shell: pwsh
+        run: |
+          Write-Host "🔍 Checking Scoop package availability..."
+          
+          # 安装 scoop（如果需要）
+          if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
+            Write-Host "Installing Scoop..."
+            Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+            irm get.scoop.sh | iex
+          }
+          
+          # 搜索包
+          $result = scoop search novel-editor 2>&1
+          
+          if ($result -match "novel-editor") {
+            Write-Host "✅ Package found in Scoop"
+            Write-Host $result
+          } else {
+            Write-Host "⚠ Package not found in default Scoop buckets"
+            Write-Host "May need to add custom bucket"
+          }
+
+  # ==================== macOS 平台 ====================
+  
+  # macOS DMG 验证 (ARM64)
+  verify-macos-arm:
+    needs: get-version
+    runs-on: macos-latest
+    steps:
+      - name: Download and test ARM64 DMG
+        run: |
+          VERSION="${{ needs.get-version.outputs.version }}"
+          FILE="novel-editor_${VERSION}_aarch64.dmg"
+          URL="https://github.com/${{ github.repository }}/releases/download/desktop-v$VERSION/$FILE"
+          
+          echo "📥 Downloading ARM64 DMG: $URL"
+          if curl -L -f -o "$FILE" "$URL"; then
+            SIZE=$(($(stat -f%z "$FILE") / 1024 / 1024))
+            echo "✅ Downloaded: $FILE ($SIZE MB)"
+            
+            echo "🔧 Testing DMG mount..."
+            MOUNT=$(hdiutil attach "$FILE" -nobrowse | grep "/Volumes" | awk '{print $3}')
+            if [ -n "$MOUNT" ]; then
+              echo "✅ DMG mounted: $MOUNT"
+              ls -la "$MOUNT"
+              hdiutil detach "$MOUNT" -quiet
+              echo "✅ DMG verification complete"
+            else
+              echo "❌ Failed to mount DMG"
+              exit 1
+            fi
+          else
+            echo "⚠ ARM64 DMG not available"
+          fi
+
+  # macOS DMG 验证 (x64)
+  verify-macos-x64:
+    needs: get-version
+    runs-on: macos-13
+    steps:
+      - name: Download and test x64 DMG
+        run: |
+          VERSION="${{ needs.get-version.outputs.version }}"
+          FILE="novel-editor_${VERSION}_x64.dmg"
+          URL="https://github.com/${{ github.repository }}/releases/download/desktop-v$VERSION/$FILE"
+          
+          echo "📥 Downloading x64 DMG: $URL"
+          if curl -L -f -o "$FILE" "$URL"; then
+            SIZE=$(($(stat -f%z "$FILE") / 1024 / 1024))
+            echo "✅ Downloaded: $FILE ($SIZE MB)"
+            
+            echo "🔧 Testing DMG mount..."
+            MOUNT=$(hdiutil attach "$FILE" -nobrowse | grep "/Volumes" | awk '{print $3}')
+            if [ -n "$MOUNT" ]; then
+              echo "✅ DMG mounted: $MOUNT"
+              ls -la "$MOUNT"
+              hdiutil detach "$MOUNT" -quiet
+              echo "✅ DMG verification complete"
+            else
+              echo "❌ Failed to mount DMG"
+              exit 1
+            fi
+          else
+            echo "⚠ x64 DMG not available"
+          fi
+
+  # Homebrew 验证
+  verify-homebrew:
+    needs: get-version
+    runs-on: macos-latest
+    steps:
+      - name: Verify Homebrew cask
+        run: |
+          echo "🔍 Checking Homebrew cask availability..."
+          
+          # 搜索 cask
+          if brew search --cask novel-editor 2>/dev/null | grep -q "novel-editor"; then
+            echo "✅ Cask found in Homebrew"
+            brew info --cask novel-editor
+          else
+            echo "⚠ Cask not yet available in Homebrew (may be pending review)"
+          fi
+
+  # ==================== Linux 平台 ====================
+  
+  # Linux DEB 验证
+  verify-linux-deb:
+    needs: get-version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download and test DEB
+        run: |
+          VERSION="${{ needs.get-version.outputs.version }}"
+          FILE="novel-editor_${VERSION}_amd64.deb"
+          URL="https://github.com/${{ github.repository }}/releases/download/desktop-v$VERSION/$FILE"
+          
+          echo "📥 Downloading DEB: $URL"
+          if curl -L -f -o "$FILE" "$URL"; then
+            SIZE=$(($(stat -c%s "$FILE") / 1024 / 1024))
+            echo "✅ Downloaded: $FILE ($SIZE MB)"
+            
+            echo "🔧 Testing DEB installation..."
+            sudo apt-get update
+            sudo apt-get install -y libwebkit2gtk-4.1-0 libgtk-3-0 || true
+            
+            if sudo dpkg -i "$FILE" 2>/dev/null || sudo apt-get install -f -y; then
+              echo "✅ DEB installation successful"
+              dpkg -L novel-editor | head -10
+              sudo dpkg -r novel-editor
+              echo "✅ DEB uninstallation successful"
+            else
+              echo "❌ DEB installation failed"
+              exit 1
+            fi
+          else
+            echo "❌ Failed to download DEB"
+            exit 1
+          fi
+
+  # Linux AppImage 验证
+  verify-linux-appimage:
+    needs: get-version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download and test AppImage
+        run: |
+          VERSION="${{ needs.get-version.outputs.version }}"
+          FILE="novel-editor_${VERSION}_amd64.AppImage"
+          URL="https://github.com/${{ github.repository }}/releases/download/desktop-v$VERSION/$FILE"
+          
+          echo "📥 Downloading AppImage: $URL"
+          if curl -L -f -o "$FILE" "$URL"; then
+            SIZE=$(($(stat -c%s "$FILE") / 1024 / 1024))
+            echo "✅ Downloaded: $FILE ($SIZE MB)"
+            
+            chmod +x "$FILE"
+            if file "$FILE" | grep -q "ELF"; then
+              echo "✅ Valid ELF executable"
+              ./"$FILE" --appimage-extract > /dev/null 2>&1 && echo "✅ AppImage extraction works" || echo "⚠ Extraction not supported"
+            else
+              echo "❌ Invalid executable"
+              exit 1
+            fi
+          else
+            echo "❌ Failed to download AppImage"
+            exit 1
+          fi
+
+  # Snap 验证
+  verify-snap:
+    needs: get-version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify Snap package
+        run: |
+          echo "🔍 Checking Snap Store availability..."
+          
+          # 搜索 snap
+          if snap find novel-editor 2>/dev/null | grep -q "novel-editor"; then
+            echo "✅ Package found in Snap Store"
+            snap info novel-editor
+          else
+            echo "⚠ Package not yet available in Snap Store"
+          fi
+
+  # Flatpak 验证
+  verify-flatpak:
+    needs: get-version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify Flatpak package
+        run: |
+          echo "🔍 Checking Flathub availability..."
+          
+          sudo apt-get update
+          sudo apt-get install -y flatpak
+          flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+          
+          # 搜索 flatpak
+          if flatpak search com.lotus.NovelEditor 2>/dev/null | grep -q "NovelEditor"; then
+            echo "✅ Package found on Flathub"
+            flatpak remote-info flathub com.lotus.NovelEditor
+          else
+            echo "⚠ Package not yet available on Flathub"
+          fi
+
+  # AUR 验证
+  verify-aur:
+    needs: get-version
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - name: Verify AUR packages
+        run: |
+          echo "🔍 Checking AUR availability..."
+          
+          pacman -Syu --noconfirm curl jq
+          
+          # 检查 novel-editor (源码构建)
+          echo "Checking novel-editor..."
+          RESULT=$(curl -s "https://aur.archlinux.org/rpc/?v=5&type=info&arg=novel-editor")
+          if echo "$RESULT" | jq -e '.resultcount > 0' > /dev/null; then
+            echo "✅ novel-editor found in AUR"
+            echo "$RESULT" | jq '.results[0] | {name, version, description}'
+          else
+            echo "⚠ novel-editor not found in AUR"
+          fi
+          
+          # 检查 novel-editor-bin (二进制)
+          echo ""
+          echo "Checking novel-editor-bin..."
+          RESULT=$(curl -s "https://aur.archlinux.org/rpc/?v=5&type=info&arg=novel-editor-bin")
+          if echo "$RESULT" | jq -e '.resultcount > 0' > /dev/null; then
+            echo "✅ novel-editor-bin found in AUR"
+            echo "$RESULT" | jq '.results[0] | {name, version, description}'
+          else
+            echo "⚠ novel-editor-bin not found in AUR"
+          fi
+
+  # PPA 验证 (Ubuntu)
+  verify-ppa:
+    needs: get-version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify PPA availability
+        run: |
+          echo "🔍 Checking PPA availability..."
+          echo "⚠ PPA verification requires manual check"
+          echo "PPA URL: https://launchpad.net/~jeason/+archive/ubuntu/novel-editor"
+
+  # COPR 验证 (Fedora)
+  verify-copr:
+    needs: get-version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify COPR availability
+        run: |
+          echo "🔍 Checking COPR availability..."
+          
+          # 检查 COPR API
+          RESULT=$(curl -s "https://copr.fedorainfracloud.org/api_3/project/search?query=novel-editor" || echo "{}")
+          
+          if echo "$RESULT" | grep -q "novel-editor"; then
+            echo "✅ Package found in COPR"
+            echo "$RESULT" | head -50
+          else
+            echo "⚠ Package not found in COPR"
+          fi
+
+  # OBS 验证 (openSUSE)
+  verify-obs:
+    needs: get-version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify OBS availability
+        run: |
+          echo "🔍 Checking openSUSE OBS availability..."
+          echo "⚠ OBS verification requires manual check"
+          echo "OBS URL: https://build.opensuse.org/package/show/home:jeason/novel-editor"
+
+  # Gentoo 验证
+  verify-gentoo:
+    needs: get-version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify Gentoo overlay
+        run: |
+          echo "🔍 Checking Gentoo overlay availability..."
+          echo "⚠ Gentoo overlay verification requires manual check"
+          echo "Overlay: https://github.com/user/gentoo-overlay"
+
+  # ==================== Web 平台 ====================
+  
+  # Web 部署验证
+  verify-web:
+    needs: get-version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify web deployments
+        run: |
+          echo "🔍 Checking web deployment availability..."
+          
+          # 检查可能的部署 URL
+          URLS=(
+            "https://novel-editor.vercel.app"
+            "https://novel-editor.netlify.app"
+          )
+          
+          for URL in "${URLS[@]}"; do
+            echo ""
+            echo "Checking: $URL"
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL" || echo "000")
+            if [ "$STATUS" = "200" ]; then
+              echo "✅ $URL is accessible (HTTP $STATUS)"
+            else
+              echo "⚠ $URL returned HTTP $STATUS"
+            fi
+          done
+
+  # ==================== 汇总报告 ====================
+  
+  verification-report:
+    needs: 
+      - get-version
+      - verify-windows-msi
+      - verify-windows-nsis
+      - verify-winget
+      - verify-chocolatey
+      - verify-scoop
+      - verify-macos-arm
+      - verify-macos-x64
+      - verify-homebrew
+      - verify-linux-deb
+      - verify-linux-appimage
+      - verify-snap
+      - verify-flatpak
+      - verify-aur
+      - verify-ppa
+      - verify-copr
+      - verify-obs
+      - verify-gentoo
+      - verify-web
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Generate comprehensive report
+        run: |
+          VERSION="${{ needs.get-version.outputs.version }}"
+          
+          echo ""
+          echo "╔══════════════════════════════════════════════════════════════╗"
+          echo "║           Installation Verification Report                    ║"
+          echo "╠══════════════════════════════════════════════════════════════╣"
+          echo "║ Version: $VERSION"
+          echo "║ Date: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "╠══════════════════════════════════════════════════════════════╣"
+          echo "║ WINDOWS PLATFORMS                                             ║"
+          echo "╠──────────────────────────────────────────────────────────────╣"
+          echo "║ MSI Installer:      ${{ needs.verify-windows-msi.result }}"
+          echo "║ NSIS Installer:     ${{ needs.verify-windows-nsis.result }}"
+          echo "║ Winget:             ${{ needs.verify-winget.result }}"
+          echo "║ Chocolatey:         ${{ needs.verify-chocolatey.result }}"
+          echo "║ Scoop:              ${{ needs.verify-scoop.result }}"
+          echo "╠══════════════════════════════════════════════════════════════╣"
+          echo "║ MACOS PLATFORMS                                               ║"
+          echo "╠──────────────────────────────────────────────────────────────╣"
+          echo "║ DMG (ARM64):        ${{ needs.verify-macos-arm.result }}"
+          echo "║ DMG (x64):          ${{ needs.verify-macos-x64.result }}"
+          echo "║ Homebrew:           ${{ needs.verify-homebrew.result }}"
+          echo "╠══════════════════════════════════════════════════════════════╣"
+          echo "║ LINUX PLATFORMS                                               ║"
+          echo "╠──────────────────────────────────────────────────────────────╣"
+          echo "║ DEB Package:        ${{ needs.verify-linux-deb.result }}"
+          echo "║ AppImage:           ${{ needs.verify-linux-appimage.result }}"
+          echo "║ Snap Store:         ${{ needs.verify-snap.result }}"
+          echo "║ Flatpak/Flathub:    ${{ needs.verify-flatpak.result }}"
+          echo "║ AUR (Arch):         ${{ needs.verify-aur.result }}"
+          echo "║ PPA (Ubuntu):       ${{ needs.verify-ppa.result }}"
+          echo "║ COPR (Fedora):      ${{ needs.verify-copr.result }}"
+          echo "║ OBS (openSUSE):     ${{ needs.verify-obs.result }}"
+          echo "║ Gentoo:             ${{ needs.verify-gentoo.result }}"
+          echo "╠══════════════════════════════════════════════════════════════╣"
+          echo "║ WEB PLATFORMS                                                 ║"
+          echo "╠──────────────────────────────────────────────────────────────╣"
+          echo "║ Web Deployment:     ${{ needs.verify-web.result }}"
+          echo "╚══════════════════════════════════════════════════════════════╝"
+          echo ""
+          
+          # 统计结果
+          TOTAL=19
+          SUCCESS=0
+          FAILED=0
+          SKIPPED=0
+          
+          for result in \
+            "${{ needs.verify-windows-msi.result }}" \
+            "${{ needs.verify-windows-nsis.result }}" \
+            "${{ needs.verify-winget.result }}" \
+            "${{ needs.verify-chocolatey.result }}" \
+            "${{ needs.verify-scoop.result }}" \
+            "${{ needs.verify-macos-arm.result }}" \
+            "${{ needs.verify-macos-x64.result }}" \
+            "${{ needs.verify-homebrew.result }}" \
+            "${{ needs.verify-linux-deb.result }}" \
+            "${{ needs.verify-linux-appimage.result }}" \
+            "${{ needs.verify-snap.result }}" \
+            "${{ needs.verify-flatpak.result }}" \
+            "${{ needs.verify-aur.result }}" \
+            "${{ needs.verify-ppa.result }}" \
+            "${{ needs.verify-copr.result }}" \
+            "${{ needs.verify-obs.result }}" \
+            "${{ needs.verify-gentoo.result }}" \
+            "${{ needs.verify-web.result }}"; do
+            case "$result" in
+              success) ((SUCCESS++)) ;;
+              failure) ((FAILED++)) ;;
+              skipped) ((SKIPPED++)) ;;
+            esac
+          done
+          
+          echo "📊 Summary: $SUCCESS passed, $FAILED failed, $SKIPPED skipped (of $TOTAL)"
+          
+          if [ "$FAILED" -gt 0 ]; then
+            echo "⚠ Some verifications failed. Check logs for details."
+            exit 1
+          else
+            echo "✅ All verifications completed!"
+          fi

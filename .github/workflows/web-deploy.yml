@@ -56,14 +56,17 @@ jobs:
           cd apps/web
           bun run build
           
-          # 验证构建
-          if [ ! -d "dist" ]; then
-            echo "❌ Build failed: dist directory not found"
+          # Next.js export 模式输出到 out 目录
+          if [ -d "out" ]; then
+            echo "✅ Web app built successfully (output: out)"
+            ls -la out/
+          elif [ -d "dist" ]; then
+            echo "✅ Web app built successfully (output: dist)"
+            ls -la dist/
+          else
+            echo "❌ Build failed: neither out nor dist directory found"
             exit 1
           fi
-          
-          echo "✅ Web app built successfully"
-          ls -la dist/
 
       - name: Deploy to Vercel
         if: steps.version.outputs.environment == 'production'
@@ -87,7 +90,7 @@ jobs:
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v3.0
         with:
-          publish-dir: 'apps/web/dist'
+          publish-dir: 'apps/web/out'
           production-branch: main
           github-token: ${{ secrets.GITHUB_TOKEN }}
           deploy-message: "Deploy web app v${{ steps.version.outputs.version }}"
@@ -103,7 +106,7 @@ jobs:
         if: steps.version.outputs.environment == 'production'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: apps/web/dist
+          publish_dir: apps/web/out
           cname: novel-editor.example.com  # 替换为你的域名
 
       - name: Create deployment summary

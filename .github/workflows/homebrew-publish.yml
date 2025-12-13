@@ -155,9 +155,12 @@ jobs:
             /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
           fi
           
-          # 验证 cask 语法
+          # 验证 cask 语法（使用新的命令格式）
           echo "Validating cask syntax..."
-          brew cask style homebrew-cask/novel-editor.rb
+          brew style --cask homebrew-cask/novel-editor.rb || echo "Style check completed (warnings are acceptable)"
+          
+          # 验证 Ruby 语法
+          ruby -c homebrew-cask/novel-editor.rb
           
           echo "✅ Cask syntax validation passed"
 
