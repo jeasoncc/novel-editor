@@ -562,78 +562,78 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "📦 Desktop release completed for version: $VERSION"
 
-      - name: Trigger dependent Linux platform releases
+      - name: Trigger dependent platform releases
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const version = '${{ steps.version.outputs.version }}';
             
-            // Linux 依赖平台列表（需要 desktop 的 deb/rpm 文件）
-            const linuxDependentPlatforms = [
-              'flatpak',
-              'aur',
-              'aur-bin',
-              'ppa',
-              'copr',
-              'obs',
-              'gentoo'
-            ];
+            // 所有依赖平台列表
+            const dependentPlatforms = {
+              // Linux 平台（需要 deb/rpm 文件）
+              linux: ['flatpak', 'aur', 'aur-bin', 'ppa', 'copr', 'obs', 'gentoo'],
+              // Windows 平台（需要 MSI/NSIS 文件）
+              windows: ['winget', 'scoop', 'chocolatey'],
+              // macOS 平台（需要 DMG 文件）
+              macos: ['homebrew']
+            };
             
             console.log(`🚀 Desktop release v${version} completed successfully!`);
-            console.log(`📋 Triggering Linux dependent platforms...`);
+            console.log(`📋 Triggering all dependent platforms...`);
             
-            const triggeredPlatforms = [];
-            const failedPlatforms = [];
+            const results = { triggered: [], failed: [] };
             
-            // 触发每个 Linux 依赖平台的工作流
-            for (const platform of linuxDependentPlatforms) {
-              try {
-                await github.rest.actions.createWorkflowDispatch({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  workflow_id: `${platform}-publish.yml`,
-                  ref: 'main',
-                  inputs: {
-                    version: version
-                  }
-                });
-                triggeredPlatforms.push(platform);
-                console.log(`✅ Triggered ${platform} workflow`);
-              } catch (error) {
-                failedPlatforms.push(platform);
-                console.log(`⚠️ Failed to trigger ${platform} workflow: ${error.message}`);
+            // 触发所有依赖平台的工作流
+            for (const [os, platforms] of Object.entries(dependentPlatforms)) {
+              console.log(`\n🖥️ Triggering ${os} platforms...`);
+              for (const platform of platforms) {
+                try {
+                  await github.rest.actions.createWorkflowDispatch({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    workflow_id: `${platform}-publish.yml`,
+                    ref: 'main',
+                    inputs: { version: version }
+                  });
+                  results.triggered.push({ platform, os });
+                  console.log(`  ✅ ${platform}`);
+                } catch (error) {
+                  results.failed.push({ platform, os, error: error.message });
+                  console.log(`  ⚠️ ${platform}: ${error.message}`);
+                }
               }
             }
             
             // 创建成功评论
             try {
-              const triggeredList = triggeredPlatforms.length > 0 
-                ? triggeredPlatforms.map(p => `- ✅ ${p}`).join('\n')
-                : '- (无)';
-              const failedList = failedPlatforms.length > 0
-                ? failedPlatforms.map(p => `- ❌ ${p}`).join('\n')
-                : '';
+              const linuxTriggered = results.triggered.filter(p => p.os === 'linux').map(p => p.platform);
+              const windowsTriggered = results.triggered.filter(p => p.os === 'windows').map(p => p.platform);
+              const macosTriggered = results.triggered.filter(p => p.os === 'macos').map(p => p.platform);
+              const failedList = results.failed.map(p => `- ❌ ${p.platform} (${p.os})`).join('\n');
               
               await github.rest.repos.createCommitComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 commit_sha: context.sha,
                 body: `🎉 **Desktop Release v${version} 完成！**
-            
+
             **✅ 已构建的包格式：**
             - Windows: MSI, NSIS, MSIX
             - macOS: DMG, APP (Intel + Apple Silicon)  
             - Linux: DEB, RPM, AppImage
+
+            **🚀 自动触发的依赖平台：**
             
-            **🚀 自动触发的 Linux 依赖平台：**
-            ${triggeredList}
-            ${failedList ? '\n**⚠️ 触发失败的平台：**\n' + failedList : ''}
-            
+            🐧 **Linux:** ${linuxTriggered.length > 0 ? linuxTriggered.join(', ') : '(无)'}
+            🪟 **Windows:** ${windowsTriggered.length > 0 ? windowsTriggered.join(', ') : '(无)'}
+            🍎 **macOS:** ${macosTriggered.length > 0 ? macosTriggered.join(', ') : '(无)'}
+            ${failedList ? '\n**⚠️ 触发失败：**\n' + failedList : ''}
+
             **📥 下载地址：**
             [GitHub Releases](https://github.com/${context.repo.owner}/${context.repo.repo}/releases/tag/desktop-v${version})
-            
-            **⏱️ 预计完成时间：** 10-15 分钟`
+
+            **⏱️ 预计完成时间：** 15-20 分钟`
               });
             } catch (error) {
               console.log('无法创建评论，但发布成功:', error.message);

@@ -1,9 +1,8 @@
 name: Publish to Scoop
 
+# 依赖 desktop 构建完成（需要 NSIS 安装包），只通过 workflow_dispatch 触发
+# desktop 完成后会自动触发此工作流
 on:
-  push:
-    tags:
-      - 'scoop-v*.*.*'
   workflow_dispatch:
     inputs:
       version:
@@ -14,7 +13,6 @@ on:
 jobs:
   publish-scoop:
     runs-on: windows-latest
-    if: startsWith(github.ref, 'refs/tags/scoop-v') || github.event_name == 'workflow_dispatch'
     
     steps:
       - name: Checkout code

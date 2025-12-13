@@ -1,32 +1,18 @@
 name: Publish to Winget
 
+# 依赖 desktop 构建完成（需要 MSI 文件），只通过 workflow_dispatch 触发
+# desktop 完成后会自动触发此工作流
 on:
-  release:
-    types: [published]
-  push:
-    tags:
-      - 'winget-v*.*.*'   # 支持 winget 标签触发
   workflow_dispatch:
     inputs:
       version:
         description: 'Version to publish (e.g., 0.1.45)'
         required: true
         type: string
-  workflow_run:
-    workflows: ["Release Desktop App"]
-    types:
-      - completed
-    branches:
-      - main
 
 jobs:
   winget-publish:
     runs-on: windows-latest
-    if: |
-      startsWith(github.event.release.tag_name, 'desktop-v') || 
-      startsWith(github.ref, 'refs/tags/winget-v') || 
-      github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
     
     steps:
       - name: Checkout repository
@@ -153,13 +139,7 @@ ManifestVersion: 1.5.0
           
           try {
             # 使用winget-create提交到winget-pkgs仓库
-            ./wingetcreate.exe submit `
-              --id "Jeason.NovelEditor" `
-              --version "$version" `
-              --urls "https://github.com/${{ github.repository }}/releases/download/desktop-v$version/novel-editor_${version}_x64_zh-CN.msi" `
-              --token "$env:GITHUB_TOKEN" `
-              --submit
-              
+            ./wingetcreate.exe submit --id "Jeason.NovelEditor" --version "$version" --urls "https://github.com/${{ github.repository }}/releases/download/desktop-v$version/novel-editor_${version}_x64_zh-CN.msi" --token "$env:GITHUB_TOKEN" --submit
             Write-Host "Successfully submitted to winget-pkgs repository"
           } catch {
             Write-Warning "Failed to auto-submit to winget-pkgs: $_"
