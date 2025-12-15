@@ -45,3 +45,6 @@ export * from "./user";
 
 // Attachment model (file attachments)
 export * from "./attachment";
+
+// Tag model (tags, node-tags, tag-relations)
+export * from "./tag";

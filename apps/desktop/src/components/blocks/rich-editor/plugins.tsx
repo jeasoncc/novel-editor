@@ -55,6 +55,7 @@ import { LinkPlugin } from "@/components/editor/plugins/link-plugin";
 import { ListMaxIndentLevelPlugin } from "@/components/editor/plugins/list-max-indent-level-plugin";
 import MentionTooltipPlugin from "@/components/editor/plugins/mention-tooltip-plugin";
 import MentionsPlugin from "@/components/editor/plugins/mentions-plugin";
+import TagPickerPlugin from "@/components/editor/plugins/tag-picker-plugin";
 import { AlignmentPickerPlugin } from "@/components/editor/plugins/picker/alignment-picker-plugin";
 import { BulletedListPickerPlugin } from "@/components/editor/plugins/picker/bulleted-list-picker-plugin";
 import { CheckListPickerPlugin } from "@/components/editor/plugins/picker/check-list-picker-plugin";
@@ -184,6 +185,7 @@ export function Plugins({}) {
 
 				<MentionsPlugin />
 				<MentionTooltipPlugin />
+				<TagPickerPlugin />
 				<DraggableBlockPlugin anchorElem={floatingAnchorElem} />
 				<KeywordsPlugin />
 				<EmojisPlugin />

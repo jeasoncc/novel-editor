@@ -13,6 +13,9 @@
  * - drawings: Excalidraw drawings
  * - users: User information and settings
  * - attachments: File attachments
+ * - tags: Tag definitions
+ * - nodeTags: Node-tag relationships
+ * - tagRelations: Tag-tag relationships
  * - dbVersions: Database version tracking
  *
  * @requirements 5.1, 5.2
@@ -31,6 +34,9 @@ import type {
 	UserInterface,
 	WikiEntryInterface,
 } from "./schema.ts";
+
+// Import tag interfaces
+import type { TagInterface, NodeTagInterface, TagRelationInterface } from "./models/tag";
 
 /**
  * Content type for the contents table
@@ -68,51 +74,57 @@ export class NovelEditorDatabase extends Dexie {
 	attachments!: Table<AttachmentInterface, string>;
 	dbVersions!: Table<DBVersionInterface, string>;
 
+	// Tag system tables
+	tags!: Table<TagInterface, string>;
+	nodeTags!: Table<NodeTagInterface, string>;
+	tagRelations!: Table<TagRelationInterface, string>;
+
 	constructor() {
 		super("NovelEditorDB");
 
 		// Version 7: Add contents table for content separation
 		// Preserves backward compatibility with existing data
 		this.version(7).stores({
-			// Nodes table - file tree structure without content
-			// Indexes: id (primary), workspace, parent, type, order
 			nodes: "id, workspace, parent, type, order",
-
-			// Contents table - document content stored separately
-			// Indexes: id (primary), nodeId, contentType
 			contents: "id, nodeId, contentType",
-
-			// Workspaces table (renamed from projects for clarity)
-			// Indexes: id (primary), title, owner
 			workspaces: "id, title, owner",
-
-			// Wiki entries table
-			// Indexes: id (primary), project, name
 			wikiEntries: "id, project, name",
-
-			// Drawings table
-			// Indexes: id (primary), project, name
 			drawings: "id, project, name",
-
-			// Users table
-			// Indexes: id (primary), username, email
 			users: "id, username, email",
-
-			// Attachments table
-			// Indexes: id (primary), project
 			attachments: "id, project",
-
-			// Database versions table
-			// Indexes: id (primary), version
 			dbVersions: "id, version",
-
-			// Keep projects as alias for workspaces during migration
 			projects: "id, title, owner",
+		});
+
+		// Version 8: Add tag system tables
+		this.version(8).stores({
+			// Existing tables (unchanged)
+			nodes: "id, workspace, parent, type, order",
+			contents: "id, nodeId, contentType",
+			workspaces: "id, title, owner",
+			wikiEntries: "id, project, name",
+			drawings: "id, project, name",
+			users: "id, username, email",
+			attachments: "id, project",
+			dbVersions: "id, version",
+			projects: "id, title, owner",
+
+			// Tag definitions table
+			// Indexes: id (primary), workspace, name, category
+			tags: "id, workspace, name, category",
+
+			// Node-tag junction table (many-to-many)
+			// Indexes: id (primary), nodeId, tagId, compound [nodeId+tagId]
+			nodeTags: "id, nodeId, tagId, [nodeId+tagId]",
+
+			// Tag-tag relations table (for graph visualization)
+			// Indexes: id (primary), workspace, sourceTagId, targetTagId, compound
+			tagRelations: "id, workspace, sourceTagId, targetTagId, [sourceTagId+targetTagId]",
 		});
 
 		// Open database and log status
 		this.open()
-			.then(() => logger.success("NovelEditorDatabase initialized (v7)"))
+			.then(() => logger.success("NovelEditorDatabase initialized (v8)"))
 			.catch((err) => logger.error("Database open error:", err));
 	}
 }

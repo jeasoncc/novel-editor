@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 // Simplified panel types - files panel is the main file tree
-export type UnifiedSidebarPanel = "search" | "drawings" | "wiki" | "files" | null;
+export type UnifiedSidebarPanel = "search" | "drawings" | "wiki" | "files" | "tags" | null;
 
 interface SearchPanelState {
 	query: string;
