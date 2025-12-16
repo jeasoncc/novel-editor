@@ -58,8 +58,12 @@ function TagMenuPortal({
 
   return ReactDOM.createPortal(
     <div
-      className="fixed z-[100000]"
-      style={{ top: position.top, left: position.left }}
+      className="fixed"
+      style={{ 
+        top: position.top, 
+        left: position.left,
+        zIndex: 9999999
+      }}
     >
       {children}
     </div>,

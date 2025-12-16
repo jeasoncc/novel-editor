@@ -381,12 +381,12 @@ export const useEditorTabsStore = create<EditorTabsState>()(
     }),
     {
       name: "novel-editor-tabs",
-      // Only persist tab list and active tab (session state)
-      // Editor states are NOT persisted - they are runtime/memory only
+      // Don't persist tabs - they should be empty on refresh
+      // This provides a clean slate on each app start
       partialize: (state) => ({
-        tabs: state.tabs.map(t => ({ ...t, isDirty: false })), // 不持久化 dirty 状态
-        activeTabId: state.activeTabId,
-        // editorStates is intentionally NOT included - kept in memory only
+        // tabs and activeTabId are NOT persisted
+        // editorStates is NOT persisted
+        // Return empty object to effectively disable persistence
       }),
     }
   )

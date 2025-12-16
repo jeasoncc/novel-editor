@@ -108,14 +108,14 @@ export function EditorTabs({ className }: EditorTabsProps) {
 
   return (
     <>
-      <div className={cn("border-b bg-muted/30 flex items-center min-w-0 overflow-hidden", className)}>
+      <div className={cn("bg-muted/20 flex items-center min-w-0 overflow-hidden", className)}>
         {/* 左滚动按钮 */}
         {showScrollButtons && (
           <Button
             variant="ghost"
             size="icon"
             className={cn(
-              "h-8 w-6 rounded-none border-r shrink-0",
+              "h-8 w-6 rounded-none shrink-0",
               !canScrollLeft && "opacity-30 cursor-default"
             )}
             onClick={scrollLeft}
@@ -140,11 +140,11 @@ export function EditorTabs({ className }: EditorTabsProps) {
                     data-tab-id={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={cn(
-                      "group flex items-center gap-1.5 px-2.5 py-1.5 text-sm border-r shrink-0",
-                      "hover:bg-accent/50 transition-colors h-8",
+                      "group flex items-center gap-1.5 px-3 py-1.5 text-sm shrink-0",
+                      "hover:bg-accent/50 transition-colors h-8 rounded-t-md mx-0.5",
                       activeTabId === tab.id
-                        ? "bg-background border-b-2 border-b-primary"
-                        : "bg-muted/50"
+                        ? "bg-background shadow-sm"
+                        : "bg-transparent"
                     )}
                     style={{ maxWidth: `${tabMaxWidth}px`, minWidth: "70px" }}
                   >
@@ -180,7 +180,7 @@ export function EditorTabs({ className }: EditorTabsProps) {
             variant="ghost"
             size="icon"
             className={cn(
-              "h-8 w-6 rounded-none border-l shrink-0",
+              "h-8 w-6 rounded-none shrink-0",
               !canScrollRight && "opacity-30 cursor-default"
             )}
             onClick={scrollRight}
@@ -196,7 +196,7 @@ export function EditorTabs({ className }: EditorTabsProps) {
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 rounded-none border-l shrink-0"
+              className="h-8 w-8 rounded-none shrink-0"
               onClick={() => setCardViewOpen(true)}
             >
               <LayoutGrid className="size-4" />

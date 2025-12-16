@@ -7,13 +7,10 @@
 
 import type { SerializedEditorState } from "lexical";
 import {
-	Download,
 	PanelRightClose,
 	PanelRightOpen,
-	Upload,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { toast } from "sonner";
 import { CanvasEditor } from "@/components/blocks/canvas-editor";
 import { KeyboardShortcutsHelp } from "@/components/blocks/keyboard-shortcuts-help";
 import { SaveStatusIndicator } from "@/components/blocks/save-status-indicator";
@@ -31,7 +28,6 @@ import {
 import type { WorkspaceInterface, DrawingInterface } from "@/db/models";
 import { useManualSave } from "@/hooks/use-manual-save";
 import { useSettings } from "@/hooks/use-settings";
-import { exportAll, importFromJson, readFileAsText } from "@/services/import-export";
 import { useSaveStore } from "@/stores/save";
 import { saveService } from "@/services/save";
 import { type SelectionState, useSelectionStore } from "@/stores/selection";
@@ -157,38 +153,6 @@ export function StoryWorkspace({
 	// 自动保存定时器引用
 	const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-	// 导入导出
-	const handleExport = useCallback(async () => {
-		if (!selectedWorkspaceId) {
-			toast.error("Please select a workspace first");
-			return;
-		}
-		try {
-			await exportAll(selectedWorkspaceId);
-			toast.success("Export successful");
-		} catch {
-			toast.error("Export failed");
-		}
-	}, [selectedWorkspaceId]);
-
-	const handleImport = useCallback(async () => {
-		const input = document.createElement("input");
-		input.type = "file";
-		input.accept = ".json";
-		input.onchange = async (e) => {
-			const file = (e.target as HTMLInputElement).files?.[0];
-			if (!file) return;
-			try {
-				const text = await readFileAsText(file);
-				await importFromJson(text);
-				toast.success("Import successful");
-			} catch {
-				toast.error("Import failed");
-			}
-		};
-		input.click();
-	}, []);
-
 	// 获取当前活动标签
 	const activeTab = tabs.find((t) => t.id === activeTabId);
 	const isCanvasTab = activeTab?.type === "canvas";
@@ -301,31 +265,13 @@ export function StoryWorkspace({
 			<div className="flex h-full w-full flex-row overflow-hidden bg-background">
 				<div className="flex flex-1 flex-col min-w-0 overflow-hidden">
 					{/* 顶部工具栏 */}
-					<div className="flex h-12 items-center justify-between border-b px-4 shrink-0">
+					<div className="flex h-12 items-center justify-between px-4 shrink-0">
 						<div className="flex items-center gap-2">
 							<SaveStatusIndicator />
 						</div>
 
 						<div className="flex items-center gap-1">
 							<ThemeSelector />
-
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<Button variant="ghost" size="icon" onClick={handleExport}>
-										<Download className="size-4" />
-									</Button>
-								</TooltipTrigger>
-								<TooltipContent>Export</TooltipContent>
-							</Tooltip>
-
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<Button variant="ghost" size="icon" onClick={handleImport}>
-										<Upload className="size-4" />
-									</Button>
-								</TooltipTrigger>
-								<TooltipContent>Import</TooltipContent>
-							</Tooltip>
 
 							<Tooltip>
 								<TooltipTrigger asChild>

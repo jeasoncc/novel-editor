@@ -130,13 +130,20 @@ export default function Editor({
           <RichTextPlugin
             contentEditable={
               <ContentEditable
-                className="min-h-full outline-none p-8 text-base leading-relaxed relative"
+                className="min-h-full outline-none px-8 py-4 text-base leading-relaxed relative"
                 style={{ caretColor: 'var(--primary)' }}
               />
             }
             ErrorBoundary={LexicalErrorBoundary}
             placeholder={
-              <div className="absolute top-8 left-8 text-muted-foreground/50 pointer-events-none select-none text-base">
+              <div 
+                className="text-muted-foreground/50 pointer-events-none select-none text-base"
+                style={{
+                  position: 'absolute',
+                  top: '1rem',
+                  left: '2rem'
+                }}
+              >
                 {placeholder}
               </div>
             }

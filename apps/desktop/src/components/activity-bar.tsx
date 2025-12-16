@@ -1,4 +1,4 @@
-import { Link, useLocation } from "@tanstack/react-router";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { Trash2, Plus, Check } from "lucide-react";
 import type * as React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -504,7 +504,7 @@ export function ActivityBar(): React.ReactElement {
 						</PopoverContent>
 					</Popover>
 
-					<NavItem
+					<ToggleNavItem
 						to="/settings/design"
 						icon={<SettingsIcon className="size-5" />}
 						label="Settings"
@@ -563,6 +563,54 @@ function NavItem({
 					)}
 					{icon}
 				</Link>
+			</TooltipTrigger>
+			<TooltipContent side="right">{label}</TooltipContent>
+		</Tooltip>
+	);
+}
+
+// Toggle 导航项组件 - 点击一次打开，再点击一次返回
+function ToggleNavItem({
+	to,
+	icon,
+	label,
+	active,
+}: {
+	to: string;
+	icon: React.ReactNode;
+	label: string;
+	active: boolean;
+}) {
+	const navigate = useNavigate();
+	
+	const handleClick = (e: React.MouseEvent) => {
+		e.preventDefault();
+		if (active) {
+			// 如果已经在目标页面，返回主页
+			navigate({ to: "/" });
+		} else {
+			// 否则导航到目标页面
+			navigate({ to });
+		}
+	};
+	
+	return (
+		<Tooltip>
+			<TooltipTrigger asChild>
+				<button
+					onClick={handleClick}
+					className={cn(
+						"relative flex w-full aspect-square items-center justify-center transition-all",
+						active
+							? "text-foreground"
+							: "text-muted-foreground hover:text-foreground",
+					)}
+				>
+					{active && (
+						<div className="absolute left-0 top-1/2 h-8 w-[3px] -translate-y-1/2 rounded-r-sm bg-primary" />
+					)}
+					{icon}
+				</button>
 			</TooltipTrigger>
 			<TooltipContent side="right">{label}</TooltipContent>
 		</Tooltip>
