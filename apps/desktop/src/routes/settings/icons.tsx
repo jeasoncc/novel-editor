@@ -18,10 +18,10 @@ function IconSettings() {
 	const currentIconTheme = useIconTheme();
 	const { currentTheme } = useTheme();
 
-	// 应用图标主题
+	// Apply icon theme
 	const handleIconThemeChange = (themeKey: string) => {
 		applyIconTheme(themeKey);
-		// 触发重新渲染
+		// Trigger re-render
 		window.dispatchEvent(new Event("icon-theme-changed"));
 	};
 
@@ -42,7 +42,7 @@ function IconSettings() {
 							<Sparkles className="size-4" />
 							<h4 className="text-sm font-medium uppercase tracking-wider">Icon Themes</h4>
 						</div>
-						<div className="grid grid-cols-2 gap-3">
+						<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 							{iconThemes.map((theme) => (
 								<IconThemeCard
 									key={theme.key}
@@ -185,68 +185,88 @@ function IconSettings() {
 										/>
 									</div>
 
-									{/* Editor Mock - ActivityBar Icons */}
+									{/* Editor Mock - Icon Gallery */}
 									<div
-										className="flex-1 p-6"
+										className="flex-1 p-6 overflow-y-auto"
 										style={{ background: currentTheme?.colors.background }}
 									>
-										<h2
-											className="text-base font-semibold mb-4 flex items-center gap-2"
-											style={{ color: currentTheme?.colors.foreground }}
-										>
-											<Sparkles className="size-4" />
-											Icon Preview
-										</h2>
+										<div className="space-y-8">
+											{/* File System Icons */}
+											<div className="space-y-3">
+												<h3 
+													className="text-xs font-semibold uppercase tracking-wider opacity-50 px-1"
+													style={{ color: currentTheme?.colors.mutedForeground }}
+												>
+													File System
+												</h3>
+												<div className="grid grid-cols-[repeat(auto-fill,minmax(70px,1fr))] gap-2">
+													<ActivityBarIconItem
+														icon={currentIconTheme.icons.project.default}
+														label="Project"
+													/>
+													<ActivityBarIconItem
+														icon={currentIconTheme.icons.folder.default}
+														label="Folder"
+														color={currentTheme?.colors.folderColor}
+													/>
+													<ActivityBarIconItem
+														icon={currentIconTheme.icons.file.default}
+														label="File"
+													/>
+													<ActivityBarIconItem
+														icon={currentIconTheme.icons.character.default}
+														label="Character"
+													/>
+													<ActivityBarIconItem
+														icon={currentIconTheme.icons.world.default}
+														label="World"
+													/>
+												</div>
+											</div>
 
-										<div className="grid grid-cols-4 gap-3">
-											{/* File Tree Icons */}
-											<ActivityBarIconItem
-												icon={currentIconTheme.icons.project.default}
-												label="Project"
-											/>
-											<ActivityBarIconItem
-												icon={currentIconTheme.icons.folder.default}
-												label="Folder"
-												color={currentTheme?.colors.folderColor}
-											/>
-											<ActivityBarIconItem
-												icon={currentIconTheme.icons.file.default}
-												label="File"
-											/>
-											<ActivityBarIconItem
-												icon={currentIconTheme.icons.character.default}
-												label="Character"
-											/>
-
-											{/* Activity Bar Icons */}
-											<ActivityBarIconItem
-												icon={currentIconTheme.icons.activityBar.library}
-												label="Library"
-											/>
-											<ActivityBarIconItem
-												icon={currentIconTheme.icons.activityBar.search}
-												label="Search"
-											/>
-											<ActivityBarIconItem
-												icon={currentIconTheme.icons.activityBar.outline}
-												label="Outline"
-											/>
-											<ActivityBarIconItem
-												icon={currentIconTheme.icons.activityBar.canvas}
-												label="Canvas"
-											/>
-											<ActivityBarIconItem
-												icon={currentIconTheme.icons.activityBar.statistics}
-												label="Stats"
-											/>
-											<ActivityBarIconItem
-												icon={currentIconTheme.icons.activityBar.settings}
-												label="Settings"
-											/>
-											<ActivityBarIconItem
-												icon={currentIconTheme.icons.activityBar.create}
-												label="New"
-											/>
+											{/* Interface Icons */}
+											<div className="space-y-3">
+												<h3 
+													className="text-xs font-semibold uppercase tracking-wider opacity-50 px-1"
+													style={{ color: currentTheme?.colors.mutedForeground }}
+												>
+													Interface
+												</h3>
+												<div className="grid grid-cols-[repeat(auto-fill,minmax(70px,1fr))] gap-2">
+													<ActivityBarIconItem
+														icon={currentIconTheme.icons.activityBar.library}
+														label="Library"
+													/>
+													<ActivityBarIconItem
+														icon={currentIconTheme.icons.activityBar.search}
+														label="Search"
+													/>
+													<ActivityBarIconItem
+														icon={currentIconTheme.icons.activityBar.outline}
+														label="Outline"
+													/>
+													<ActivityBarIconItem
+														icon={currentIconTheme.icons.activityBar.canvas}
+														label="Canvas"
+													/>
+													<ActivityBarIconItem
+														icon={currentIconTheme.icons.activityBar.statistics}
+														label="Stats"
+													/>
+													<ActivityBarIconItem
+														icon={currentIconTheme.icons.activityBar.settings}
+														label="Settings"
+													/>
+													<ActivityBarIconItem
+														icon={currentIconTheme.icons.activityBar.create}
+														label="New"
+													/>
+													<ActivityBarIconItem
+														icon={currentIconTheme.icons.activityBar.import}
+														label="Import"
+													/>
+												</div>
+											</div>
 										</div>
 									</div>
 								</div>
@@ -259,7 +279,7 @@ function IconSettings() {
 	);
 }
 
-// 图标主题卡片
+// Icon Theme Card
 interface IconThemeCardProps {
 	theme: IconTheme;
 	isActive: boolean;
@@ -275,38 +295,52 @@ function IconThemeCard({ theme, isActive, onSelect }: IconThemeCardProps) {
 		<button
 			onClick={onSelect}
 			className={cn(
-				"relative flex flex-col rounded-xl border overflow-hidden transition-all text-left group",
-				"hover:shadow-sm hover:-translate-y-0.5",
-				isActive ? "border-primary ring-1 ring-primary/20 shadow-sm" : "border-border/50",
+				"relative flex flex-col rounded-xl border overflow-hidden transition-all duration-300 text-left group",
+				"hover:shadow-md hover:-translate-y-1 hover:border-primary/50",
+				isActive 
+					? "border-primary ring-2 ring-primary/20 shadow-md bg-accent/5" 
+					: "border-border/40 bg-card"
 			)}
 		>
-			{/* 图标预览 */}
-			<div className="h-14 w-full flex items-center justify-center gap-4 bg-muted/20 border-b border-border/10">
-				<ProjectIcon className="size-5 text-foreground/70" />
-				<FolderIcon className="size-5 text-foreground/70" />
-				<FileIcon className="size-5 text-foreground/70" />
-			</div>
-
-			{/* 主题信息 */}
-			<div className="px-3 py-2 bg-muted/20">
-				<div className="text-xs font-medium text-card-foreground">
-					{theme.name}
+			{/* Icon Preview */}
+			<div className={cn(
+				"h-16 w-full flex items-center justify-center gap-4 border-b border-border/10 transition-colors",
+				isActive ? "bg-primary/5" : "bg-muted/30 group-hover:bg-muted/50"
+			)}>
+				<div className="p-2 rounded-lg bg-background shadow-sm ring-1 ring-border/10 group-hover:scale-110 transition-transform duration-300">
+					<ProjectIcon className="size-5 text-foreground/80" />
+				</div>
+				<div className="p-2 rounded-lg bg-background shadow-sm ring-1 ring-border/10 group-hover:scale-110 transition-transform duration-300 delay-75">
+					<FolderIcon className="size-5 text-foreground/80" />
+				</div>
+				<div className="p-2 rounded-lg bg-background shadow-sm ring-1 ring-border/10 group-hover:scale-110 transition-transform duration-300 delay-150">
+					<FileIcon className="size-5 text-foreground/80" />
 				</div>
 			</div>
 
-			{/* 选中标记 */}
+			{/* Theme Info */}
+			<div className="px-4 py-3">
+				<div className="text-sm font-semibold text-card-foreground mb-1 group-hover:text-primary transition-colors">
+					{theme.name}
+				</div>
+				<p className="text-[10px] text-muted-foreground line-clamp-1 opacity-70">
+					{theme.description}
+				</p>
+			</div>
+
+			{/* Selection Indicator */}
 			{isActive && (
-				<div className="absolute top-1.5 right-1.5 size-4 rounded-full flex items-center justify-center shadow-sm"
+				<div className="absolute top-2 right-2 size-5 rounded-full flex items-center justify-center shadow-sm animate-in fade-in zoom-in duration-200"
 					style={{ background: "hsl(var(--primary))" }}
 				>
-					<Check className="size-2.5 text-primary-foreground" />
+					<Check className="size-3 text-primary-foreground" />
 				</div>
 			)}
 		</button>
 	);
 }
 
-// 文件项组件
+// File Item Component
 function FileItem({
 	icon: Icon,
 	label,
@@ -347,7 +381,7 @@ function FileItem({
 	);
 }
 
-// ActivityBar 图标组件（左侧竖条）
+// ActivityBar Icon Component (Left vertical bar)
 function ActivityBarIcon({
 	icon: Icon,
 	isActive = false,
@@ -380,7 +414,7 @@ function ActivityBarIcon({
 	);
 }
 
-// ActivityBar 图标项组件（右侧预览网格）
+// ActivityBar Icon Item Component (Right preview grid)
 function ActivityBarIconItem({
 	icon: Icon,
 	label,
@@ -394,20 +428,19 @@ function ActivityBarIconItem({
 
 	return (
 		<div
-			className="flex flex-col items-center gap-2 p-3 rounded-lg border transition-colors hover:bg-muted/50"
-			style={{
-				borderColor: currentTheme?.colors.border,
-			}}
+			className="group flex flex-col items-center justify-center gap-2 p-2 rounded-xl transition-all duration-200 hover:bg-muted/20 hover:scale-105 cursor-default"
 		>
-			<Icon
-				className="size-6"
-				style={{ 
-					color: color || currentTheme?.colors.foreground,
-					fill: color ? `${color}1A` : undefined
-				}}
-			/>
+			<div className="p-2 rounded-lg bg-muted/10 group-hover:bg-muted/20 transition-colors">
+				<Icon
+					className="size-5 transition-transform group-hover:-translate-y-0.5 duration-300"
+					style={{ 
+						color: color || currentTheme?.colors.foreground,
+						fill: color ? `${color}1A` : undefined
+					}}
+				/>
+			</div>
 			<span
-				className="text-xs text-center"
+				className="text-[10px] font-medium text-center opacity-70 group-hover:opacity-100 transition-opacity"
 				style={{ color: currentTheme?.colors.mutedForeground }}
 			>
 				{label}

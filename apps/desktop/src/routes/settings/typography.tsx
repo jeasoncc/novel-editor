@@ -1,10 +1,24 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { RotateCcw, Type } from "lucide-react";
+import { Monitor, RotateCcw, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
+import { DebouncedSlider } from "@/components/ui/debounced-slider";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Slider } from "@/components/ui/slider";
-import { AVAILABLE_FONTS, useFontSettings } from "@/stores/font";
+import { Separator } from "@/components/ui/separator";
+import {
+	DEFAULT_UI_FONT,
+	POPULAR_FONTS,
+	UI_SCALE_OPTIONS,
+	CARD_SIZE_OPTIONS,
+	useFontSettings,
+} from "@/stores/font";
 
 export const Route = createFileRoute("/settings/typography")({
 	component: TypographySettings,
@@ -12,208 +26,252 @@ export const Route = createFileRoute("/settings/typography")({
 
 function TypographySettings() {
 	const {
-		fontFamily,
-		fontSize,
-		lineHeight,
-		letterSpacing,
-		paragraphSpacing,
-		firstLineIndent,
-		setFontFamily,
-		setFontSize,
-		setLineHeight,
-		setLetterSpacing,
-		setParagraphSpacing,
-		setFirstLineIndent,
-		reset,
+		uiFontFamily,
+		uiFontSize,
+		uiScale,
+		cardSize,
+		cardBorderRadius,
+		setUiFontFamily,
+		setUiFontSize,
+		setUiScale,
+		setCardSize,
+		setCardBorderRadius,
 	} = useFontSettings();
 
-	const currentFont =
-		AVAILABLE_FONTS.find((f) => f.value === fontFamily) || AVAILABLE_FONTS[0];
+	const resetUiSettings = () => {
+		setUiFontFamily(DEFAULT_UI_FONT);
+		setUiFontSize(14);
+		setUiScale("default");
+		setCardSize("default");
+		setCardBorderRadius(8);
+	};
+
+	// 添加字体到列表
+	const addFont = (font: string) => {
+		const fonts = uiFontFamily.split(",").map(f => f.trim());
+		if (!fonts.some(f => f.replace(/['"]/g, "") === font)) {
+			setUiFontFamily(`'${font}', ${uiFontFamily}`);
+		}
+	};
 
 	return (
-		<div className="space-y-10 max-w-3xl">
+		<div className="space-y-6 max-w-4xl">
 			<div className="flex items-start justify-between">
 				<div>
-					<h3 className="text-lg font-medium">Typography</h3>
+					<h3 className="text-lg font-medium">Interface Settings</h3>
 					<p className="text-sm text-muted-foreground">
-						Customize font, size, and layout for reading.
+						Customize fonts and layout for the application interface.
 					</p>
 				</div>
-				<Button variant="outline" size="sm" onClick={reset}>
+				<Button variant="outline" size="sm" onClick={resetUiSettings}>
 					<RotateCcw className="size-3.5 mr-2" />
 					Reset
 				</Button>
 			</div>
 
-			<div className="space-y-12">
-				{/* Font Selection */}
-				<div className="space-y-4">
-					<h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Font Family</h4>
-					<RadioGroup value={fontFamily} onValueChange={setFontFamily}>
-						<div className="grid grid-cols-2 gap-3">
-							{AVAILABLE_FONTS.map((font) => (
-								<label
-									key={font.value}
-									className={`
-                      flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-all
-                      ${
-												fontFamily === font.value
+			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+				{/* UI Typography Card */}
+				<Card>
+					<CardHeader className="pb-4">
+						<CardTitle className="flex items-center gap-2 text-base">
+							<Monitor className="size-4" />
+							Interface Typography
+						</CardTitle>
+						<CardDescription>
+							Font settings for sidebar, menus, and UI elements
+						</CardDescription>
+					</CardHeader>
+					<CardContent className="space-y-6">
+						{/* UI Font Family - VSCode style input */}
+						<div className="space-y-2">
+							<div className="flex items-center justify-between">
+								<Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+									UI Font
+								</Label>
+								<Button
+									variant="ghost"
+									size="sm"
+									className="h-6 text-xs"
+									onClick={() => setUiFontFamily(DEFAULT_UI_FONT)}
+								>
+									Reset
+								</Button>
+							</div>
+							<Input
+								value={uiFontFamily}
+								onChange={(e) => setUiFontFamily(e.target.value)}
+								placeholder="'Font Name', sans-serif"
+								className="font-mono text-xs"
+							/>
+							<div className="flex flex-wrap gap-1">
+								{POPULAR_FONTS.map((font) => {
+									const isIncluded = uiFontFamily.includes(font);
+									return (
+										<button
+											key={font}
+											onClick={() => addFont(font)}
+											disabled={isIncluded}
+											className={`
+												px-1.5 py-0.5 text-[10px] rounded border transition-all
+												${isIncluded 
+													? "bg-primary/10 border-primary/30 text-primary cursor-default" 
+													: "border-border hover:bg-muted hover:border-primary/50"
+												}
+											`}
+										>
+											{isIncluded && <Check className="size-2.5 inline mr-0.5" />}
+											{font}
+										</button>
+									);
+								})}
+							</div>
+						</div>
+
+						<Separator />
+
+						{/* UI Font Size */}
+						<div className="space-y-3">
+							<div className="flex items-center justify-between">
+								<Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+									UI Font Size
+								</Label>
+								<span className="text-sm font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded">
+									{uiFontSize}px
+								</span>
+							</div>
+							<DebouncedSlider
+								value={[uiFontSize]}
+								onValueChange={([v]: number[]) => setUiFontSize(v)}
+								min={12}
+								max={18}
+								step={1}
+								className="w-full"
+							/>
+							<div className="flex justify-between text-[10px] text-muted-foreground">
+								<span>Compact</span>
+								<span>Large</span>
+							</div>
+						</div>
+
+						<Separator />
+
+						{/* UI Scale */}
+						<div className="space-y-3">
+							<Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+								UI Scale
+							</Label>
+							<div className="grid grid-cols-2 gap-2">
+								{UI_SCALE_OPTIONS.map((option) => (
+									<button
+										key={option.value}
+										onClick={() => setUiScale(option.value)}
+										className={`
+											p-3 rounded-lg border text-center transition-all
+											${
+												uiScale === option.value
 													? "border-primary ring-1 ring-primary/20 bg-primary/5"
 													: "border-border hover:bg-muted/50"
 											}
-                    `}
-								>
-									<RadioGroupItem value={font.value} className="sr-only" />
-									<div className="flex-1">
-										<div className="font-medium text-sm">{font.label}</div>
-										<div
-											className="text-xs text-muted-foreground mt-1 truncate"
-											style={{ fontFamily: font.family }}
-										>
-											The quick brown fox jumps over the lazy dog
+										`}
+									>
+										<div className="text-sm font-medium">{option.label}</div>
+										<div className="text-xs text-muted-foreground">
+											{option.description}
 										</div>
-									</div>
-								</label>
-							))}
+									</button>
+								))}
+							</div>
 						</div>
-					</RadioGroup>
-				</div>
+					</CardContent>
+				</Card>
 
-				{/* Metrics */}
-				<div className="space-y-8">
-					<h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Metrics</h4>
-					
-					{/* Font Size */}
-					<div className="space-y-4">
-						<div className="flex items-center justify-between">
-							<Label className="font-normal">Font Size</Label>
-							<span className="text-sm font-mono text-muted-foreground">
-								{fontSize}px
-							</span>
+				{/* UI Layout Card */}
+				<Card>
+					<CardHeader className="pb-4">
+						<CardTitle className="flex items-center gap-2 text-base">
+							<Monitor className="size-4" />
+							UI Layout
+						</CardTitle>
+						<CardDescription>
+							Card sizes and layout spacing
+						</CardDescription>
+					</CardHeader>
+					<CardContent className="space-y-6">
+						{/* Card Size */}
+						<div className="space-y-3">
+							<Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+								Card Size
+							</Label>
+							<div className="grid grid-cols-2 gap-2">
+								{CARD_SIZE_OPTIONS.map((option) => (
+									<button
+										key={option.value}
+										onClick={() => setCardSize(option.value)}
+										className={`
+											p-3 rounded-lg border text-center transition-all
+											${
+												cardSize === option.value
+													? "border-primary ring-1 ring-primary/20 bg-primary/5"
+													: "border-border hover:bg-muted/50"
+											}
+										`}
+									>
+										<div className="text-sm font-medium">{option.label}</div>
+										<div className="text-xs text-muted-foreground">
+											{option.description}
+										</div>
+									</button>
+								))}
+							</div>
 						</div>
-						<Slider
-							value={[fontSize]}
-							onValueChange={([v]: number[]) => setFontSize(v)}
-							min={14}
-							max={32}
-							step={1}
-							className="w-full"
-						/>
-					</div>
 
-					{/* Line Height */}
-					<div className="space-y-4">
-						<div className="flex items-center justify-between">
-							<Label className="font-normal">Line Height</Label>
-							<span className="text-sm font-mono text-muted-foreground">
-								{lineHeight.toFixed(1)}
-							</span>
+						<Separator />
+
+						{/* Card Border Radius */}
+						<div className="space-y-3">
+							<div className="flex items-center justify-between">
+								<Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+									Card Roundness
+								</Label>
+								<span className="text-sm font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded">
+									{cardBorderRadius}px
+								</span>
+							</div>
+							<DebouncedSlider
+								value={[cardBorderRadius]}
+								onValueChange={([v]: number[]) => setCardBorderRadius(v)}
+								min={0}
+								max={16}
+								step={1}
+								className="w-full"
+							/>
+							<div className="flex justify-between text-[10px] text-muted-foreground">
+								<span>Square</span>
+								<span>Rounded</span>
+							</div>
 						</div>
-						<Slider
-							value={[lineHeight]}
-							onValueChange={([v]: number[]) => setLineHeight(v)}
-							min={1.2}
-							max={2.5}
-							step={0.1}
-							className="w-full"
-						/>
-					</div>
 
-					{/* Letter Spacing */}
-					<div className="space-y-4">
-						<div className="flex items-center justify-between">
-							<Label className="font-normal">Letter Spacing</Label>
-							<span className="text-sm font-mono text-muted-foreground">
-								{letterSpacing.toFixed(2)}em
-							</span>
+						{/* Preview Card */}
+						<div className="space-y-3">
+							<Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+								Preview
+							</Label>
+							<div 
+								className="p-4 border bg-card text-card-foreground transition-all"
+								style={{
+									borderRadius: `${cardBorderRadius}px`,
+									padding: CARD_SIZE_OPTIONS.find(c => c.value === cardSize)?.padding || "1rem",
+									fontFamily: uiFontFamily,
+								}}
+							>
+								<div className="font-medium text-sm mb-2">Sample Card</div>
+								<div className="text-xs text-muted-foreground">
+									This shows how cards will look with your settings
+								</div>
+							</div>
 						</div>
-						<Slider
-							value={[letterSpacing]}
-							onValueChange={([v]: number[]) => setLetterSpacing(v)}
-							min={-0.05}
-							max={0.2}
-							step={0.01}
-							className="w-full"
-						/>
-					</div>
-
-					{/* Paragraph Spacing */}
-					<div className="space-y-4">
-						<div className="flex items-center justify-between">
-							<Label className="font-normal">Paragraph Spacing</Label>
-							<span className="text-sm font-mono text-muted-foreground">
-								{paragraphSpacing.toFixed(1)}em
-							</span>
-						</div>
-						<Slider
-							value={[paragraphSpacing]}
-							onValueChange={([v]: number[]) => setParagraphSpacing(v)}
-							min={0}
-							max={2.5}
-							step={0.1}
-							className="w-full"
-						/>
-					</div>
-
-					{/* First Line Indent */}
-					<div className="space-y-4">
-						<div className="flex items-center justify-between">
-							<Label className="font-normal">First Line Indent</Label>
-							<span className="text-sm font-mono text-muted-foreground">
-								{firstLineIndent.toFixed(0)} chars
-							</span>
-						</div>
-						<Slider
-							value={[firstLineIndent]}
-							onValueChange={([v]: number[]) => setFirstLineIndent(v)}
-							min={0}
-							max={4}
-							step={1}
-							className="w-full"
-						/>
-					</div>
-				</div>
-
-				{/* Preview */}
-				<div className="space-y-4">
-					<h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Preview</h4>
-					<div
-						className="p-8 rounded-lg border bg-background/50"
-						style={{
-							fontFamily: currentFont.family,
-							fontSize: `${fontSize}px`,
-							lineHeight: lineHeight,
-							letterSpacing: `${letterSpacing}em`,
-						}}
-					>
-						<p
-							style={{
-								textIndent: `${firstLineIndent}em`,
-								marginBottom: `${paragraphSpacing}em`,
-							}}
-						>
-							The old lighthouse stood defiant against the crashing waves, its
-							beacon cutting through the thick fog like a silver blade. For
-							generations, it had guided sailors home, but tonight, the light
-							seemed to flicker with an eerie, irregular rhythm.
-						</p>
-						<p
-							style={{
-								textIndent: `${firstLineIndent}em`,
-								marginBottom: `${paragraphSpacing}em`,
-							}}
-						>
-							Elias wiped the salt spray from his glasses and squinted into
-							the dark. He had tended this lamp for forty years, knowing every
-							gear and lens by heart. But the sound echoing from the lantern
-							room wasn't mechanical. It was a whisper.
-						</p>
-						<p style={{ textIndent: `${firstLineIndent}em` }}>
-							"They are coming," it said, carried on the wind that shouldn't
-							have been able to breach the thick glass walls.
-						</p>
-					</div>
-				</div>
+					</CardContent>
+				</Card>
 			</div>
 		</div>
 	);

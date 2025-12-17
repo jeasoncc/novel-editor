@@ -1,6 +1,6 @@
 /**
- * 清空所有数据的服务
- * 包括 IndexedDB、localStorage、sessionStorage、cookies 等
+ * Clear Data Service
+ * Includes IndexedDB, localStorage, sessionStorage, cookies, etc.
  */
 
 import logger from "@/log";
@@ -14,11 +14,11 @@ export interface ClearDataOptions {
 }
 
 /**
- * 清空 IndexedDB 数据
+ * Clear IndexedDB data
  */
 export async function clearIndexedDB(): Promise<void> {
 	try {
-		// 清空所有表的数据
+		// Clear all table data
 		await database.transaction(
 			"rw",
 			[
@@ -54,11 +54,11 @@ export async function clearIndexedDB(): Promise<void> {
 }
 
 /**
- * 清空 localStorage
+ * Clear localStorage
  */
 export function clearLocalStorage(): void {
 	try {
-		// 清空所有 localStorage 数据，包括 zustand 持久化的 store
+		// Clear all localStorage data, including zustand persisted stores
 		localStorage.clear();
 
 		logger.info("[Clear Data] localStorage cleared successfully");
@@ -72,7 +72,7 @@ export function clearLocalStorage(): void {
 }
 
 /**
- * 清空 sessionStorage
+ * Clear sessionStorage
  */
 export function clearSessionStorage(): void {
 	try {
@@ -88,11 +88,11 @@ export function clearSessionStorage(): void {
 }
 
 /**
- * 清空 cookies
+ * Clear cookies
  */
 export function clearCookies(): void {
 	try {
-		// 获取所有 cookies
+		// Get all cookies
 		const cookies = document.cookie.split(";");
 
 		for (const cookie of cookies) {
@@ -101,7 +101,7 @@ export function clearCookies(): void {
 				eqPos > -1 ? cookie.substring(0, eqPos).trim() : cookie.trim();
 
 			if (name) {
-				// 删除 cookie（设置过期时间为过去）
+				// Delete cookie by setting expiration to the past
 				document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
 				document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`;
 				document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.${window.location.hostname}`;
@@ -119,13 +119,13 @@ export function clearCookies(): void {
 }
 
 /**
- * 初始化基本设置，确保应用正常运行
- * 清空所有数据后，设置一些默认值
+ * Initialize basic settings to ensure app runs normally
+ * After clearing all data, set some default values
  */
 function initializeBasicSettings(): void {
 	try {
-		// 不设置任何默认值，让应用使用代码中的默认值
-		// 这样可以确保完全清空，应用会自动初始化
+		// Don't set any default values, let the app use code defaults
+		// This ensures complete clearing, app will auto-initialize
 		
 		logger.info("[Clear Data] Basic settings will be initialized by app on next load");
 	} catch (error) {
@@ -134,7 +134,7 @@ function initializeBasicSettings(): void {
 }
 
 /**
- * 清空所有缓存（如果支持 Cache API）
+ * Clear all caches (if Cache API is supported)
  */
 export async function clearCaches(): Promise<void> {
 	try {
@@ -147,12 +147,12 @@ export async function clearCaches(): Promise<void> {
 		}
 	} catch (error) {
 		logger.error("[Clear Data] Failed to clear caches:", error);
-		// 不抛出错误，因为缓存清理失败不是致命的
+		// Don't throw error, cache clearing failure is not fatal
 	}
 }
 
 /**
- * 清空所有数据
+ * Clear all data
  */
 export async function clearAllData(
 	options: ClearDataOptions = {},
@@ -167,30 +167,30 @@ export async function clearAllData(
 	const errors: string[] = [];
 
 	try {
-		// 清空 IndexedDB
+		// Clear IndexedDB
 		if (shouldClearIndexedDB) {
 			await clearIndexedDB();
 		}
 
-		// 清空 localStorage
+		// Clear localStorage
 		if (shouldClearLocalStorage) {
 			clearLocalStorage();
 		}
 
-		// 清空 sessionStorage
+		// Clear sessionStorage
 		if (shouldClearSessionStorage) {
 			clearSessionStorage();
 		}
 
-		// 清空 cookies
+		// Clear cookies
 		if (shouldClearCookies) {
 			clearCookies();
 		}
 
-		// 清空缓存
+		// Clear caches
 		await clearCaches();
 
-		// 重新初始化基本设置，确保应用正常运行
+		// Re-initialize basic settings to ensure app runs normally
 		if (shouldClearLocalStorage) {
 			initializeBasicSettings();
 		}
@@ -208,42 +208,78 @@ export async function clearAllData(
 }
 
 /**
- * 获取存储使用情况统计
+ * Calculate the size of data in bytes
+ */
+function calculateDataSize(data: unknown[]): number {
+	try {
+		return new Blob([JSON.stringify(data)]).size;
+	} catch {
+		return 0;
+	}
+}
+
+/**
+ * Get storage usage statistics
  */
 export async function getStorageStats(): Promise<{
-	indexedDB: { size: number; tables: Record<string, number> };
+	indexedDB: { size: number; tables: Record<string, number>; tableSizes: Record<string, number> };
 	localStorage: { size: number; keys: number };
 	sessionStorage: { size: number; keys: number };
 	cookies: { count: number };
 }> {
 	try {
-		// IndexedDB 统计（使用新的 node-based 结构）
-		const indexedDBStats = {
-			size: 0,
-			tables: {
-				users: await database.users.count(),
-				workspaces: await database.workspaces.count(),
-				nodes: await database.nodes.count(),
-				contents: await database.contents.count(),
-				drawings: await database.drawings.count(),
-				attachments: await database.attachments.count(),
-				tags: await database.tags.count(),
-			},
+		// Get all data from each table to calculate sizes
+		const [users, workspaces, nodes, contents, drawings, attachments, tags] = await Promise.all([
+			database.users.toArray(),
+			database.workspaces.toArray(),
+			database.nodes.toArray(),
+			database.contents.toArray(),
+			database.drawings.toArray(),
+			database.attachments.toArray(),
+			database.tags.toArray(),
+		]);
+
+		// Calculate sizes for each table
+		const tableSizes = {
+			users: calculateDataSize(users),
+			workspaces: calculateDataSize(workspaces),
+			nodes: calculateDataSize(nodes),
+			contents: calculateDataSize(contents),
+			drawings: calculateDataSize(drawings),
+			attachments: calculateDataSize(attachments),
+			tags: calculateDataSize(tags),
 		};
 
-		// localStorage 统计
+		// Total IndexedDB size
+		const totalSize = Object.values(tableSizes).reduce((a, b) => a + b, 0);
+
+		const indexedDBStats = {
+			size: totalSize,
+			tables: {
+				users: users.length,
+				workspaces: workspaces.length,
+				nodes: nodes.length,
+				contents: contents.length,
+				drawings: drawings.length,
+				attachments: attachments.length,
+				tags: tags.length,
+			},
+			tableSizes,
+		};
+
+		// localStorage stats
 		const localStorageStats = {
-			size: JSON.stringify(localStorage).length,
+			size: new Blob([JSON.stringify(localStorage)]).size,
 			keys: Object.keys(localStorage).length,
 		};
 
-		// sessionStorage 统计
+		// sessionStorage stats
 		const sessionStorageStats = {
-			size: JSON.stringify(sessionStorage).length,
+			size: new Blob([JSON.stringify(sessionStorage)]).size,
 			keys: Object.keys(sessionStorage).length,
 		};
 
-		// cookies 统计
+		// cookies stats
 		const cookiesStats = {
 			count: document.cookie.split(";").filter((c) => c.trim()).length,
 		};

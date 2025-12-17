@@ -3,5 +3,5 @@
 
 fn main() {
     std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
-    novel_editor_lib::run()
+    grain_lib::run()
 }

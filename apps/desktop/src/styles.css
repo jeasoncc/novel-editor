@@ -2,15 +2,15 @@
    Novel Editor - Tailwind CSS v4 + shadcn/ui
    ======================================== */
 
-/* 导入 Tailwind */
+/* Import Tailwind */
 @import 'tailwindcss';
 
 /* ========================================
-   Tailwind v4 主题配置 - shadcn/ui 兼容
+   Tailwind v4 Theme Config - shadcn/ui Compatible
    ======================================== */
 
 @theme inline {
-  /* 基础颜色 - 映射到 CSS 变量 */
+  /* Base Colors - Map to CSS Variables */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   
@@ -39,7 +39,7 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   
-  /* 侧边栏颜色 */
+  /* Sidebar Colors */
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -54,7 +54,7 @@
   --color-toast-foreground: var(--toast-foreground);
   --color-toast-border: var(--toast-border);
   
-  /* 圆角 */
+  /* Border Radius */
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -62,18 +62,18 @@
 }
 
 /* ========================================
-   CSS 变量定义 - 浅色模式（默认值）
-   这些值会被 applyTheme() 函数覆盖
+   CSS Variable Definitions - Light Mode (Default)
+   These values will be overridden by applyTheme()
    ======================================== */
 
 :root {
   --radius: 0.5rem;
   
-  /* 基础颜色 - 十六进制格式 */
+  /* Base Colors - Hex Format */
   --background: #ffffff;
   --foreground: #1f2937;
   
-  /* 编辑器选中背景色 */
+  /* Editor Selection Background */
   --editor-selection: #bfdbfe;
   
   --card: #ffffff;
@@ -124,15 +124,15 @@
 }
 
 /* ========================================
-   CSS 变量定义 - 深色模式（默认值）
-   这些值会被 applyTheme() 函数覆盖
+   CSS Variable Definitions - Dark Mode (Default)
+   These values will be overridden by applyTheme()
    ======================================== */
 
 .dark {
   --background: #0f172a;
   --foreground: #f1f5f9;
   
-  /* 编辑器选中背景色 - 深色主题 */
+  /* Editor Selection Background - Dark Theme */
   --editor-selection: #1e3a5f;
   
   --card: #1e293b;
@@ -183,7 +183,7 @@
 }
 
 /* ========================================
-   基础样式
+   Base Styles
    ======================================== */
 
 html {
@@ -201,7 +201,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* 字体 */
+/* Fonts */
 .font-editor {
   font-family: 'Georgia', 'Times New Roman', 'Palatino', 'Baskerville', serif;
 }
@@ -210,7 +210,7 @@ code {
   font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Fira Mono', 'Roboto Mono', 'Consolas', 'Courier New', monospace;
 }
 
-/* 标题层级 */
+/* Heading Hierarchy */
 h1 { font-size: 1.5rem; font-weight: 600; line-height: 1.3; }
 h2 { font-size: 1.25rem; font-weight: 600; line-height: 1.4; }
 h3 { font-size: 1.125rem; font-weight: 600; line-height: 1.4; }
@@ -218,22 +218,22 @@ h4 { font-size: 1rem; font-weight: 600; line-height: 1.5; }
 h5 { font-size: 0.875rem; font-weight: 600; line-height: 1.5; }
 h6 { font-size: 0.75rem; font-weight: 600; line-height: 1.5; }
 
-/* 文本选择 - 增强可见性 */
+/* Text Selection - Enhanced Visibility */
 ::selection {
   background-color: var(--editor-selection);
   color: inherit;
 }
 
-/* 深色模式下选中样式更明显 */
+/* Dark Mode Selection More Visible */
 .dark ::selection {
   background-color: var(--editor-selection);
 }
 
 /* ========================================
-   焦点样式优化 - 移除默认轮廓，使用自定义样式
+   Focus Style Optimization - Remove Default Outline, Use Custom Styles
    ======================================== */
 
-/* 移除所有元素的默认焦点轮廓（使用 !important 确保优先级） */
+/* Remove default focus outline from all elements (use !important for priority) */
 *:focus {
   outline: none !important;
 }
@@ -243,14 +243,14 @@ h6 { font-size: 0.75rem; font-weight: 600; line-height: 1.5; }
   box-shadow: none !important;
 }
 
-/* 仅在键盘导航时显示焦点样式（保持无障碍性） */
+/* Only show focus styles during keyboard navigation (maintain accessibility) */
 *:focus-visible {
   outline: 2px solid hsl(var(--ring)) !important;
   outline-offset: 2px;
   border-radius: 4px;
 }
 
-/* 按钮和交互元素的焦点样式 */
+/* Focus styles for buttons and interactive elements */
 button:focus,
 button:focus-visible,
 a:focus,
@@ -267,7 +267,7 @@ a:focus-visible,
   outline-offset: 2px;
 }
 
-/* 输入框的焦点样式 */
+/* Focus styles for input fields */
 input:focus,
 textarea:focus,
 select:focus {
@@ -282,7 +282,7 @@ select:focus-visible {
   box-shadow: 0 0 0 3px color-mix(in srgb, hsl(var(--ring)) 15%, transparent);
 }
 
-/* 对话框和弹出层不显示焦点轮廓 */
+/* Dialogs and popovers don't show focus outline */
 [role="dialog"]:focus,
 [role="menu"]:focus,
 [role="listbox"]:focus,
@@ -291,63 +291,63 @@ select:focus-visible {
   outline: none !important;
 }
 
-/* Radix UI 组件特殊处理 */
+/* Radix UI Components Special Handling */
 [data-radix-focus-guard]:focus,
 [data-radix-popper-content-wrapper]:focus {
   outline: none !important;
 }
 
-/* 所有 div 和 span 的焦点 */
+/* Focus for all div and span elements */
 div:focus:not(:focus-visible),
 span:focus:not(:focus-visible) {
   outline: none !important;
 }
 
-/* 编辑器内容区域的焦点样式 */
+/* Focus styles for editor content area */
 .editor-container:focus,
 .editor-container:focus-within {
   outline: none;
 }
 
-/* Canvas 和绘图区域 */
+/* Canvas and Drawing Area */
 canvas:focus {
   outline: none;
 }
 
-/* 自定义滚动条不显示焦点 */
+/* Custom scrollbar doesn't show focus */
 [data-radix-scroll-area-viewport]:focus {
   outline: none;
 }
 
-/* 焦点状态 */
+/* Focus State */
 *:focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
 }
 
 /* ========================================
-   布局样式
+   Layout Styles
    ======================================== */
 
-/* 活动栏 */
+/* Activity Bar */
 .activity-bar {
   background-color: var(--sidebar);
 }
 
-/* 头部栏 */
+/* Header Bar */
 .header-bar {
   border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
 }
 
 /* ========================================
-   组件样式
+   Component Styles
    ======================================== */
 
 /* ========================================
-   全局滚动条优化 - 虚化隐藏
+   Global Scrollbar Optimization - Fade Hidden
    ======================================== */
 
-/* 全局滚动条样式 - 默认隐藏 */
+/* Global Scrollbar Styles - Hidden by Default */
 * {
   scrollbar-width: thin;
   scrollbar-color: transparent transparent;
@@ -368,7 +368,7 @@ canvas:focus {
   transition: background 0.3s ease;
 }
 
-/* 悬停时才显示滚动条 */
+/* Show scrollbar only on hover */
 *:hover::-webkit-scrollbar-thumb {
   background: color-mix(in srgb, var(--muted-foreground) 15%, transparent);
 }
@@ -377,12 +377,12 @@ canvas:focus {
   background: color-mix(in srgb, var(--muted-foreground) 25%, transparent);
 }
 
-/* Firefox 滚动条 */
+/* Firefox Scrollbar */
 *:hover {
   scrollbar-color: color-mix(in srgb, var(--muted-foreground) 15%, transparent) transparent;
 }
 
-/* 滚动条细化样式类 */
+/* Thin Scrollbar Style Class */
 .scrollbar-thin::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -406,7 +406,7 @@ canvas:focus {
   background: color-mix(in srgb, var(--muted-foreground) 20%, transparent);
 }
 
-/* 键盘快捷键 */
+/* Keyboard Shortcuts */
 kbd {
   display: inline-block;
   padding: 0.125rem 0.375rem;
@@ -421,30 +421,30 @@ kbd {
 }
 
 /* ========================================
-   编辑器样式 - 增强版
+   Editor Styles - Enhanced
    ======================================== */
 
-/* 编辑器容器 */
+/* Editor Container */
 .editor-container {
   position: relative;
 }
 
-/* 光标颜色 - 使用主题的 editorCursor 或 primary，增强可见性 */
+/* Cursor Color - Use theme's editorCursor or primary, enhanced visibility */
 .editor-container [contenteditable="true"] {
   caret-color: var(--editor-cursor, var(--primary));
 }
 
-/* 增强光标可见性 - 使用更粗的光标 */
+/* Enhanced Cursor Visibility - Use thicker cursor */
 [contenteditable="true"] {
   caret-color: var(--primary);
 }
 
-/* 深色模式下使用更亮的光标 */
+/* Use brighter cursor in dark mode */
 .dark [contenteditable="true"] {
   caret-color: #60a5fa;
 }
 
-/* 编辑器内文本选择 - 更明显的背景色 */
+/* Editor Text Selection - More visible background */
 .editor-container ::selection {
   background-color: var(--editor-selection);
   color: inherit;
@@ -454,12 +454,12 @@ kbd {
   background-color: var(--editor-selection);
 }
 
-/* 小说编辑器专用样式 */
+/* Novel Editor Specific Styles */
 .novel-editor-content {
   position: relative;
 }
 
-/* 小说编辑器选中样式 */
+/* Novel Editor Selection Styles */
 .novel-editor-content ::selection {
   background-color: var(--editor-selection);
   color: inherit;
@@ -469,14 +469,14 @@ kbd {
   background-color: var(--editor-selection);
 }
 
-/* Lexical 编辑器选中节点样式 */
+/* Lexical Editor Selected Node Styles */
 .novel-editor-content [data-lexical-decorator="true"].selected,
 .novel-editor-content .lexical-selected {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 
-/* 当前行高亮效果 */
+/* Current Line Highlight Effect */
 .novel-editor-content [data-lexical-editor="true"] > p:focus-within,
 .novel-editor-content [data-lexical-editor="true"] > div:focus-within,
 .novel-editor-content [data-lexical-editor="true"] > h1:focus-within,
@@ -492,9 +492,9 @@ kbd {
   transition: background-color 0.15s ease;
 }
 
-/* 打字机模式样式增强 */
+/* Typewriter Mode Style Enhancement */
 .novel-editor-content.typewriter-mode {
-  /* 打字机模式基础样式 */
+  /* Typewriter Mode Base Styles */
   scroll-behavior: smooth;
 }
 
@@ -508,7 +508,7 @@ kbd {
   transition: opacity 0.15s ease;
 }
 
-/* 打字机模式当前行居中指示器 */
+/* Typewriter Mode Current Line Center Indicator */
 .novel-editor-content.typewriter-mode::before {
   content: "";
   position: fixed;
@@ -527,7 +527,7 @@ kbd {
   z-index: 1;
 }
 
-/* 编辑器语法高亮 */
+/* Editor Syntax Highlighting */
 .editor-container h1,
 .editor-container h2,
 .editor-container h3,
@@ -590,7 +590,7 @@ kbd {
 }
 
 /* ========================================
-   动画
+   Animations
    ======================================== */
 
 @keyframes fadeIn {
@@ -645,7 +645,7 @@ kbd {
   }
 }
 
-/* 主题切换过渡动画 */
+/* Theme Switch Transition Animation */
 .theme-transition,
 .theme-transition *,
 .theme-transition *::before,
@@ -660,10 +660,31 @@ kbd {
 }
 
 /* ========================================
-   工具类
+   Utility Classes
    ======================================== */
 
-/* 禁止选择 */
+/* Font Configuration Utilities */
+.font-ui {
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: calc(var(--ui-font-size, 14px) * var(--ui-scale, 1));
+}
+
+.font-editor {
+  font-family: var(--font-editor, system-ui, sans-serif);
+  font-size: var(--editor-font-size, 15px);
+  line-height: var(--editor-line-height, 1.75);
+  letter-spacing: var(--editor-letter-spacing, 0em);
+}
+
+.card-padding {
+  padding: var(--card-padding, 1rem);
+}
+
+.card-radius {
+  border-radius: var(--card-border-radius, 8px);
+}
+
+/* Disable Selection */
 button, .no-select {
   user-select: none;
   -webkit-user-select: none;
@@ -676,17 +697,17 @@ button, .no-select {
 }
 
 /* ========================================
-   Excalidraw 嵌入样式
+   Excalidraw Embed Styles
    ======================================== */
 
-/* Excalidraw 容器 */
+/* Excalidraw Container */
 .excalidraw-container {
   position: relative;
   border-radius: 0.5rem;
   overflow: hidden;
 }
 
-/* Excalidraw 工具栏悬停显示 */
+/* Excalidraw Toolbar Show on Hover */
 .excalidraw-container .excalidraw-toolbar {
   opacity: 0;
   transition: opacity 0.2s ease;
@@ -696,7 +717,7 @@ button, .no-select {
   opacity: 1;
 }
 
-/* Excalidraw 全屏模式 */
+/* Excalidraw Fullscreen Mode */
 .excalidraw-fullscreen {
   position: fixed;
   inset: 0;
@@ -704,7 +725,7 @@ button, .no-select {
   background: var(--background);
 }
 
-/* 覆盖 Excalidraw 默认样式以适配主题 */
+/* Override Excalidraw Default Styles to Match Theme */
 .excalidraw .App-menu_top {
   background: var(--card) !important;
 }
@@ -719,7 +740,7 @@ button, .no-select {
   border-color: var(--border) !important;
 }
 
-/* Excalidraw 在编辑器中的占位符 */
+/* Excalidraw Placeholder in Editor */
 .excalidraw-placeholder {
   display: flex;
   flex-direction: column;
@@ -731,27 +752,27 @@ button, .no-select {
 }
 
 /* ========================================
-   全局焦点轮廓移除（最高优先级）
+   Global Focus Outline Removal (Highest Priority)
    ======================================== */
 
-/* 强制移除所有焦点轮廓 - 鼠标点击时 */
+/* Force Remove All Focus Outlines - On Mouse Click */
 html *:focus:not(:focus-visible) {
   outline: none !important;
   box-shadow: none !important;
 }
 
-/* 确保所有元素默认无轮廓 */
+/* Ensure All Elements Have No Outline by Default */
 html * {
   outline: none;
 }
 
-/* 仅在键盘导航时显示（Tab 键） */
+/* Only Show on Keyboard Navigation (Tab Key) */
 html *:focus-visible {
   outline: 2px solid hsl(var(--ring)) !important;
   outline-offset: 2px;
 }
 
-/* 特殊元素完全移除焦点轮廓 */
+/* Completely Remove Focus Outline from Special Elements */
 html div:focus,
 html span:focus,
 html [role="dialog"]:focus,
@@ -763,10 +784,10 @@ html [data-radix-focus-guard]:focus {
 
 
 /* ========================================
-   角色提及样式
+   Character Mention Styles
    ======================================== */
 
-/* 提及节点样式 */
+/* Mention Node Styles */
 .mention {
   @apply inline-block px-1 py-0.5 mx-0.5 rounded bg-primary/10 text-primary font-medium cursor-pointer transition-colors;
 }
@@ -775,7 +796,7 @@ html [data-radix-focus-guard]:focus {
   @apply bg-primary/20;
 }
 
-/* 提及菜单样式 */
+/* Mention Menu Styles */
 .mentions-menu {
   @apply min-w-[200px] max-w-[300px];
 }
@@ -788,16 +809,16 @@ html [data-radix-focus-guard]:focus {
   @apply bg-accent;
 }
 
-/* Typeahead 弹出框样式 */
+/* Typeahead Popup Styles */
 .typeahead-popover {
   @apply z-50;
 }
 
 /* ========================================
-   Mermaid 图表样式
+   Mermaid Diagram Styles
    ======================================== */
 
-/* Mermaid 容器 */
+/* Mermaid Container */
 .mermaid {
   display: flex;
   justify-content: center;
@@ -805,13 +826,13 @@ html [data-radix-focus-guard]:focus {
   min-height: 200px;
 }
 
-/* Mermaid 全局样式优化 */
+/* Mermaid Global Style Optimization */
 .mermaid svg {
   max-width: 100%;
   height: auto;
 }
 
-/* 优化节点样式 - 圆角和阴影 */
+/* Optimize Node Styles - Rounded Corners and Shadows */
 .mermaid .node rect,
 .mermaid .node circle,
 .mermaid .node ellipse,
@@ -822,19 +843,19 @@ html [data-radix-focus-guard]:focus {
   ry: 8px;
 }
 
-/* 优化连线样式 */
+/* Optimize Edge Styles */
 .mermaid .edgePath .path {
   stroke-width: 2px;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
-/* 优化箭头 */
+/* Optimize Arrows */
 .mermaid .arrowheadPath {
   fill: currentColor;
 }
 
-/* 优化文字样式 */
+/* Optimize Text Styles */
 .mermaid .nodeLabel,
 .mermaid .edgeLabel {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
@@ -842,7 +863,7 @@ html [data-radix-focus-guard]:focus {
   font-weight: 500;
 }
 
-/* Mermaid 状态样式类 - 现代化配色 */
+/* Mermaid Status Style Classes - Modern Colors */
 .mermaid .completed {
   fill: #d1fae5 !important;
   stroke: #10b981 !important;
@@ -873,7 +894,7 @@ html [data-radix-focus-guard]:focus {
   stroke-width: 2.5px !important;
 }
 
-/* Mermaid 剧情点样式 - 渐变效果 */
+/* Mermaid Plot Point Styles - Gradient Effects */
 .mermaid .setup {
   fill: #dbeafe !important;
   stroke: #3b82f6 !important;
@@ -898,7 +919,7 @@ html [data-radix-focus-guard]:focus {
   stroke-width: 2.5px !important;
 }
 
-/* 深色模式下的 Mermaid 样式 */
+/* Mermaid Styles in Dark Mode */
 .dark .mermaid .completed {
   fill: #064e3b !important;
   stroke: #34d399 !important;
@@ -953,7 +974,7 @@ html [data-radix-focus-guard]:focus {
   stroke-width: 2.5px !important;
 }
 
-/* 优化 subgraph 样式 */
+/* Optimize Subgraph Styles */
 .mermaid .cluster rect {
   fill: transparent !important;
   stroke: var(--border) !important;
@@ -967,7 +988,7 @@ html [data-radix-focus-guard]:focus {
   stroke: var(--border) !important;
 }
 
-/* 优化 cluster 标签 */
+/* Optimize Cluster Labels */
 .mermaid .cluster-label {
   font-weight: 600 !important;
   font-size: 15px !important;
@@ -975,15 +996,15 @@ html [data-radix-focus-guard]:focus {
 }
 
 /* ========================================
-   Mermaid 错误提示优化
+   Mermaid Error Message Optimization
    ======================================== */
 
-/* 隐藏 Mermaid 库自动生成的错误提示（我们在组件中自己处理） */
+/* Hide Mermaid Library Auto-generated Error Messages (We Handle in Component) */
 #d2h-675094 {
   display: none !important;
 }
 
-/* 隐藏所有 Mermaid 生成的错误提示容器 */
+/* Hide All Mermaid Generated Error Containers */
 [id^="d2h-"] {
   display: none !important;
 }

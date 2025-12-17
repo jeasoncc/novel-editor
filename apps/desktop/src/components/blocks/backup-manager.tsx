@@ -1,16 +1,24 @@
 /**
- * 备份管理器组件
+ * Backup Manager Component
  */
 
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import {
 	Archive,
+	BookOpen,
 	Clock,
+	Cookie,
 	Database,
 	Download,
 	FileText,
+	FolderOpen,
+	HardDrive,
+	Image,
 	Loader2,
+	Paperclip,
+	Settings,
+	Tag,
 	Trash2,
 	Upload,
 } from "lucide-react";
@@ -25,6 +33,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -36,11 +45,9 @@ import {
 	restoreBackup,
 } from "@/services/backup";
 import { clearAllData, getStorageStats } from "@/services/clear-data";
-import "dayjs/locale/zh-cn";
 import { useConfirm } from "@/components/ui/confirm";
 
 dayjs.extend(relativeTime);
-dayjs.locale("zh-cn");
 
 export function BackupManager() {
 	const [stats, setStats] = useState<{
@@ -50,6 +57,7 @@ export function BackupManager() {
 		attachmentCount: number;
 		nodeCount: number;
 		contentCount: number;
+		tagCount: number;
 	} | null>(null);
 	const [loading, setLoading] = useState(false);
 	const [autoBackupEnabled, setAutoBackupEnabled] = useState(false);
@@ -57,11 +65,20 @@ export function BackupManager() {
 		Array<{ timestamp: string; data: BackupData }>
 	>([]);
 	const [storageStats, setStorageStats] = useState<{
-		indexedDB: { size: number; tables: Record<string, number> };
+		indexedDB: { size: number; tables: Record<string, number>; tableSizes: Record<string, number> };
 		localStorage: { size: number; keys: number };
 		sessionStorage: { size: number; keys: number };
 		cookies: { count: number };
 	} | null>(null);
+
+	// Format bytes to human-readable format
+	const formatBytes = (bytes: number): string => {
+		if (bytes === 0) return "0 B";
+		const k = 1024;
+		const sizes = ["B", "KB", "MB", "GB"];
+		const i = Math.floor(Math.log(bytes) / Math.log(k));
+		return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
+	};
 	const confirm = useConfirm();
 
 	const loadStats = useCallback(async () => {
@@ -69,7 +86,6 @@ export function BackupManager() {
 			const data = await getDatabaseStats();
 			setStats(data);
 
-			// 同时加载存储统计
 			const storage = await getStorageStats();
 			setStorageStats(storage);
 		} catch (error) {
@@ -82,12 +98,10 @@ export function BackupManager() {
 		setLocalBackups(backups);
 	}, []);
 
-	// 加载统计信息
 	useEffect(() => {
 		loadStats();
 		loadLocalBackups();
 
-		// 检查自动备份状态
 		const enabled = localStorage.getItem("auto-backup-enabled") === "true";
 		setAutoBackupEnabled(enabled);
 		if (enabled) {
@@ -95,12 +109,11 @@ export function BackupManager() {
 		}
 	}, [loadStats, loadLocalBackups]);
 
-	// Export备份（JSON）
 	const handleExportJson = async () => {
 		setLoading(true);
 		try {
 			await exportBackup();
-			toast.success("Backup exported");
+			toast.success("Backup exported successfully");
 		} catch (error) {
 			toast.error("Export failed");
 			console.error(error);
@@ -109,12 +122,11 @@ export function BackupManager() {
 		}
 	};
 
-	// Export备份（ZIP）
 	const handleExportZip = async () => {
 		setLoading(true);
 		try {
 			await exportBackupZip();
-			toast.success("Compressed backup exported");
+			toast.success("Compressed backup exported successfully");
 		} catch (error) {
 			toast.error("Export failed");
 			console.error(error);
@@ -123,14 +135,13 @@ export function BackupManager() {
 		}
 	};
 
-	// 恢复备份
 	const handleRestore = async () => {
 		const confirmed = await confirm({
-			title: "恢复备份",
+			title: "Restore Backup",
 			description:
-				"恢复备份将覆盖当前数据，此操作不可撤销。建议先Export当前数据作为备份。",
-			confirmText: "确认恢复",
-			cancelText: "取消",
+				"Restoring a backup will overwrite current data. This action cannot be undone. We recommend exporting your current data first.",
+			confirmText: "Confirm Restore",
+			cancelText: "Cancel",
 		});
 
 		if (!confirmed) return;
@@ -147,7 +158,7 @@ export function BackupManager() {
 				await restoreBackup(file);
 				toast.success("Backup restored successfully");
 				await loadStats();
-				window.location.reload(); // 刷新页面
+				window.location.reload();
 			} catch (error) {
 				toast.error("Restore failed");
 				console.error(error);
@@ -158,27 +169,25 @@ export function BackupManager() {
 		input.click();
 	};
 
-	// 切换自动备份
 	const handleToggleAutoBackup = (enabled: boolean) => {
 		setAutoBackupEnabled(enabled);
 		localStorage.setItem("auto-backup-enabled", enabled.toString());
 
 		if (enabled) {
 			autoBackupManager.start();
-			toast.success("自动备份已Enable");
+			toast.success("Auto backup enabled");
 		} else {
 			autoBackupManager.stop();
-			toast.info("自动备份已禁用");
+			toast.info("Auto backup disabled");
 		}
 	};
 
-	// 恢复本地备份
 	const handleRestoreLocal = async (timestamp: string) => {
 		const confirmed = await confirm({
-			title: "恢复本地备份",
-			description: `确定要恢复 ${dayjs(timestamp).format("YYYY-MM-DD HH:mm:ss")} 的备份吗？`,
-			confirmText: "确认恢复",
-			cancelText: "取消",
+			title: "Restore Local Backup",
+			description: `Are you sure you want to restore the backup from ${dayjs(timestamp).format("YYYY-MM-DD HH:mm:ss")}?`,
+			confirmText: "Confirm Restore",
+			cancelText: "Cancel",
 		});
 
 		if (!confirmed) return;
@@ -186,25 +195,24 @@ export function BackupManager() {
 		setLoading(true);
 		try {
 			await autoBackupManager.restoreLocalBackup(timestamp);
-			toast.success("备份恢复成功");
+			toast.success("Backup restored successfully");
 			await loadStats();
 			window.location.reload();
 		} catch (error) {
-			toast.error("恢复失败");
+			toast.error("Restore failed");
 			console.error(error);
 		} finally {
 			setLoading(false);
 		}
 	};
 
-	// 清空所有数据
 	const handleClearAllData = async () => {
 		const confirmed = await confirm({
-			title: "清空所有数据",
+			title: "Clear All Data",
 			description:
-				"此操作将永久删除所有数据，包括：\n• 所有项目、章节、场景数据 (IndexedDB)\n• 应用设置和偏好 (localStorage)\n• 会话数据 (sessionStorage)\n• 浏览器 cookies\n• 应用缓存\n\n此操作不可撤销！建议先Export备份。",
-			confirmText: "确认清空",
-			cancelText: "取消",
+				"This will permanently delete all data including:\n• All projects, chapters, and scenes (IndexedDB)\n• App settings and preferences (localStorage)\n• Session data (sessionStorage)\n• Browser cookies\n• App cache\n\nThis action cannot be undone! We recommend exporting a backup first.",
+			confirmText: "Confirm Clear",
+			cancelText: "Cancel",
 		});
 
 		if (!confirmed) return;
@@ -212,20 +220,16 @@ export function BackupManager() {
 		setLoading(true);
 		try {
 			await clearAllData();
-			toast.success("所有数据已清空");
-
-			// 刷新统计
+			toast.success("All data cleared");
 			await loadStats();
-
-			// 延迟刷新页面，让用户看到成功消息
 			setTimeout(() => {
 				window.location.reload();
 			}, 1500);
 		} catch (error) {
 			const errorMessage =
-				error instanceof Error ? error.message : "清空数据失败";
+				error instanceof Error ? error.message : "Failed to clear data";
 			toast.error(errorMessage);
-			console.error("清空数据失败:", error);
+			console.error("Failed to clear data:", error);
 		} finally {
 			setLoading(false);
 		}
@@ -233,87 +237,190 @@ export function BackupManager() {
 
 	return (
 		<div className="space-y-6">
-			{/* 数据统计 */}
+			{/* Data Statistics */}
 			<Card>
 				<CardHeader>
 					<CardTitle className="flex items-center gap-2">
 						<Database className="size-5" />
-						数据统计
+						Data Statistics
 					</CardTitle>
-					<CardDescription>当前数据库的统计信息</CardDescription>
+					<CardDescription>Current database statistics</CardDescription>
 				</CardHeader>
 				<CardContent>
 					{stats ? (
 						<div className="space-y-6">
-							{/* 数据库统计 */}
 							<div>
-								<h4 className="text-sm font-medium mb-3">数据库内容</h4>
-								<div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-									<div className="space-y-1">
-										<p className="text-sm text-muted-foreground">项目</p>
-										<p className="text-2xl font-bold">{stats.projectCount}</p>
+								<h4 className="text-xs font-medium mb-2 flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
+									<Database className="size-3.5" />
+									Database Content
+								</h4>
+								<div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+									<div className="p-2.5 rounded-lg bg-muted/20 border transition-all hover:bg-muted/30 relative overflow-hidden group">
+										<div className="absolute right-2 top-2 opacity-5 scale-150 group-hover:scale-125 transition-transform duration-500">
+											<BookOpen className="size-6" />
+										</div>
+										<p className="text-[10px] font-medium text-muted-foreground mb-0.5 uppercase tracking-wide relative z-10">Projects</p>
+										<div className="flex items-baseline gap-1 relative z-10">
+											<p className="text-xl font-bold text-foreground">{stats.projectCount}</p>
+											<BookOpen className="size-3 text-muted-foreground opacity-50" />
+										</div>
 									</div>
-									<div className="space-y-1">
-										<p className="text-sm text-muted-foreground">文件节点</p>
-										<p className="text-2xl font-bold">{stats.nodeCount}</p>
+									<div className="p-2.5 rounded-lg bg-muted/20 border transition-all hover:bg-muted/30 relative overflow-hidden group">
+										<div className="absolute right-2 top-2 opacity-5 scale-150 group-hover:scale-125 transition-transform duration-500">
+											<FileText className="size-6" />
+										</div>
+										<p className="text-[10px] font-medium text-muted-foreground mb-0.5 uppercase tracking-wide relative z-10">File Nodes</p>
+										<div className="flex items-baseline gap-1 relative z-10">
+											<p className="text-xl font-bold text-foreground">{stats.nodeCount}</p>
+											<FileText className="size-3 text-muted-foreground opacity-50" />
+										</div>
 									</div>
-									<div className="space-y-1">
-										<p className="text-sm text-muted-foreground">内容记录</p>
-										<p className="text-2xl font-bold">{stats.contentCount}</p>
+									<div className="p-2.5 rounded-lg bg-muted/20 border transition-all hover:bg-muted/30 relative overflow-hidden group">
+										<div className="absolute right-2 top-2 opacity-5 scale-150 group-hover:scale-125 transition-transform duration-500">
+											<Database className="size-6" />
+										</div>
+										<p className="text-[10px] font-medium text-muted-foreground mb-0.5 uppercase tracking-wide relative z-10">Records</p>
+										<div className="flex items-baseline gap-1 relative z-10">
+											<p className="text-xl font-bold text-foreground">{stats.contentCount}</p>
+											<Database className="size-3 text-muted-foreground opacity-50" />
+										</div>
 									</div>
-									<div className="space-y-1">
-										<p className="text-sm text-muted-foreground">绘图</p>
-										<p className="text-2xl font-bold">{stats.drawingCount}</p>
+									<div className="p-2.5 rounded-lg bg-muted/20 border transition-all hover:bg-muted/30 relative overflow-hidden group">
+										<div className="absolute right-2 top-2 opacity-5 scale-150 group-hover:scale-125 transition-transform duration-500">
+											<Image className="size-6" />
+										</div>
+										<p className="text-[10px] font-medium text-muted-foreground mb-0.5 uppercase tracking-wide relative z-10">Drawings</p>
+										<div className="flex items-baseline gap-1 relative z-10">
+											<p className="text-xl font-bold text-foreground">{stats.drawingCount}</p>
+											<Image className="size-3 text-muted-foreground opacity-50" />
+										</div>
 									</div>
-									<div className="space-y-1">
-										<p className="text-sm text-muted-foreground">附件</p>
-										<p className="text-2xl font-bold">{stats.attachmentCount}</p>
+									<div className="p-2.5 rounded-lg bg-muted/20 border transition-all hover:bg-muted/30 relative overflow-hidden group">
+										<div className="absolute right-2 top-2 opacity-5 scale-150 group-hover:scale-125 transition-transform duration-500">
+											<Paperclip className="size-6" />
+										</div>
+										<p className="text-[10px] font-medium text-muted-foreground mb-0.5 uppercase tracking-wide relative z-10">Attachments</p>
+										<div className="flex items-baseline gap-1 relative z-10">
+											<p className="text-xl font-bold text-foreground">{stats.attachmentCount}</p>
+											<Paperclip className="size-3 text-muted-foreground opacity-50" />
+										</div>
+									</div>
+									<div className="p-2.5 rounded-lg bg-muted/20 border transition-all hover:bg-muted/30 relative overflow-hidden group">
+										<div className="absolute right-2 top-2 opacity-5 scale-150 group-hover:scale-125 transition-transform duration-500">
+											<Tag className="size-6" />
+										</div>
+										<p className="text-[10px] font-medium text-muted-foreground mb-0.5 uppercase tracking-wide relative z-10">Tags</p>
+										<div className="flex items-baseline gap-1 relative z-10">
+											<p className="text-xl font-bold text-foreground">{stats.tagCount}</p>
+											<Tag className="size-3 text-muted-foreground opacity-50" />
+										</div>
 									</div>
 								</div>
 							</div>
 
-							{/* 存储统计 */}
 							{storageStats && (
 								<>
 									<Separator />
 									<div>
-										<h4 className="text-sm font-medium mb-3">存储使用情况</h4>
-										<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-											<div className="space-y-1">
-												<p className="text-sm text-muted-foreground">
-													IndexedDB
-												</p>
-												<p className="text-lg font-semibold">
-													{(
-														Object.values(
-															storageStats.indexedDB.tables,
-														) as number[]
-													).reduce((a, b) => a + b, 0)}{" "}
-													条记录
-												</p>
-											</div>
-											<div className="space-y-1">
-												<p className="text-sm text-muted-foreground">
-													localStorage
-												</p>
-												<p className="text-lg font-semibold">
-													{storageStats.localStorage.keys} 个键
+										<h4 className="text-sm font-medium mb-4 flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
+											<HardDrive className="size-4" />
+											Storage Usage
+										</h4>
+										<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+											{/* IndexedDB Card */}
+											<div className="p-3 rounded-xl border bg-gradient-to-br from-blue-500/10 via-blue-500/5 to-transparent hover:shadow-sm transition-all">
+												<div className="flex items-center gap-3 mb-2">
+													<div className="p-1.5 rounded-lg bg-blue-500/20">
+														<HardDrive className="size-4 text-blue-600" />
+													</div>
+													<div>
+														<p className="text-sm font-medium">IndexedDB</p>
+														<p className="text-[10px] text-muted-foreground">Main database storage</p>
+													</div>
+												</div>
+												<p className="text-xl font-bold mb-1">{formatBytes(storageStats.indexedDB.size)}</p>
+												<p className="text-[10px] text-muted-foreground">
+													{(Object.values(storageStats.indexedDB.tables) as number[]).reduce((a, b) => a + b, 0)} total records
 												</p>
 											</div>
-											<div className="space-y-1">
-												<p className="text-sm text-muted-foreground">
-													sessionStorage
-												</p>
-												<p className="text-lg font-semibold">
-													{storageStats.sessionStorage.keys} 个键
+
+											{/* localStorage Card */}
+											<div className="p-3 rounded-xl border bg-gradient-to-br from-green-500/10 via-green-500/5 to-transparent hover:shadow-sm transition-all">
+												<div className="flex items-center gap-3 mb-2">
+													<div className="p-1.5 rounded-lg bg-green-500/20">
+														<Settings className="size-4 text-green-600" />
+													</div>
+													<div>
+														<p className="text-sm font-medium">localStorage</p>
+														<p className="text-[10px] text-muted-foreground">App settings & preferences</p>
+													</div>
+												</div>
+												<p className="text-xl font-bold mb-1">{formatBytes(storageStats.localStorage.size)}</p>
+												<p className="text-[10px] text-muted-foreground">
+													{storageStats.localStorage.keys} keys stored
 												</p>
 											</div>
-											<div className="space-y-1">
-												<p className="text-sm text-muted-foreground">Cookies</p>
-												<p className="text-lg font-semibold">
-													{storageStats.cookies.count} 个
+
+											{/* sessionStorage Card */}
+											<div className="p-3 rounded-xl border bg-gradient-to-br from-purple-500/10 via-purple-500/5 to-transparent hover:shadow-sm transition-all">
+												<div className="flex items-center gap-3 mb-2">
+													<div className="p-1.5 rounded-lg bg-purple-500/20">
+														<FolderOpen className="size-4 text-purple-600" />
+													</div>
+													<div>
+														<p className="text-sm font-medium">sessionStorage</p>
+														<p className="text-[10px] text-muted-foreground">Temporary session data</p>
+													</div>
+												</div>
+												<p className="text-xl font-bold mb-1">{formatBytes(storageStats.sessionStorage.size)}</p>
+												<p className="text-[10px] text-muted-foreground">
+													{storageStats.sessionStorage.keys} keys stored
 												</p>
 											</div>
+
+											{/* Cookies Card */}
+											<div className="p-3 rounded-xl border bg-gradient-to-br from-orange-500/10 via-orange-500/5 to-transparent hover:shadow-sm transition-all">
+												<div className="flex items-center gap-3 mb-2">
+													<div className="p-1.5 rounded-lg bg-orange-500/20">
+														<Cookie className="size-4 text-orange-600" />
+													</div>
+													<div>
+														<p className="text-sm font-medium">Cookies</p>
+														<p className="text-[10px] text-muted-foreground">Browser cookies</p>
+													</div>
+												</div>
+												<p className="text-xl font-bold mb-1">{storageStats.cookies.count}</p>
+												<p className="text-[10px] text-muted-foreground">
+													cookies stored
+												</p>
+											</div>
+										</div>
+									</div>
+
+									<Separator />
+									<div>
+										<h4 className="text-sm font-medium mb-4">IndexedDB Table Breakdown</h4>
+										<div className="space-y-3">
+											{Object.entries(storageStats.indexedDB.tableSizes)
+												.sort(([, a], [, b]) => b - a)
+												.map(([table, size]) => {
+													const percentage = storageStats.indexedDB.size > 0 
+														? (size / storageStats.indexedDB.size) * 100 
+														: 0;
+													const recordCount = storageStats.indexedDB.tables[table] || 0;
+													return (
+														<div key={table} className="space-y-1.5">
+															<div className="flex justify-between items-center">
+																<div className="flex items-center gap-2">
+																	<span className="text-sm font-medium capitalize">{table}</span>
+																	<span className="text-xs text-muted-foreground">({recordCount} records)</span>
+																</div>
+																<span className="text-sm font-semibold">{formatBytes(size)}</span>
+															</div>
+															<Progress value={percentage} className="h-1.5" />
+														</div>
+													);
+												})}
 										</div>
 									</div>
 								</>
@@ -327,140 +434,158 @@ export function BackupManager() {
 				</CardContent>
 			</Card>
 
-			{/* 手动备份 */}
-			<Card>
-				<CardHeader>
-					<CardTitle className="flex items-center gap-2">
-						<Archive className="size-5" />
-						手动备份
+
+			{/* Manual Backup */}
+			<Card className="overflow-hidden border-primary/20 bg-primary/5">
+				<CardHeader className="pb-3">
+					<CardTitle className="flex items-center gap-2 text-base">
+						<Archive className="size-4 text-primary" />
+						Manual Backup
 					</CardTitle>
-					<CardDescription>Export或恢复完整数据库备份</CardDescription>
+					<CardDescription>Export your data to safeguard against loss.</CardDescription>
 				</CardHeader>
-				<CardContent className="space-y-4">
+				<CardContent className="space-y-3">
 					<div className="flex flex-wrap gap-3">
-						<Button onClick={handleExportJson} disabled={loading}>
-							<Download className="size-4 mr-2" />
+						<Button onClick={handleExportJson} disabled={loading} className="flex-1 h-9" variant="default" size="sm">
+							<Download className="size-3.5 mr-2" />
 							Export JSON
 						</Button>
-						<Button
-							onClick={handleExportZip}
-							disabled={loading}
-							variant="outline"
-						>
-							<Archive className="size-4 mr-2" />
+						<Button onClick={handleExportZip} disabled={loading} className="flex-1 h-9" variant="secondary" size="sm">
+							<Archive className="size-3.5 mr-2" />
 							Export ZIP
 						</Button>
-						<Button
-							onClick={handleRestore}
-							disabled={loading}
-							variant="outline"
-						>
-							<Upload className="size-4 mr-2" />
-							恢复备份
+						<Button onClick={handleRestore} disabled={loading} className="flex-1 h-9" variant="outline" size="sm">
+							<Upload className="size-3.5 mr-2" />
+							Restore Backup
 						</Button>
 					</div>
-					<p className="text-xs text-muted-foreground">
-						建议定期Export备份文件，以防数据丢失。ZIP 格式包含完整的元数据信息。
-					</p>
+					<div className="flex items-center gap-2 p-2 rounded bg-background/50 text-[10px] text-muted-foreground border border-border/50">
+						<Settings className="size-3" />
+						ZIP format includes all project metadata and is recommended for full backups.
+					</div>
 				</CardContent>
 			</Card>
 
-			{/* 自动备份 */}
+			{/* Auto Backup */}
 			<Card>
-				<CardHeader>
-					<CardTitle className="flex items-center gap-2">
-						<Clock className="size-5" />
-						自动备份
-					</CardTitle>
-					<CardDescription>
-						每24小时自动创建本地备份（最多保留3个）
-					</CardDescription>
-				</CardHeader>
-				<CardContent className="space-y-4">
+				<CardHeader className="pb-3">
 					<div className="flex items-center justify-between">
-						<Label htmlFor="auto-backup" className="cursor-pointer">
-							Enable自动备份
-						</Label>
+						<div className="space-y-1">
+							<CardTitle className="flex items-center gap-2 text-base">
+								<Clock className="size-4" />
+								Auto Backup
+							</CardTitle>
+							<CardDescription>
+								Automatically creates local backups every 24 hours
+							</CardDescription>
+						</div>
 						<Switch
 							id="auto-backup"
 							checked={autoBackupEnabled}
 							onCheckedChange={handleToggleAutoBackup}
 						/>
 					</div>
-
-					{localBackups.length > 0 && (
-						<>
-							<Separator />
-							<div className="space-y-2">
-								<p className="text-sm font-medium">本地备份记录</p>
+				</CardHeader>
+				<CardContent className="space-y-3">
+					{localBackups.length > 0 ? (
+						<div className="space-y-3">
+							<div className="text-xs font-medium flex items-center gap-2 text-muted-foreground">
+								<FileText className="size-3.5" />
+								Local Backup History
+							</div>
+							<div className="grid gap-2">
 								{localBackups.map((backup) => (
 									<div
 										key={backup.timestamp}
-										className="flex items-center justify-between p-3 rounded-lg border bg-card"
+										className="flex items-center justify-between p-3 rounded-lg border bg-card hover:shadow-sm transition-all"
 									>
 										<div className="flex items-center gap-3">
-											<FileText className="size-4 text-muted-foreground" />
+											<div className="p-1.5 rounded-full bg-primary/10 text-primary">
+												<Database className="size-3.5" />
+											</div>
 											<div>
-												<p className="text-sm font-medium">
-													{dayjs(backup.timestamp).format(
-														"YYYY-MM-DD HH:mm:ss",
-													)}
+												<p className="font-medium text-xs">
+													{dayjs(backup.timestamp).format("MMM D, YYYY · HH:mm:ss")}
 												</p>
-												<p className="text-xs text-muted-foreground">
-													{dayjs(backup.timestamp).fromNow()} ·{" "}
-													{backup.data.metadata.projectCount} 个项目
+												<p className="text-[10px] text-muted-foreground">
+													{dayjs(backup.timestamp).fromNow()} · {backup.data.metadata.projectCount} projects
 												</p>
 											</div>
 										</div>
 										<Button
 											size="sm"
-											variant="ghost"
+											variant="secondary"
 											onClick={() => handleRestoreLocal(backup.timestamp)}
 											disabled={loading}
+											className="h-7 text-xs"
 										>
-											恢复
+											Restore
 										</Button>
 									</div>
 								))}
 							</div>
-						</>
+						</div>
+					) : (
+						<div className="flex flex-col items-center justify-center py-6 text-center text-muted-foreground bg-muted/20 rounded-lg border border-dashed">
+							<Clock className="size-6 mb-2 opacity-50" />
+							<p className="text-xs">No local backups yet</p>
+							<p className="text-[10px] opacity-70">Enable auto backup to start saving automatically</p>
+						</div>
 					)}
 				</CardContent>
 			</Card>
 
-			{/* 危险操作 */}
-			<Card className="border-destructive/50">
-				<CardHeader>
-					<CardTitle className="flex items-center gap-2 text-destructive">
-						<Trash2 className="size-5" />
-						危险操作
+			{/* Danger Zone */}
+			<Card className="border-destructive/30 bg-destructive/5 overflow-hidden">
+				<CardHeader className="pb-3">
+					<CardTitle className="flex items-center gap-2 text-destructive text-base">
+						<Trash2 className="size-4" />
+						Danger Zone
 					</CardTitle>
-					<CardDescription>这些操作不可撤销，请谨慎使用</CardDescription>
+					<CardDescription className="text-destructive/70 text-xs">Irreversible actions. Please proceed with caution.</CardDescription>
 				</CardHeader>
-				<CardContent className="space-y-4">
-					<div className="flex flex-wrap gap-3">
-						<Button
-							variant="destructive"
-							onClick={handleClearAllData}
+				<CardContent className="space-y-2">
+					<div className="flex items-center justify-between p-2.5 rounded-lg border border-destructive/20 bg-background/50">
+						<div className="flex items-center gap-3">
+							<div className="p-1.5 rounded-full bg-destructive/10 text-destructive shrink-0">
+								<Trash2 className="size-3.5" />
+							</div>
+							<div>
+								<div className="font-medium text-sm text-foreground">Clear All Data</div>
+								<div className="text-[10px] text-muted-foreground">Delete content, settings, and cache</div>
+							</div>
+						</div>
+						<Button 
+							variant="destructive" 
+							size="sm"
+							onClick={handleClearAllData} 
 							disabled={loading}
+							className="h-7 text-xs whitespace-nowrap"
 						>
-							{loading ? (
-								<Loader2 className="size-4 mr-2 animate-spin" />
-							) : (
-								<Trash2 className="size-4 mr-2" />
-							)}
-							清空所有数据
+							Clear All
 						</Button>
+					</div>
 
+					<div className="flex items-center justify-between p-2.5 rounded-lg border border-border bg-background/50">
+						<div className="flex items-center gap-3">
+							<div className="p-1.5 rounded-full bg-muted text-foreground shrink-0">
+								<Database className="size-3.5" />
+							</div>
+							<div>
+								<div className="font-medium text-sm text-foreground">Clear Database</div>
+								<div className="text-[10px] text-muted-foreground">Delete projects only. Keep settings</div>
+							</div>
+						</div>
 						<Button
 							variant="outline"
+							size="sm"
 							onClick={async () => {
 								const confirmed = await confirm({
-									title: "仅清空数据库",
+									title: "Clear Database Only",
 									description:
-										"此操作将清空所有项目、章节、场景等数据，但保留应用设置。",
-									confirmText: "确认清空",
-									cancelText: "取消",
+										"This will clear all projects, chapters, and scenes, but keep app settings.",
+									confirmText: "Confirm Clear",
+									cancelText: "Cancel",
 								});
 								if (!confirmed) return;
 
@@ -472,29 +597,41 @@ export function BackupManager() {
 										clearSessionStorage: false,
 										clearCookies: false,
 									});
-									toast.success("数据库已清空");
+									toast.success("Database cleared");
 									await loadStats();
 								} catch (error) {
-									toast.error("清空失败");
+									toast.error("Clear failed");
 									console.error(error);
 								} finally {
 									setLoading(false);
 								}
 							}}
 							disabled={loading}
+							className="h-7 text-xs whitespace-nowrap hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50"
 						>
-							<Database className="size-4 mr-2" />
-							仅清空数据库
+							Clear DB
 						</Button>
+					</div>
 
+					<div className="flex items-center justify-between p-2.5 rounded-lg border border-border bg-background/50">
+						<div className="flex items-center gap-3">
+							<div className="p-1.5 rounded-full bg-muted text-foreground shrink-0">
+								<Settings className="size-3.5" />
+							</div>
+							<div>
+								<div className="font-medium text-sm text-foreground">Clear Settings</div>
+								<div className="text-[10px] text-muted-foreground">Reset preferences. Keep projects</div>
+							</div>
+						</div>
 						<Button
 							variant="outline"
+							size="sm"
 							onClick={async () => {
 								const confirmed = await confirm({
-									title: "仅清空设置",
-									description: "此操作将清空应用设置和偏好，但保留项目数据。",
-									confirmText: "确认清空",
-									cancelText: "取消",
+									title: "Clear Settings Only",
+									description: "This will clear app settings and preferences, but keep project data.",
+									confirmText: "Confirm Clear",
+									cancelText: "Cancel",
 								});
 								if (!confirmed) return;
 
@@ -506,29 +643,21 @@ export function BackupManager() {
 										clearSessionStorage: true,
 										clearCookies: true,
 									});
-									toast.success("设置已清空");
+									toast.success("Settings cleared");
 									await loadStats();
 								} catch (error) {
-									toast.error("清空失败");
+									toast.error("Clear failed");
 									console.error(error);
 								} finally {
 									setLoading(false);
 								}
 							}}
 							disabled={loading}
+							className="h-7 text-xs whitespace-nowrap hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50"
 						>
-							<Database className="size-4 mr-2" />
-							仅清空设置
+							Reset Settings
 						</Button>
 					</div>
-
-					<p className="text-xs text-muted-foreground">
-						<strong>清空所有数据</strong>：删除所有内容和设置
-						<br />
-						<strong>仅清空数据库</strong>：删除项目数据，保留应用设置
-						<br />
-						<strong>仅清空设置</strong>：删除应用设置，保留项目数据
-					</p>
 				</CardContent>
 			</Card>
 		</div>

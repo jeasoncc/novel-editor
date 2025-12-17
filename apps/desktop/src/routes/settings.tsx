@@ -12,60 +12,113 @@ export const Route = createFileRoute("/settings")({
 	component: SettingsLayout,
 });
 
+interface NavItem {
+	to: string;
+	label: string;
+	description: string;
+	icon: React.ComponentType<{ className?: string }>;
+}
+
+interface NavGroup {
+	title: string;
+	items: NavItem[];
+}
+
 function SettingsLayout() {
 	const location = useLocation();
 	const iconTheme = useIconTheme();
 
-	const navItems = [
+	const navGroups: NavGroup[] = [
 		{
-			to: "/settings/design",
-			label: "Appearance",
-			icon: iconTheme.icons.settingsPage.appearance,
+			title: "Customization",
+			items: [
+				{
+					to: "/settings/design",
+					label: "Appearance",
+					description: "Theme & colors",
+					icon: iconTheme.icons.settingsPage.appearance,
+				},
+				{
+					to: "/settings/typography",
+					label: "Typography",
+					description: "Fonts & sizes",
+					icon: iconTheme.icons.settingsPage.editor,
+				},
+				{
+					to: "/settings/icons",
+					label: "Icons",
+					description: "Icon style",
+					icon: iconTheme.icons.settingsPage.icons,
+				},
+				{
+					to: "/settings/diagrams",
+					label: "Diagrams",
+					description: "Diagram settings",
+					icon: iconTheme.icons.settingsPage.diagrams,
+				},
+			],
 		},
 		{
-			to: "/settings/icons",
-			label: "Icons",
-			icon: iconTheme.icons.settingsPage.icons,
+			title: "Application",
+			items: [
+				{
+					to: "/settings/general",
+					label: "General",
+					description: "Basic settings",
+					icon: iconTheme.icons.settingsPage.general,
+				},
+				{
+					to: "/settings/editor",
+					label: "Editor",
+					description: "Writing preferences",
+					icon: iconTheme.icons.settingsPage.editor,
+				},
+			],
 		},
 		{
-			to: "/settings/diagrams",
-			label: "Diagrams",
-			icon: iconTheme.icons.settingsPage.diagrams,
+			title: "Data & Storage",
+			items: [
+				{
+					to: "/settings/data",
+					label: "Data",
+					description: "Backup & storage",
+					icon: iconTheme.icons.settingsPage.data,
+				},
+				{
+					to: "/settings/export",
+					label: "Export",
+					description: "Export options",
+					icon: iconTheme.icons.settingsPage.export,
+				},
+			],
 		},
 		{
-			to: "/settings/general",
-			label: "General",
-			icon: iconTheme.icons.settingsPage.general,
+			title: "Advanced",
+			items: [
+				{
+					to: "/settings/scroll-test",
+					label: "Scroll Test",
+					description: "Test scrolling",
+					icon: iconTheme.icons.settingsPage.scroll,
+				},
+				{
+					to: "/settings/logs",
+					label: "Logs",
+					description: "System logs",
+					icon: iconTheme.icons.settingsPage.logs,
+				},
+			],
 		},
 		{
-			to: "/settings/editor",
-			label: "Editor",
-			icon: iconTheme.icons.settingsPage.editor,
-		},
-		{
-			to: "/settings/data",
-			label: "数据管理",
-			icon: iconTheme.icons.settingsPage.data,
-		},
-		{
-			to: "/settings/export",
-			label: "Export设置",
-			icon: iconTheme.icons.settingsPage.export,
-		},
-		{
-			to: "/settings/scroll-test",
-			label: "Scroll Test",
-			icon: iconTheme.icons.settingsPage.scroll,
-		},
-		{
-			to: "/settings/logs",
-			label: "Logs",
-			icon: iconTheme.icons.settingsPage.logs,
-		},
-		{
-			to: "/settings/about",
-			label: "About",
-			icon: iconTheme.icons.settingsPage.about,
+			title: "Info",
+			items: [
+				{
+					to: "/settings/about",
+					label: "About",
+					description: "App info",
+					icon: iconTheme.icons.settingsPage.about,
+				},
+			],
 		},
 	];
 
@@ -89,34 +142,59 @@ function SettingsLayout() {
 			</header>
 
 			{/* Main content area with fixed sidebar */}
-			<div className="flex-1 flex min-h-0">
-				{/* Sidebar Navigation - Fixed, not scrollable */}
-				<aside className="hidden lg:block w-[240px] shrink-0 border-r border-border/50 bg-background overflow-hidden">
-					<div className="w-full p-6 space-y-1">
-						{navItems.map((item) => {
-							const isActive = location.pathname === item.to;
-							return (
-								<Link
-									key={item.to}
-									to={item.to}
-									className={cn(
-										"flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all",
-										isActive
-											? "bg-accent text-accent-foreground"
-											: "text-muted-foreground hover:bg-muted hover:text-foreground",
-									)}
-								>
-									<item.icon className="size-4" />
-									{item.label}
-								</Link>
-							);
-						})}
+			<div className="flex-1 flex min-h-0 overflow-hidden">
+				{/* Sidebar Navigation - Scrollable */}
+				<aside className="hidden lg:block w-[220px] shrink-0 border-r border-border/50 bg-sidebar overflow-y-auto">
+					<div className="w-full p-3 space-y-4">
+						{navGroups.map((group) => (
+							<div key={group.title} className="space-y-1">
+								<h3 className="px-3 py-1 text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">
+									{group.title}
+								</h3>
+								<div className="space-y-0.5">
+									{group.items.map((item) => {
+										const isActive = location.pathname === item.to;
+										return (
+											<Link
+												key={item.to}
+												to={item.to}
+												className={cn(
+													"group flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all duration-200",
+													isActive
+														? "bg-primary/10 text-primary shadow-sm border border-primary/20"
+														: "text-muted-foreground hover:bg-muted/80 hover:text-foreground",
+												)}
+											>
+												<div
+													className={cn(
+														"flex items-center justify-center size-7 rounded-md transition-colors",
+														isActive
+															? "bg-primary/20 text-primary"
+															: "bg-muted/50 text-muted-foreground group-hover:bg-muted group-hover:text-foreground",
+													)}
+												>
+													<item.icon className="size-3.5" />
+												</div>
+												<div className="flex flex-col min-w-0">
+													<span className={cn("text-xs font-medium truncate", isActive && "text-primary")}>
+														{item.label}
+													</span>
+													<span className="text-[9px] text-muted-foreground/60 truncate leading-tight">
+														{item.description}
+													</span>
+												</div>
+											</Link>
+										);
+									})}
+								</div>
+							</div>
+						))}
 					</div>
 				</aside>
 
 				{/* Content Area - Only this part scrolls */}
-				<main className="flex-1 overflow-y-auto">
-					<div className="max-w-screen-xl mx-auto p-8 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+				<main className="flex-1 overflow-y-auto bg-background">
+					<div className="max-w-screen-xl mx-auto p-6 pb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
 						<Outlet />
 					</div>
 				</main>

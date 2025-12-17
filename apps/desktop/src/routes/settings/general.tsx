@@ -9,9 +9,19 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSettings } from "@/hooks/use-settings";
 import { useUIStore, type TabPosition } from "@/stores/ui";
+import { 
+	Globe, 
+	LayoutTemplate, 
+	Save, 
+	Clock, 
+	SpellCheck, 
+	Monitor,
+	Languages,
+	AppWindow
+} from "lucide-react";
 
 export const Route = createFileRoute("/settings/general")({
 	component: GeneralSettings,
@@ -32,7 +42,7 @@ function GeneralSettings() {
 	const { tabPosition, setTabPosition } = useUIStore();
 
 	return (
-		<div className="space-y-10 max-w-3xl">
+		<div className="space-y-6 max-w-3xl">
 			<div>
 				<h3 className="text-lg font-medium">General Settings</h3>
 				<p className="text-sm text-muted-foreground">
@@ -40,18 +50,31 @@ function GeneralSettings() {
 				</p>
 			</div>
 			
-			<div className="space-y-8">
+			<div className="grid gap-6">
 				{/* Application Preferences */}
-				<div className="space-y-4">
-					<h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Application</h4>
-					
-					<div className="space-y-6">
+				<Card>
+					<CardHeader>
+						<CardTitle className="flex items-center gap-2">
+							<Monitor className="size-5" />
+							Application
+						</CardTitle>
+						<CardDescription>
+							Customize how the application looks and behaves.
+						</CardDescription>
+					</CardHeader>
+					<CardContent className="space-y-6">
+						{/* Language */}
 						<div className="flex items-center justify-between">
-							<div className="space-y-0.5">
-								<Label className="text-base font-normal">Language</Label>
-								<p className="text-sm text-muted-foreground">
-									Select the display language.
-								</p>
+							<div className="flex items-center gap-3">
+								<div className="p-2 rounded-lg bg-primary/10 text-primary">
+									<Languages className="size-4" />
+								</div>
+								<div className="space-y-0.5">
+									<Label className="text-base font-normal">Language</Label>
+									<p className="text-sm text-muted-foreground">
+										Select the display language.
+									</p>
+								</div>
 							</div>
 							<div className="w-[200px]">
 								<Select
@@ -69,12 +92,18 @@ function GeneralSettings() {
 							</div>
 						</div>
 
+						{/* Tab Position */}
 						<div className="flex items-center justify-between">
-							<div className="space-y-0.5">
-								<Label className="text-base font-normal">Tab Position</Label>
-								<p className="text-sm text-muted-foreground">
-									Choose where editor tabs are displayed.
-								</p>
+							<div className="flex items-center gap-3">
+								<div className="p-2 rounded-lg bg-primary/10 text-primary">
+									<LayoutTemplate className="size-4" />
+								</div>
+								<div className="space-y-0.5">
+									<Label className="text-base font-normal">Tab Position</Label>
+									<p className="text-sm text-muted-foreground">
+										Choose where editor tabs are displayed.
+									</p>
+								</div>
 							</div>
 							<div className="w-[200px]">
 								<Select
@@ -85,71 +114,93 @@ function GeneralSettings() {
 										<SelectValue placeholder="Select position" />
 									</SelectTrigger>
 									<SelectContent>
-										<SelectItem value="top">Top</SelectItem>
+										<SelectItem value="top">Top Bar</SelectItem>
 										<SelectItem value="right-sidebar">Right Sidebar</SelectItem>
 									</SelectContent>
 								</Select>
 							</div>
 						</div>
-					</div>
-				</div>
-
-				<Separator />
+					</CardContent>
+				</Card>
 
 				{/* Editor & Saving */}
-				<div className="space-y-4">
-					<h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Editor & Saving</h4>
-					
-					<div className="space-y-6">
-						<div className="flex items-center justify-between">
-							<div className="space-y-0.5">
-								<Label className="text-base font-normal">Auto Save</Label>
-								<p className="text-sm text-muted-foreground">
-									Automatically save your work periodically.
-								</p>
+				<Card>
+					<CardHeader>
+						<CardTitle className="flex items-center gap-2">
+							<AppWindow className="size-5" />
+							Editor & Saving
+						</CardTitle>
+						<CardDescription>
+							Manage how your content is saved and checked.
+						</CardDescription>
+					</CardHeader>
+					<CardContent className="space-y-6">
+						{/* Auto Save */}
+						<div className="space-y-4">
+							<div className="flex items-center justify-between">
+								<div className="flex items-center gap-3">
+									<div className="p-2 rounded-lg bg-green-500/10 text-green-600">
+										<Save className="size-4" />
+									</div>
+									<div className="space-y-0.5">
+										<Label className="text-base font-normal">Auto Save</Label>
+										<p className="text-sm text-muted-foreground">
+											Automatically save your work periodically.
+										</p>
+									</div>
+								</div>
+								<Switch
+									checked={autoSave}
+									onCheckedChange={(c) => setAutoSave(!!c)}
+								/>
 							</div>
-							<Switch
-								checked={autoSave}
-								onCheckedChange={(c) => setAutoSave(!!c)}
-							/>
+
+							{autoSave && (
+								<div className="ml-12 p-4 rounded-lg bg-muted/30 border flex items-center justify-between animate-in slide-in-from-top-2 duration-200">
+									<div className="flex items-center gap-3">
+										<Clock className="size-4 text-muted-foreground" />
+										<div className="space-y-0.5">
+											<Label className="text-sm font-normal">Save Interval</Label>
+											<p className="text-xs text-muted-foreground">
+												How often to save (in seconds).
+											</p>
+										</div>
+									</div>
+									<div className="flex items-center gap-2">
+										<Input
+											type="number"
+											value={autoSaveInterval}
+											onChange={(e) => setAutoSaveInterval(Number(e.target.value))}
+											min={10}
+											max={3600}
+											className="h-8 w-20 text-center"
+										/>
+										<span className="text-sm text-muted-foreground">sec</span>
+									</div>
+								</div>
+							)}
 						</div>
 
-						{autoSave && (
-							<div className="flex items-center justify-between pl-4 border-l-2 border-muted">
+						{/* Spell Check */}
+						<div className="flex items-center justify-between">
+							<div className="flex items-center gap-3">
+								<div className="p-2 rounded-lg bg-blue-500/10 text-blue-600">
+									<SpellCheck className="size-4" />
+								</div>
 								<div className="space-y-0.5">
-									<Label className="text-sm font-normal">Save Interval</Label>
-									<p className="text-xs text-muted-foreground">
-										How often to save (in seconds).
+									<Label className="text-base font-normal">Spell Check</Label>
+									<p className="text-sm text-muted-foreground">
+										Highlight misspelled words in the editor.
 									</p>
 								</div>
-								<div className="w-[120px] flex items-center gap-2">
-									<Input
-										type="number"
-										value={autoSaveInterval}
-										onChange={(e) => setAutoSaveInterval(Number(e.target.value))}
-										min={10}
-										max={3600}
-										className="h-8"
-									/>
-									<span className="text-sm text-muted-foreground">s</span>
-								</div>
-							</div>
-						)}
-
-						<div className="flex items-center justify-between">
-							<div className="space-y-0.5">
-								<Label className="text-base font-normal">Spell Check</Label>
-								<p className="text-sm text-muted-foreground">
-									Highlight misspelled words in the editor.
-								</p>
 							</div>
 							<Switch
 								checked={spellCheck}
 								onCheckedChange={(c) => setSpellCheck(!!c)}
 							/>
 						</div>
-					</div>
-				</div>
+					</CardContent>
+				</Card>
 			</div>
 		</div>
 	);

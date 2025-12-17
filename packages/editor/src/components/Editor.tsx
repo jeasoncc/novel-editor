@@ -31,13 +31,12 @@ import { TabIndentationPlugin } from "@lexical/react/LexicalTabIndentationPlugin
 import { TRANSFORMERS } from "@lexical/markdown";
 import type { EditorState, SerializedEditorState } from "lexical";
 import type React from "react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback } from "react";
 
 import { EditorNodes } from "../nodes";
 import MentionsPlugin, { type MentionEntry } from "../plugins/mentions-plugin";
 import MentionTooltipPlugin, { type MentionTooltipPluginProps } from "../plugins/mention-tooltip-plugin";
 import TagTransformPlugin from "../plugins/tag-transform-plugin";
-import DraggableBlockPlugin from "../plugins/draggable-block-plugin";
 import theme from "../themes/PlaygroundEditorTheme";
 import "../themes/PlaygroundEditorTheme.css";
 
@@ -88,15 +87,6 @@ export default function Editor({
   // Support both new and deprecated prop names
   const entries = mentionEntries ?? wikiEntries;
   
-  // Ref for draggable block plugin anchor element
-  const [floatingAnchorElem, setFloatingAnchorElem] = useState<HTMLDivElement | null>(null);
-  
-  const onRef = (_floatingAnchorElem: HTMLDivElement) => {
-    if (_floatingAnchorElem !== null) {
-      setFloatingAnchorElem(_floatingAnchorElem);
-    }
-  };
-  
   // Handle editor state changes
   const handleChange = useCallback(
     (editorState: EditorState) => {
@@ -122,7 +112,7 @@ export default function Editor({
     <LexicalComposer initialConfig={initialConfig}>
       <div className="relative flex flex-col h-full">
         {/* Editor body */}
-        <div className="relative flex-1 overflow-auto" ref={onRef}>
+        <div className="relative flex-1 overflow-auto">
           <RichTextPlugin
             contentEditable={
               <ContentEditable
@@ -144,8 +134,6 @@ export default function Editor({
               </div>
             }
           />
-          {/* Draggable Block Plugin - DISABLED due to severe performance issues */}
-          {/* TODO: Reimplement with better performance approach */}
         </div>
 
         {/* Built-in plugins */}

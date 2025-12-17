@@ -1,18 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Check, Moon, Sun, Folder, FileText } from "lucide-react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Check, Moon, Sun } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { useIconTheme } from "@/hooks/use-icon-theme";
 import { getDarkThemes, getLightThemes, type Theme } from "@/lib/themes";
 import { cn } from "@/lib/utils";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { AVAILABLE_FONTS, useFontSettings } from "@/stores/font";
 
 export const Route = createFileRoute("/settings/design")({
 	component: DesignSettings,
@@ -23,9 +14,6 @@ function DesignSettings() {
 	const iconTheme = useIconTheme();
 	const lightThemes = getLightThemes();
 	const darkThemes = getDarkThemes();
-	const { uiFontFamily, setUiFontFamily } = useFontSettings();
-
-	const currentUiFont = AVAILABLE_FONTS.find((f) => f.value === uiFontFamily);
 
 	return (
 		<div className="space-y-10 max-w-5xl">
@@ -39,42 +27,13 @@ function DesignSettings() {
 			<div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
 				{/* Left: Theme Selection */}
 				<div className="lg:col-span-5 space-y-10">
-					{/* Application Font */}
-					<div className="space-y-4">
-						<h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Typography</h4>
-						<div className="flex items-center justify-between">
-							<div className="space-y-0.5">
-								<div className="text-base font-normal">Application Font</div>
-								<p className="text-sm text-muted-foreground">
-									The font used for the user interface (sidebar, menus, etc).
-								</p>
-							</div>
-							<div className="w-[240px]">
-								<Select value={uiFontFamily} onValueChange={setUiFontFamily}>
-									<SelectTrigger>
-										<SelectValue placeholder="Select font">
-											{currentUiFont?.label || uiFontFamily}
-										</SelectValue>
-									</SelectTrigger>
-									<SelectContent>
-										{AVAILABLE_FONTS.map((font) => (
-											<SelectItem key={font.value} value={font.value}>
-												{font.label}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-							</div>
-						</div>
-					</div>
-
 					{/* Light Themes */}
 					<div className="space-y-4">
 						<div className="flex items-center gap-2 text-muted-foreground">
 							<Sun className="size-4" />
 							<h4 className="text-sm font-medium uppercase tracking-wider">Light Themes</h4>
 						</div>
-						<div className="grid grid-cols-2 gap-3">
+						<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 							{lightThemes.map((t) => (
 								<ThemeCard
 									key={t.key}
@@ -92,7 +51,7 @@ function DesignSettings() {
 							<Moon className="size-4" />
 							<h4 className="text-sm font-medium uppercase tracking-wider">Dark Themes</h4>
 						</div>
-						<div className="grid grid-cols-2 gap-3">
+						<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 							{darkThemes.map((t) => (
 								<ThemeCard
 									key={t.key}
@@ -236,6 +195,7 @@ interface ThemeCardProps {
 	onSelect: () => void;
 }
 
+// Theme Card Component
 function ThemeCard({ theme, isActive, onSelect }: ThemeCardProps) {
 	const { colors } = theme;
 
@@ -243,72 +203,87 @@ function ThemeCard({ theme, isActive, onSelect }: ThemeCardProps) {
 		<button
 			onClick={onSelect}
 			className={cn(
-				"relative flex flex-col rounded-xl border overflow-hidden transition-all text-left group",
-				"hover:shadow-sm hover:-translate-y-0.5",
-				isActive ? "border-primary ring-1 ring-primary/20 shadow-sm" : "border-border/50",
+				"relative flex flex-col rounded-xl border overflow-hidden transition-all duration-300 text-left group",
+				"hover:shadow-md hover:-translate-y-1 hover:border-primary/50",
+				isActive 
+					? "border-primary ring-2 ring-primary/20 shadow-md bg-accent/5" 
+					: "border-border/40 bg-card"
 			)}
 		>
 			{/* Theme Preview */}
 			<div
-				className="h-14 w-full flex border-b border-border/10"
+				className="h-24 w-full flex border-b border-border/10 transition-colors"
 				style={{ background: colors.background }}
 			>
 				{/* Sidebar Mock */}
 				<div
-					className="w-1/4 h-full border-r flex flex-col items-center pt-2 gap-1.5"
+					className="w-1/3 h-full border-r flex flex-col pt-3 px-3 gap-2"
 					style={{
 						background: colors.sidebar,
 						borderColor: colors.sidebarBorder,
 					}}
 				>
 					<div 
-						className="size-1.5 rounded-sm opacity-50"
+						className="h-2 w-16 rounded-full opacity-70 mb-1"
 						style={{ background: colors.sidebarForeground }}
 					/>
-					<div 
-						className="size-1.5 rounded-sm"
-						style={{ background: colors.folderColor || colors.primary }}
-					/>
-					<div 
-						className="size-1.5 rounded-sm opacity-50"
-						style={{ background: colors.sidebarForeground }}
-					/>
+					<div className="space-y-2">
+						<div className="flex items-center gap-2 opacity-90">
+							<div className="size-2 rounded-full shrink-0" style={{ background: colors.folderColor || colors.primary }} />
+							<div className="h-1.5 w-full rounded-full" style={{ background: colors.sidebarForeground }} />
+						</div>
+						<div className="flex items-center gap-2 opacity-60 pl-2">
+							<div className="size-1.5 rounded-full shrink-0" style={{ background: colors.sidebarForeground }} />
+							<div className="h-1.5 w-full rounded-full" style={{ background: colors.sidebarForeground }} />
+						</div>
+					</div>
 				</div>
 				{/* Editor Mock */}
-				<div className="flex-1 p-2 flex flex-col gap-1.5">
+				<div className="flex-1 p-3 flex flex-col gap-2">
 					<div
-						className="h-1.5 w-3/4 rounded-full"
-						style={{ background: colors.primary, opacity: 0.8 }}
+						className="h-2.5 w-24 rounded-full mb-1"
+						style={{ background: colors.primary, opacity: 0.9 }}
 					/>
-					<div
-						className="h-1 w-full rounded-full opacity-40"
-						style={{ background: colors.foreground }}
-					/>
-					<div
-						className="h-1 w-2/3 rounded-full opacity-20"
-						style={{ background: colors.foreground }}
-					/>
+					<div className="space-y-2">
+						<div
+							className="h-1.5 w-full rounded-full opacity-40"
+							style={{ background: colors.foreground }}
+						/>
+						<div
+							className="h-1.5 w-5/6 rounded-full opacity-30"
+							style={{ background: colors.foreground }}
+						/>
+						<div
+							className="h-1.5 w-4/6 rounded-full opacity-20"
+							style={{ background: colors.foreground }}
+						/>
+					</div>
 				</div>
 			</div>
 
 			{/* Theme Info */}
-			<div className="px-3 py-2 bg-muted/20">
-				<div
-					className="text-xs font-medium truncate"
-					style={{ color: colors.cardForeground }}
-				>
-					{theme.name}
+			<div className="px-4 py-3 bg-muted/20 group-hover:bg-muted/30 transition-colors">
+				<div className="flex items-center justify-between gap-2">
+					<div className="font-semibold text-sm text-card-foreground truncate">
+						{theme.name}
+					</div>
+					{/* Color Palette Preview */}
+					<div className="flex -space-x-1.5 shrink-0">
+						<div className="size-4 rounded-full ring-2 ring-background z-30" style={{ background: colors.background }} />
+						<div className="size-4 rounded-full ring-2 ring-background z-20" style={{ background: colors.sidebar }} />
+						<div className="size-4 rounded-full ring-2 ring-background z-10" style={{ background: colors.primary }} />
+					</div>
 				</div>
 			</div>
 
 			{/* Selected Check */}
 			{isActive && (
 				<div
-					className="absolute top-1.5 right-1.5 size-4 rounded-full flex items-center justify-center shadow-sm"
+					className="absolute top-2 right-2 size-5 rounded-full flex items-center justify-center shadow-sm animate-in fade-in zoom-in duration-200"
 					style={{ background: colors.primary }}
 				>
 					<Check
-						className="size-2.5"
+						className="size-3"
 						style={{ color: colors.primaryForeground }}
 					/>
 				</div>

@@ -162,8 +162,8 @@ export interface IconTheme {
 export const iconThemes: IconTheme[] = [
 	{
 		key: "default",
-		name: "默认图标",
-		description: "Novel Editor 默认图标主题",
+		name: "Default",
+		description: "Novel Editor default icon theme",
 		author: "Novel Editor Team",
 		icons: {
 			project: {
@@ -215,8 +215,8 @@ export const iconThemes: IconTheme[] = [
 	},
 	{
 		key: "minimal",
-		name: "极简图标",
-		description: "简洁统一的图标风格",
+		name: "Minimal",
+		description: "Clean and unified icon style",
 		author: "Novel Editor Team",
 		icons: {
 			project: {
@@ -266,8 +266,8 @@ export const iconThemes: IconTheme[] = [
 	},
 	{
 		key: "classic",
-		name: "经典图标",
-		description: "传统的文件图标风格",
+		name: "Classic",
+		description: "Traditional file icon style",
 		author: "Novel Editor Team",
 		icons: {
 			project: {
@@ -319,8 +319,8 @@ export const iconThemes: IconTheme[] = [
 	},
 	{
 		key: "modern",
-		name: "现代图标",
-		description: "现代化的图标设计",
+		name: "Modern",
+		description: "Modern icon design",
 		author: "Novel Editor Team",
 		icons: {
 			project: {
@@ -372,8 +372,8 @@ export const iconThemes: IconTheme[] = [
 	},
 	{
 		key: "elegant",
-		name: "优雅图标",
-		description: "优雅精致的图标风格",
+		name: "Elegant",
+		description: "Elegant and exquisite icon style",
 		author: "Novel Editor Team",
 		icons: {
 			project: {
@@ -425,8 +425,8 @@ export const iconThemes: IconTheme[] = [
 	},
 	{
 		key: "writer",
-		name: "作家图标",
-		description: "专为写作设计的图标主题",
+		name: "Writer",
+		description: "Icon theme designed for writing",
 		author: "Novel Editor Team",
 		icons: {
 			project: {
@@ -478,8 +478,8 @@ export const iconThemes: IconTheme[] = [
 	},
 	{
 		key: "technical",
-		name: "技术图标",
-		description: "硬朗的技术风格图标",
+		name: "Technical",
+		description: "Hard-edged technical style icons",
 		author: "Novel Editor Team",
 		icons: {
 			project: {
@@ -531,8 +531,8 @@ export const iconThemes: IconTheme[] = [
 	},
 	{
 		key: "nature",
-		name: "自然图标",
-		description: "清新自然的图标风格",
+		name: "Nature",
+		description: "Fresh and natural icon style",
 		author: "Novel Editor Team",
 		icons: {
 			project: {

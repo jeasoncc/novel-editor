@@ -1,17 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Minus, Plus } from "lucide-react";
+import { Minus, Plus, RotateCcw, Type, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DebouncedSlider } from "@/components/ui/debounced-slider";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-import { AVAILABLE_FONTS, useFontSettings } from "@/stores/font";
+import { DEFAULT_EDITOR_FONT, POPULAR_FONTS, useFontSettings } from "@/stores/font";
 
 export const Route = createFileRoute("/settings/editor")({
 	component: EditorSettings,
@@ -22,201 +16,212 @@ function EditorSettings() {
 		fontFamily,
 		fontSize,
 		lineHeight,
+		letterSpacing,
 		paragraphSpacing,
 		firstLineIndent,
 		setFontFamily,
 		setFontSize,
 		setLineHeight,
+		setLetterSpacing,
 		setParagraphSpacing,
 		setFirstLineIndent,
 	} = useFontSettings();
 
-	const currentFont = AVAILABLE_FONTS.find(f => f.value === fontFamily);
+	// 添加字体到列表
+	const addFont = (font: string) => {
+		const fonts = fontFamily.split(",").map(f => f.trim());
+		if (!fonts.some(f => f.replace(/['"]/g, "") === font)) {
+			setFontFamily(`'${font}', ${fontFamily}`);
+		}
+	};
 
 	return (
-		<div className="space-y-10 max-w-3xl">
+		<div className="space-y-8 max-w-2xl">
 			<div>
-				<h3 className="text-lg font-medium">Editor Settings</h3>
+				<h3 className="text-lg font-medium">Editor</h3>
 				<p className="text-sm text-muted-foreground">
-					Customize the writing experience.
+					Customize the writing experience. Changes are saved automatically.
 				</p>
 			</div>
-			
-			<div className="space-y-8">
-				{/* Typography Section */}
-				<div className="space-y-4">
-					<h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Typography</h4>
+
+			{/* Font Settings */}
+			<div className="space-y-6">
+				<div className="flex items-center gap-2 text-muted-foreground">
+					<Type className="size-4" />
+					<h4 className="text-sm font-medium uppercase tracking-wider">Typography</h4>
+				</div>
+
+				{/* Font Family - VSCode style input */}
+				<div className="space-y-3">
+					<div className="flex items-center justify-between">
+						<div>
+							<Label className="text-sm">Font Family</Label>
+							<p className="text-xs text-muted-foreground">
+								Comma-separated list (first available will be used)
+							</p>
+						</div>
+						<Button
+							variant="ghost"
+							size="sm"
+							className="h-7 text-xs"
+							onClick={() => setFontFamily(DEFAULT_EDITOR_FONT)}
+						>
+							<RotateCcw className="size-3 mr-1" />
+							Reset
+						</Button>
+					</div>
+					<Input
+						value={fontFamily}
+						onChange={(e) => setFontFamily(e.target.value)}
+						placeholder="'Font Name', 'Fallback Font', monospace"
+						className="font-mono text-sm"
+					/>
 					
-					<div className="space-y-6">
-						{/* Font Family */}
-						<div className="flex items-center justify-between">
-							<div className="space-y-0.5">
-								<Label className="text-base font-normal">Font Family</Label>
-								<p className="text-sm text-muted-foreground">
-									The primary font used for writing.
-								</p>
-							</div>
-							<div className="w-[240px]">
-								<Select value={fontFamily} onValueChange={setFontFamily}>
-									<SelectTrigger>
-										<SelectValue placeholder="Select font">
-											{currentFont?.label || fontFamily}
-										</SelectValue>
-									</SelectTrigger>
-									<SelectContent>
-										{AVAILABLE_FONTS.map((font) => (
-											<SelectItem key={font.value} value={font.value}>
-												{font.label}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-							</div>
-						</div>
-
-						{/* Font Size */}
-						<div className="flex items-center justify-between">
-							<div className="space-y-0.5">
-								<Label className="text-base font-normal">Font Size</Label>
-								<p className="text-sm text-muted-foreground">
-									Adjust the text size (px).
-								</p>
-							</div>
-							<div className="flex items-center gap-3">
-								<Button
-									variant="outline"
-									size="icon"
-									className="size-8"
-									onClick={() => setFontSize(Math.max(12, fontSize - 1))}
-									disabled={fontSize <= 12}
+					{/* Quick add popular fonts */}
+					<div className="flex flex-wrap gap-1.5">
+						{POPULAR_FONTS.map((font) => {
+							const isIncluded = fontFamily.includes(font);
+							return (
+								<button
+									key={font}
+									onClick={() => addFont(font)}
+									disabled={isIncluded}
+									className={`
+										px-2 py-1 text-xs rounded border transition-all
+										${isIncluded 
+											? "bg-primary/10 border-primary/30 text-primary cursor-default" 
+											: "border-border hover:bg-muted hover:border-primary/50"
+										}
+									`}
 								>
-									<Minus className="size-4" />
-								</Button>
-								<div className="w-12 text-center font-mono text-sm">
-									{fontSize}px
-								</div>
-								<Button
-									variant="outline"
-									size="icon"
-									className="size-8"
-									onClick={() => setFontSize(Math.min(32, fontSize + 1))}
-									disabled={fontSize >= 32}
-								>
-									<Plus className="size-4" />
-								</Button>
-							</div>
-						</div>
-
-						{/* Line Height */}
-						<div className="flex items-center justify-between">
-							<div className="space-y-0.5">
-								<Label className="text-base font-normal">Line Height</Label>
-								<p className="text-sm text-muted-foreground">
-									Vertical spacing between lines.
-								</p>
-							</div>
-							<div className="w-[200px]">
-								<Select
-									value={lineHeight.toString()}
-									onValueChange={(v) => setLineHeight(Number(v))}
-								>
-									<SelectTrigger>
-										<SelectValue placeholder="Select height" />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value="1.2">Compact (1.2)</SelectItem>
-										<SelectItem value="1.5">Standard (1.5)</SelectItem>
-										<SelectItem value="1.6">Relaxed (1.6)</SelectItem>
-										<SelectItem value="1.75">Ideal (1.75)</SelectItem>
-										<SelectItem value="1.8">Loose (1.8)</SelectItem>
-										<SelectItem value="2">Double (2.0)</SelectItem>
-									</SelectContent>
-								</Select>
-							</div>
-						</div>
-
-						{/* Paragraph Spacing */}
-						<div className="flex items-center justify-between">
-							<div className="space-y-0.5">
-								<Label className="text-base font-normal">Paragraph Spacing</Label>
-								<p className="text-sm text-muted-foreground">
-									Spacing between paragraphs.
-								</p>
-							</div>
-							<div className="w-[200px]">
-								<Select
-									value={paragraphSpacing.toString()}
-									onValueChange={(v) => setParagraphSpacing(Number(v))}
-								>
-									<SelectTrigger>
-										<SelectValue placeholder="Select spacing" />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value="0">None</SelectItem>
-										<SelectItem value="0.4">Small (0.4)</SelectItem>
-										<SelectItem value="0.5">Compact (0.5)</SelectItem>
-										<SelectItem value="1">Standard (1.0)</SelectItem>
-										<SelectItem value="1.2">Relaxed (1.2)</SelectItem>
-										<SelectItem value="1.5">Wide (1.5)</SelectItem>
-									</SelectContent>
-								</Select>
-							</div>
-						</div>
-
-						{/* First Line Indent */}
-						<div className="flex items-center justify-between">
-							<div className="space-y-0.5">
-								<Label className="text-base font-normal">First Line Indent</Label>
-								<p className="text-sm text-muted-foreground">
-									Indent the first line of each paragraph.
-								</p>
-							</div>
-							<div className="flex items-center gap-3">
-								<span className="text-sm text-muted-foreground w-16 text-right">
-									{firstLineIndent > 0 ? `${firstLineIndent} chars` : "Off"}
-								</span>
-								<Switch
-									checked={firstLineIndent > 0}
-									onCheckedChange={(checked) => setFirstLineIndent(checked ? 2 : 0)}
-								/>
-							</div>
-						</div>
+									{isIncluded && <Check className="size-3 inline mr-1" />}
+									{font}
+								</button>
+							);
+						})}
 					</div>
 				</div>
 
-				<Separator />
-
-				{/* Preview */}
-				<div className="space-y-4">
-					<h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Preview</h4>
-					
-					<div className="rounded-lg bg-muted/20 p-8">
-						<div
-							className="max-w-2xl mx-auto"
-							style={{
-								fontFamily: currentFont?.family || fontFamily,
-								fontSize: `${fontSize}px`,
-								lineHeight,
-							}}
-						>
-							<p style={{ marginBottom: `${paragraphSpacing}em`, textIndent: `${firstLineIndent}em` }}>
-								The old lighthouse stood defiant against the crashing waves, its
-								beacon cutting through the thick fog like a silver blade. For
-								generations, it had guided sailors home, but tonight, the light
-								seemed to flicker with an eerie, irregular rhythm.
-							</p>
-							<p style={{ marginBottom: `${paragraphSpacing}em`, textIndent: `${firstLineIndent}em` }}>
-								Elias wiped the salt spray from his glasses and squinted into
-								the dark. He had tended this lamp for forty years, knowing every
-								gear and lens by heart. But the sound echoing from the lantern
-								room wasn't mechanical. It was a whisper.
-							</p>
-							<p style={{ textIndent: `${firstLineIndent}em` }}>
-								"They are coming," it said, carried on the wind that shouldn't
-								have been able to breach the thick glass walls.
-							</p>
-						</div>
+				{/* Font Size */}
+				<div className="flex items-center justify-between">
+					<div>
+						<Label className="text-sm">Font Size</Label>
+						<p className="text-xs text-muted-foreground">Text size in pixels</p>
 					</div>
+					<div className="flex items-center gap-2">
+						<Button
+							variant="outline"
+							size="icon"
+							className="size-8"
+							onClick={() => setFontSize(Math.max(12, fontSize - 1))}
+						>
+							<Minus className="size-4" />
+						</Button>
+						<span className="w-12 text-center font-mono text-sm">{fontSize}px</span>
+						<Button
+							variant="outline"
+							size="icon"
+							className="size-8"
+							onClick={() => setFontSize(Math.min(32, fontSize + 1))}
+						>
+							<Plus className="size-4" />
+						</Button>
+					</div>
+				</div>
+
+				{/* Line Height */}
+				<div className="space-y-3">
+					<div className="flex items-center justify-between">
+						<div>
+							<Label className="text-sm">Line Height</Label>
+							<p className="text-xs text-muted-foreground">Space between lines</p>
+						</div>
+						<span className="font-mono text-sm text-muted-foreground">{lineHeight.toFixed(1)}</span>
+					</div>
+					<DebouncedSlider
+						value={[lineHeight]}
+						onValueChange={([v]) => setLineHeight(v)}
+						min={1.2}
+						max={2.5}
+						step={0.1}
+					/>
+				</div>
+
+				{/* Letter Spacing */}
+				<div className="space-y-3">
+					<div className="flex items-center justify-between">
+						<div>
+							<Label className="text-sm">Letter Spacing</Label>
+							<p className="text-xs text-muted-foreground">Space between characters</p>
+						</div>
+						<span className="font-mono text-sm text-muted-foreground">{letterSpacing.toFixed(2)}em</span>
+					</div>
+					<DebouncedSlider
+						value={[letterSpacing]}
+						onValueChange={([v]) => setLetterSpacing(v)}
+						min={-0.05}
+						max={0.2}
+						step={0.01}
+					/>
+				</div>
+
+				{/* Paragraph Spacing */}
+				<div className="space-y-3">
+					<div className="flex items-center justify-between">
+						<div>
+							<Label className="text-sm">Paragraph Spacing</Label>
+							<p className="text-xs text-muted-foreground">Space between paragraphs</p>
+						</div>
+						<span className="font-mono text-sm text-muted-foreground">{paragraphSpacing.toFixed(1)}em</span>
+					</div>
+					<DebouncedSlider
+						value={[paragraphSpacing]}
+						onValueChange={([v]) => setParagraphSpacing(v)}
+						min={0}
+						max={2.5}
+						step={0.1}
+					/>
+				</div>
+
+				{/* First Line Indent */}
+				<div className="flex items-center justify-between">
+					<div>
+						<Label className="text-sm">First Line Indent</Label>
+						<p className="text-xs text-muted-foreground">Indent first line of paragraphs</p>
+					</div>
+					<div className="flex items-center gap-3">
+						{firstLineIndent > 0 && (
+							<span className="text-sm text-muted-foreground">{firstLineIndent} chars</span>
+						)}
+						<Switch
+							checked={firstLineIndent > 0}
+							onCheckedChange={(checked) => setFirstLineIndent(checked ? 2 : 0)}
+						/>
+					</div>
+				</div>
+			</div>
+
+			{/* Preview */}
+			<div className="space-y-3">
+				<Label className="text-sm text-muted-foreground">Preview</Label>
+				<div
+					className="p-4 rounded-lg border bg-card"
+					style={{
+						fontFamily: fontFamily,
+						fontSize: `${fontSize}px`,
+						lineHeight: lineHeight,
+						letterSpacing: `${letterSpacing}em`,
+					}}
+				>
+					<p style={{ textIndent: `${firstLineIndent}em`, marginBottom: `${paragraphSpacing}em` }}>
+						The old lighthouse stood defiant against the crashing waves, its beacon cutting through the thick fog.
+					</p>
+					<p style={{ textIndent: `${firstLineIndent}em`, marginBottom: `${paragraphSpacing}em` }}>
+						古老的灯塔傲然矗立，抵御着汹涌的海浪，它的光芒穿透浓雾。
+					</p>
+					<p style={{ textIndent: `${firstLineIndent}em` }}>
+						0123456789 ABCDEFG abcdefg 中文测试
+					</p>
 				</div>
 			</div>
 		</div>

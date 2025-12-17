@@ -22,9 +22,6 @@ export type {
 
 export { default as TagTransformPlugin } from "./tag-transform-plugin";
 
-export { default as DraggableBlockPlugin } from "./draggable-block-plugin";
-export type { DraggableBlockPluginProps } from "./draggable-block-plugin";
-
 // Re-export commonly used Lexical plugins for convenience
 export { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 export { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
