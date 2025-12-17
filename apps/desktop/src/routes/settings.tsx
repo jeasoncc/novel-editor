@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
 	createFileRoute,
 	Link,
@@ -28,7 +29,7 @@ function SettingsLayout() {
 	const location = useLocation();
 	const iconTheme = useIconTheme();
 
-	const navGroups: NavGroup[] = [
+	const navGroups = useMemo<NavGroup[]>(() => [
 		{
 			title: "Customization",
 			items: [
@@ -120,7 +121,7 @@ function SettingsLayout() {
 				},
 			],
 		},
-	];
+	], [iconTheme]);
 
 	return (
 		<div className="h-screen bg-background flex flex-col overflow-hidden">
@@ -194,7 +195,7 @@ function SettingsLayout() {
 
 				{/* Content Area - Only this part scrolls */}
 				<main className="flex-1 overflow-y-auto bg-background">
-					<div className="max-w-screen-xl mx-auto p-6 pb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+					<div className="max-w-screen-xl mx-auto p-6 pb-8">
 						<Outlet />
 					</div>
 				</main>

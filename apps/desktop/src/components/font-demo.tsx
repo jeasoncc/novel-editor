@@ -50,12 +50,12 @@ export function FontDemo() {
 					<div className="grid grid-cols-2 md:grid-cols-3 gap-4 p-4 bg-muted/30 rounded-lg">
 						<div>
 							<div className="text-xs font-medium text-muted-foreground mb-1">UI Font</div>
-							<div className="text-sm">{FontConfigManager.getFontDisplayName(currentConfig.uiFontFamily)}</div>
+							<div className="text-sm font-mono text-xs">{currentConfig.uiFontFamily.split(',')[0].replace(/['"]/g, '')}</div>
 							<div className="text-xs text-muted-foreground">{currentConfig.uiFontSize}px</div>
 						</div>
 						<div>
 							<div className="text-xs font-medium text-muted-foreground mb-1">Editor Font</div>
-							<div className="text-sm">{FontConfigManager.getFontDisplayName(currentConfig.fontFamily)}</div>
+							<div className="text-sm font-mono text-xs">{currentConfig.fontFamily.split(',')[0].replace(/['"]/g, '')}</div>
 							<div className="text-xs text-muted-foreground">{currentConfig.fontSize}px</div>
 						</div>
 						<div>
@@ -98,7 +98,7 @@ export function FontDemo() {
 							<CardContent className="card-padding space-y-3">
 								<Button size="sm">Sample Button</Button>
 								<div className="text-sm text-muted-foreground">
-									UI text with current font: {FontConfigManager.getFontDisplayName(currentConfig.uiFontFamily)}
+									UI text with current font: {currentConfig.uiFontFamily.split(',')[0].replace(/['"]/g, '')}
 								</div>
 							</CardContent>
 						</Card>
